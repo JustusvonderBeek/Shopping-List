@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vocabulary</string>
+    <string name="hello_blank_fragment">Hallo leeres Fragment</string>
+    <string name="btn_get_data">Vokabeln abrufen</string>
+    <string name="btn_next_word">Nächstes Wort</string>
+    <string name="nav_btn_overview">Einkaufsliste</string>
+    <string name="nav_btn_list">Liste</string>
+    <string name="recipe_name_hint">Rezeptname</string>
+    <string name="trans_ipt_hint">Beschreibung</string>
+    <string name="btn_recipe_add">Rezept abschließen</string>
+    <string name="nav_btn_add">Rezept hinzufügen</string>
+    <string name="btn_edit_add">Item hinzufügen</string>
+    <string name="btn_edit">Wort bearbeiten</string>
+    <string name="btn_rmv_word">Wort entfernen</string>
+    <string name="nav_btn_recipes">Rezepte</string>
+    <string name="recap_fragment_name">Abfragen</string>
+    <string name="edit_fragment_title">Word editieren</string>
+    <string name="recap_input_hint">Benutzername eingeben</string>
+    <string name="recap_correct">Richtig</string>
+    <string name="recap_incorrect">Falsch</string>
+    <string name="btn_start_app">Start</string>
+    <string name="btn_add_to_list">Alles zur Liste hinzufügen</string>
+    <string name="btn_start_recap">Wiederholung anfangen</string>
+    <string name="notification_description">Vokabular wiederholen</string>
+    <string name="btn_count_correct">War richtig</string>
+    <string name="btn_swap_word">Felder tauschen</string>
+    <string name="nav_start_recap_title">Abfrage anfangen</string>
+    <string name="recap_start_title">Abfragerichtung auswählen</string>
+    <string name="recap_direction_both">Beide</string>
+    <string name="recap_direction_german_to_spanish">Deutsch zu Spanisch</string>
+    <string name="recap_direction_spanish_to_german">Spanisch zu Deutsch</string>
+    <string name="recap_start_word_cnt">Anzahl an Vokabeln zum Wiederholen</string>
+</resources>

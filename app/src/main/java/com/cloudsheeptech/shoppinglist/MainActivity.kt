@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
@@ -11,7 +12,10 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.cloudsheeptech.shoppinglist.databinding.ActivityMainBinding
+import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModel
+import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModelFactory
 import com.cloudsheeptech.shoppinglist.start.StartViewModel
+import com.cloudsheeptech.shoppinglist.start.StartViewModelFactory
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -37,6 +41,8 @@ class MainActivity : AppCompatActivity() {
 
 //        val vocabularyFile = File(applicationContext.filesDir, "vocabulary.json")
 //        val vocabulary = Vocabulary.getInstance(vocabularyFile)
+        val startViewModel by viewModels<StartViewModel> { StartViewModelFactory(application) }
+        val listOverviewViewModel by viewModels<ListOverviewViewModel> { ListOverviewViewModelFactory(application) }
 //        val activityViewModel by viewModels<LearningViewModel> { LearningViewModelFactory(vocabulary) }
 //        learningViewModel = activityViewModel
 //        val actViewModel by viewModels<RecapViewModel> { RecapViewModelFactory(vocabulary) }

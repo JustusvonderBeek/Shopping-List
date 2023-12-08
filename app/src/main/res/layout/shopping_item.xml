@@ -20,7 +20,7 @@
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:elevation="3dp"
-        android:shadowColor="@color/vocabulary_gray"
+        android:shadowColor="@color/shopping_gray"
         app:cardCornerRadius="5dp"
         >
 

@@ -57,7 +57,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:onClick="@{() -> viewModel.navigateToApp()}"
+                android:onClick="@{() -> viewModel.pushUsername()}"
                 android:text="@string/btn_start_app" />
 
         </LinearLayout>

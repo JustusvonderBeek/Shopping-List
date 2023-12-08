@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="VocabularyTheme" parent="Theme.Material3.Light">
+        <item name="colorPrimary">@color/vocabulary_blue</item>
+    </style>
+</resources>

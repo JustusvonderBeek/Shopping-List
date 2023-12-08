@@ -31,6 +31,13 @@ class ListOverviewFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
+        viewModel.init.observe(viewLifecycleOwner, Observer { initialized ->
+            if (!initialized) {
+                findNavController().navigate(ListOverviewFragmentDirections.actionListOverviewToUsernameSelection())
+                viewModel.onStartNavigated()
+            }
+        })
+
         return binding.root
     }
 

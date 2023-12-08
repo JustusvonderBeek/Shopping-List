@@ -30,8 +30,6 @@ class StartFragment : Fragment() {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_start, container, false)
 
-        // TODO: Create view model
-
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 

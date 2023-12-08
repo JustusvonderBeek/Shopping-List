@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="WordListItemBaseStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">24sp</item>
+    </style>
+    <style name="WordListItemVocabStyle" parent="WordListItemBaseStyle">
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="WordListItemTransStyle" parent="WordListItemBaseStyle">
+        <item name="android:textStyle">italic</item>
+    </style>
+    <style name="RecapHeadingViewStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">26sp</item>
+    </style>
+    <style name="RecapTextViewStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+    <style name="LearningTextViewStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+</resources>

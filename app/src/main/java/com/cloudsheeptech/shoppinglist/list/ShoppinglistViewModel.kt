@@ -1,18 +1,17 @@
 package com.cloudsheeptech.shoppinglist.list
 
-import android.widget.MultiAutoCompleteTextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.Item
-import com.cloudsheeptech.shoppinglist.datastructures.Shoppinglist
+import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ShoppinglistViewModel(val list: Shoppinglist) : ViewModel() {
+class ShoppinglistViewModel(val list: ItemListWithName<Item>) : ViewModel() {
 
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)

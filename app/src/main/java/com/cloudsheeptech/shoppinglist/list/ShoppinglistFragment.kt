@@ -17,9 +17,10 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.cloudsheeptech.shoppinglist.R
+import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.databinding.FragmentShoppinglistBinding
-import com.cloudsheeptech.shoppinglist.datastructures.Shoppinglist
+import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import com.cloudsheeptech.shoppinglist.recipe.RecipeViewModel
 
 class ShoppinglistFragment : Fragment(), MenuProvider {
@@ -57,8 +58,8 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         // Adding the dropdown menu in the toolbar
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        val shoppinglist = Shoppinglist()
-        val viewModelFactory = ShoppingListViewModelFactory(shoppinglist)
+        val itemListWithName = ItemListWithName<Item>()
+        val viewModelFactory = ShoppingListViewModelFactory(itemListWithName)
 
         viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[ShoppinglistViewModel::class.java]
         binding.viewModel = viewModel

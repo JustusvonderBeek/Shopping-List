@@ -4,7 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.SingleEvent
-import com.cloudsheeptech.shoppinglist.datastructures.Shoppinglist
+import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,7 +16,7 @@ class AddRecipeViewModel() : ViewModel() {
     private val job = Job()
     private val addVmScope = CoroutineScope(Dispatchers.IO + job)
 
-    val shoppinglist = MutableLiveData<Shoppinglist>()
+    val itemListWithName = MutableLiveData<ItemListWithName<Item>>()
 
     val recipeName = MutableLiveData<String>()
     val recipeDescription = MutableLiveData<String>()

@@ -6,7 +6,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,10 +24,15 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private val job = Job()
     private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
 
+    private val user = User()
+
     private val _init = MutableLiveData<Boolean>(true)
     val init : LiveData<Boolean> get()= _init
 
-    val username = MutableLiveData<String>("")
+    private  val _createList = MutableLiveData<Boolean>(false)
+    val createList : LiveData<Boolean> get() = _createList
+
+    val shoppingList = ItemListWithName<Item>()
 
     init {
         checkInitialized()
@@ -36,6 +43,13 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
         vmCoroutine.launch {
            loadUser()
         }
+    }
+
+    fun createNewList() {
+//        Log.d("ListOverviewViewModel", "Creating new list")
+//        val list = Item((shoppingList.size() + 1).toLong(), "New List", "")
+//        shoppingList.addItem(list)
+        navigateToCreateList()
     }
 
     private suspend fun loadUser() {
@@ -76,6 +90,14 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     fun onStartNavigated() {
         _init.value = true
+    }
+
+    private fun navigateToCreateList() {
+        _createList.value = true
+    }
+
+    fun onCreateListNavigated() {
+        _createList.value = false
     }
 
 }

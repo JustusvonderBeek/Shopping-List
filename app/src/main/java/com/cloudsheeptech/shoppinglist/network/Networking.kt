@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.network
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
+//import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -59,7 +59,7 @@ object Networking {
         withContext(Dispatchers.IO) {
             client = HttpClient(OkHttp) {
                 engine {
-                 addInterceptor(AuthenticationInterceptor(token = "todo"))
+//                 addInterceptor(AuthenticationInterceptor(token = "todo"))
                     config {
                         hostnameVerifier {
                             _, _ -> true

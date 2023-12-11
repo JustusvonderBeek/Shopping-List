@@ -22,7 +22,7 @@
         android:name="com.cloudsheeptech.shoppinglist.add_recipe.AddRecipeFragment"
         android:label="@string/nav_btn_add" />
     <fragment
-        android:id="@+id/list"
+        android:id="@+id/shoppinglist"
         android:name="com.cloudsheeptech.shoppinglist.list.ShoppinglistFragment"
         android:label="@string/nav_btn_list" >
         <action
@@ -54,6 +54,18 @@
             app:popUpToInclusive="false" />
         <action
             android:id="@+id/action_overview_to_list"
-            app:destination="@id/list" />
+            app:destination="@id/shoppinglist" />
+        <action
+            android:id="@+id/action_overview_to_createShoppinglistFragment"
+            app:destination="@id/createShoppinglistFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/createShoppinglistFragment"
+        android:name="com.cloudsheeptech.shoppinglist.create.list.CreateShoppinglistFragment"
+        android:label="fragment_create_shoppinglist"
+        tools:layout="@layout/fragment_create_shoppinglist" >
+        <action
+            android:id="@+id/action_createShoppinglistFragment_to_shoppinglist"
+            app:destination="@id/shoppinglist" />
     </fragment>
 </navigation>

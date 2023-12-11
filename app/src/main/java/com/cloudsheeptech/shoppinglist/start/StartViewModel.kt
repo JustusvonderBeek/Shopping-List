@@ -9,7 +9,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.Util
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText

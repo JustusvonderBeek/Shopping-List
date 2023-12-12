@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,14 +26,16 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
 
     private val user = User()
-
-    private val _init = MutableLiveData<Boolean>(true)
-    val init : LiveData<Boolean> get()= _init
+    private val database = ShoppingListDatabase.getInstance(application.applicationContext)
+    private val shoppingListDao = database.shoppingListDao()
 
     private  val _createList = MutableLiveData<Boolean>(false)
     val createList : LiveData<Boolean> get() = _createList
 
-    val shoppingList = ItemListWithName<Item>()
+    private val _navigateList = MutableLiveData<Long>(-1)
+    val navigateList : LiveData<Long> get() = _navigateList
+
+    val shoppingList = shoppingListDao.getShoppingLists()
 
     init {
         checkInitialized()
@@ -79,17 +82,16 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
             return@withContext true
         }
         if (!result) {
-            Log.d("ListOverviewViewModel", "Showing fragment to set username")
-            navigateToStart()
+            Log.d("ListOverviewViewModel", "Failed to load user. Okay for now")
         }
     }
 
-    private fun navigateToStart() {
-        _init.value = false
+    fun navigateToShoppingList(id : Long) {
+        _navigateList.value = id
     }
 
-    fun onStartNavigated() {
-        _init.value = true
+    fun onShoppingListNavigated() {
+        _navigateList.value = -1
     }
 
     private fun navigateToCreateList() {

@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
+import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListOverviewBinding
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 
@@ -34,20 +35,14 @@ class ListOverviewFragment : Fragment() {
         binding.lifecycleOwner = this
         val adapter = ShoppingListAdapter(ShoppingListAdapter.ListClickListener { id ->
             Log.d("ListOverviewFragment", "Got ID $id")
-        }, requireActivity().resources, ItemListWithName())
+            viewModel.navigateToShoppingList(id)
+        }, requireActivity().resources, listOf())
         binding.listOverviewList.adapter = adapter
 
-        viewModel.shoppingList.list.observe(viewLifecycleOwner, Observer {
+        viewModel.shoppingList.observe(viewLifecycleOwner, Observer {
             it?.let {
                 adapter.submitList(it)
                 adapter.notifyDataSetChanged()
-            }
-        })
-
-        viewModel.init.observe(viewLifecycleOwner, Observer { initialized ->
-            if (!initialized) {
-                findNavController().navigate(ListOverviewFragmentDirections.actionListOverviewToUsernameSelection())
-                viewModel.onStartNavigated()
             }
         })
 
@@ -55,6 +50,13 @@ class ListOverviewFragment : Fragment() {
             if (navigate) {
                 findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToCreateShoppinglistFragment())
                 viewModel.onCreateListNavigated()
+            }
+        })
+
+        viewModel.navigateList.observe(viewLifecycleOwner, Observer { id ->
+            if (id > 0L) {
+                findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToShoppinglist(id))
+                viewModel.onShoppingListNavigated()
             }
         })
 

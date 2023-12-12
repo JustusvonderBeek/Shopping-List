@@ -11,16 +11,18 @@
         android:label="@string/nav_btn_overview"
         tools:layout="@layout/fragment_recipe" >
         <action
-            android:id="@+id/action_learning_to_add2"
-            app:destination="@id/addRecipe" />
-        <action
-            android:id="@+id/action_learning_to_editFragment"
-            app:destination="@id/editItem" />
+            android:id="@+id/action_recipes_to_shoppinglist"
+            app:destination="@id/shoppinglist"
+            app:popUpTo="@id/shoppinglist" />
     </fragment>
     <fragment
         android:id="@+id/addRecipe"
         android:name="com.cloudsheeptech.shoppinglist.add_recipe.AddRecipeFragment"
-        android:label="@string/nav_btn_add" />
+        android:label="@string/nav_btn_add" >
+        <action
+            android:id="@+id/action_addRecipe_to_recipes"
+            app:destination="@id/recipes" />
+    </fragment>
     <fragment
         android:id="@+id/shoppinglist"
         android:name="com.cloudsheeptech.shoppinglist.list.ShoppinglistFragment"
@@ -28,12 +30,21 @@
         <action
             android:id="@+id/action_edit_to_editFragment"
             app:destination="@id/editItem" />
+        <argument
+            android:name="ListID"
+            app:argType="long"
+            android:defaultValue="-1L" />
     </fragment>
     <fragment
         android:id="@+id/usernameSelection"
         android:name="com.cloudsheeptech.shoppinglist.start.StartFragment"
         android:label="@string/recap_fragment_name"
-        tools:layout="@layout/fragment_start" />
+        tools:layout="@layout/fragment_start" >
+        <action
+            android:id="@+id/action_usernameSelection_to_overview"
+            app:destination="@id/overview"
+            app:popUpTo="@id/overview" />
+    </fragment>
     <fragment
         android:id="@+id/editItem"
         android:name="com.cloudsheeptech.shoppinglist.edit.EditFragment"
@@ -41,6 +52,9 @@
         <argument
             android:name="selectedId"
             app:argType="integer" />
+        <action
+            android:id="@+id/action_editItem_to_addRecipe"
+            app:destination="@id/addRecipe" />
     </fragment>
     <fragment
         android:id="@+id/overview"
@@ -48,16 +62,11 @@
         android:label="@string/nav_start_recap_title"
         tools:layout="@layout/fragment_list_overview">
         <action
-            android:id="@+id/action_listOverview_to_usernameSelection"
-            app:destination="@id/usernameSelection"
-            app:popUpTo="@id/overview"
-            app:popUpToInclusive="false" />
-        <action
-            android:id="@+id/action_overview_to_list"
-            app:destination="@id/shoppinglist" />
-        <action
             android:id="@+id/action_overview_to_createShoppinglistFragment"
             app:destination="@id/createShoppinglistFragment" />
+        <action
+            android:id="@+id/action_overview_to_shoppinglist"
+            app:destination="@id/shoppinglist" />
     </fragment>
     <fragment
         android:id="@+id/createShoppinglistFragment"

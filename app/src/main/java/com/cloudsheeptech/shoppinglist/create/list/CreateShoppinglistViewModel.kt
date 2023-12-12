@@ -5,16 +5,24 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class CreateShoppinglistViewModel : ViewModel() {
+class CreateShoppinglistViewModel(database : ShoppingListDatabase) : ViewModel() {
+
+    private val job = Job()
+    private val createSLCoroutine = CoroutineScope(Dispatchers.Main + job)
 
     val title = MutableLiveData<String>("")
     val description = MutableLiveData<String>("")
-    val creator = MutableLiveData<Long>()
     val image = MutableLiveData<String>()
-    val items = ItemListWithName<Item>()
-    val list_id = MutableLiveData<Long>()
 
     private val _navigateBack = MutableLiveData<Boolean>(false)
     val navigateBack : LiveData<Boolean> get() = _navigateBack
@@ -22,9 +30,27 @@ class CreateShoppinglistViewModel : ViewModel() {
     private val _navigateToCreatedList = MutableLiveData<Long>(-1)
     val navigateToCreatedList : LiveData<Long> get() = _navigateToCreatedList
 
+    private val shoppingListDao = database.shoppingListDao()
+
     fun create() {
         Log.d("CreateShoppinglistViewModel", "Creating list pressed")
+        if (title.value == null || title.value!!.isEmpty()) {
+            return
+        }
+        if (description.value == null || description.value!!.isEmpty())
+            return
+        val creator = User(ID = 100, Name = "TestNutzer", FavouriteRecipe = -1)
+        val newShoppingList = ShoppingList(ID=0, Title = title.value!!, Description = description.value!!, Image = "", Creator = creator)
+        createSLCoroutine.launch {
+            storeShoppingListDatabase(newShoppingList)
+        }
+    }
 
+    private suspend fun storeShoppingListDatabase(list : ShoppingList) {
+        withContext(Dispatchers.IO) {
+            shoppingListDao.insertList(list)
+            Log.d("CreateShoppingListViewModel", "Stored list to database")
+        }
     }
 
     fun navigateBack() {

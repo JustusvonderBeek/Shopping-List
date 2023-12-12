@@ -6,7 +6,7 @@
     <data>
         <variable
             name="item"
-            type="com.cloudsheeptech.shoppinglist.data.Item" />
+            type="com.cloudsheeptech.shoppinglist.data.ShoppingList" />
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.list_overview.ShoppingListAdapter.ListClickListener" />
@@ -35,7 +35,7 @@
             <ImageView
                 android:layout_width="60dp"
                 android:layout_height="match_parent"
-                android:src="@{item.imagePath}"
+                android:src="@{item.Image}"
                 />
 
             <LinearLayout
@@ -47,14 +47,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text='@{String.format("%s", item.Name)}'
+                    android:text='@{String.format("%s", item.Title)}'
                     style="@style/WordListItemVocabStyle"
                     />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text='@{String.format("%s", item.ID)}'
+                    android:text='@{String.format("%s", item.Creator.Name)}'
                     style="@style/WordListItemTransStyle"
                     />
 

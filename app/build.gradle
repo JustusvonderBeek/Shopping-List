@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlinx-serialization'
-    id 'androidx.navigation.safeargs'
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
@@ -68,7 +68,6 @@ dependencies {
     implementation 'androidx.room:room-ktx:2.5.2'
     implementation 'androidx.room:room-runtime:2.5.2'
     implementation 'androidx.room:room-common:2.5.2'
-
 
     // Allows to share view models between fragments
     implementation 'androidx.fragment:fragment-ktx:1.6.1'

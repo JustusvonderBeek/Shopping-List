@@ -8,10 +8,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingListBinding
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 
-class ShoppingListAdapter(val clickListener: ListClickListener, private val resource : Resources, private val itemList : ItemListWithName<Item>) : ListAdapter<Item, ShoppingListAdapter.ShoppingListViewHolder>(ItemDiffCallback()) {
+class ShoppingListAdapter(val clickListener: ListClickListener, private val resource : Resources, private val itemList : List<ShoppingList>) : ListAdapter<ShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(ItemDiffCallback()) {
 
     suspend fun deleteItemAt(position : Int) {
         Log.i("WordListItemAdapter", "Remove item at $position")
@@ -27,7 +28,7 @@ class ShoppingListAdapter(val clickListener: ListClickListener, private val reso
     }
 
     class ShoppingListViewHolder private constructor(val binding : ShoppingListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(clickListener: ListClickListener, item : Item, resource: Resources) {
+        fun bind(clickListener: ListClickListener, item : ShoppingList, resource: Resources) {
             binding.item = item
             binding.clickListener = clickListener
             binding.executePendingBindings()
@@ -42,16 +43,16 @@ class ShoppingListAdapter(val clickListener: ListClickListener, private val reso
         }
     }
 
-    class ListClickListener(val clickListener: (id: Int) -> Unit) {
-        fun onClick(item: Item) = clickListener(item.ID.toInt())
+    class ListClickListener(val clickListener: (id: Long) -> Unit) {
+        fun onClick(item: ShoppingList) = clickListener(item.ID)
     }
 
-    class ItemDiffCallback : DiffUtil.ItemCallback<Item>() {
-        override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
-            return oldItem.ID == newItem.ID && oldItem.Name == newItem.Name && oldItem.ImagePath == newItem.ImagePath
+    class ItemDiffCallback : DiffUtil.ItemCallback<ShoppingList>() {
+        override fun areItemsTheSame(oldItem: ShoppingList, newItem: ShoppingList): Boolean {
+            return oldItem.ID == newItem.ID && oldItem.Title == newItem.Title && oldItem.Image == newItem.Image
         }
 
-        override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
+        override fun areContentsTheSame(oldItem: ShoppingList, newItem: ShoppingList): Boolean {
             return oldItem == newItem
         }
     }

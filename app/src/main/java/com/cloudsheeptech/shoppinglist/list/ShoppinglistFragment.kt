@@ -15,10 +15,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentShoppinglistBinding
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import com.cloudsheeptech.shoppinglist.recipe.RecipeViewModel
@@ -28,6 +30,8 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
     private lateinit var binding : FragmentShoppinglistBinding
     private lateinit var viewModel : ShoppinglistViewModel
     private val learningViewModel : RecipeViewModel by activityViewModels()
+
+    val args : ShoppinglistFragmentArgs by navArgs()
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.list_dropdown, menu)
@@ -58,13 +62,15 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         // Adding the dropdown menu in the toolbar
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
+        val shoppingListId = args.ListID
+
+        val database = ShoppingListDatabase.getInstance(requireContext())
         val itemListWithName = ItemListWithName<Item>()
-        val viewModelFactory = ShoppingListViewModelFactory(itemListWithName)
+        val viewModelFactory = ShoppingListViewModelFactory(itemListWithName, database, shoppingListId)
 
         viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[ShoppinglistViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
-
 
         val adapter = ShoppingListItemAdapter(ShoppingListItemAdapter.ShoppingItemClickListener { itemId ->
             Log.i("EditFragment", "Tapped on item with ID $itemId")

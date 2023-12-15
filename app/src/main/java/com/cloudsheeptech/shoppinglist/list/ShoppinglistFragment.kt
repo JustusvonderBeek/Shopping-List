@@ -81,7 +81,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
 
         val adapter = ShoppingListItemAdapter(ShoppingListItemAdapter.ShoppingItemClickListener { itemId ->
             Log.i("EditFragment", "Tapped on item with ID $itemId")
-            viewModel.editWord(itemId)
+            viewModel.increaseItemCount(itemId)
         }, resources, database.mappingDao())
         binding.itemList.adapter = adapter
         // Allow removing item with swipe

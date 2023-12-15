@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation_graph"
-    app:startDestination="@id/overview">
+    app:startDestination="@id/shoppinglist">
 
     <fragment
         android:id="@+id/recipes"
@@ -41,9 +41,9 @@
         android:label="@string/recap_fragment_name"
         tools:layout="@layout/fragment_start" >
         <action
-            android:id="@+id/action_usernameSelection_to_overview"
-            app:destination="@id/overview"
-            app:popUpTo="@id/overview" />
+            android:id="@+id/action_usernameSelection_to_shoppinglist"
+            app:destination="@id/shoppinglist"
+            app:popUpTo="@id/shoppinglist" />
     </fragment>
     <fragment
         android:id="@+id/editItem"

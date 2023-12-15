@@ -36,4 +36,7 @@ interface ItemListMappingDao {
 
     @Query("SELECT * FROM item_to_list_mapping WHERE ItemID = :itemId")
     fun getMappingsForItemLive(itemId : Long) : LiveData<List<ListMapping>>
+
+    @Query("SELECT * FROM item_to_list_mapping WHERE ItemID = :itemId AND ListID = :listId")
+    fun getMappingForItemAndList(itemId : Long, listId : Long) : List<ListMapping>
 }

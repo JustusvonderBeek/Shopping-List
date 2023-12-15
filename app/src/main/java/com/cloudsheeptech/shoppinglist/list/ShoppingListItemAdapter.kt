@@ -8,15 +8,22 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.database.ItemListMappingDao
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, private val resource : Resources) : ListAdapter<Item, ShoppingListItemAdapter.WordListItemViewHolder>(WordDiffCallback()) {
+class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, private val resource : Resources, private val mappingDao: ItemListMappingDao) : ListAdapter<Item, ShoppingListItemAdapter.WordListItemViewHolder>(WordDiffCallback()) {
 
     suspend fun deleteItemAt(position : Int) {
         Log.i("WordListItemAdapter", "Remove item at $position")
-//        vocabulary.removeVocabularyItem(position)
+        withContext(Dispatchers.IO) {
+            val item = currentList[position]
+            mappingDao.deleteMappingItemListId(item.ID, 0)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordListItemViewHolder {
@@ -31,6 +38,7 @@ class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, priv
         fun bind(clickListener: ShoppingItemClickListener, item : Item, resource: Resources) {
             binding.item = item
             binding.clickListener = clickListener
+            Glide.with(binding.root).load(R.drawable.ic_item).into(binding.itemIcon)
             binding.executePendingBindings()
         }
 

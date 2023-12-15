@@ -1,15 +1,11 @@
 package com.cloudsheeptech.shoppinglist.database
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.cloudsheeptech.shoppinglist.data.Item
-import com.cloudsheeptech.shoppinglist.data.ItemList
-import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 
 @Dao
 interface ItemListDao {

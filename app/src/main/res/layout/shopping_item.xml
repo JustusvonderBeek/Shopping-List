@@ -5,7 +5,7 @@
     <data>
         <variable
             name="item"
-            type="com.cloudsheeptech.shoppinglist.data.Item" />
+            type="com.cloudsheeptech.shoppinglist.data.ItemWithQuantity" />
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.list.ShoppingListItemAdapter.ShoppingItemClickListener" />
@@ -61,6 +61,14 @@
                     />
 
             </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{String.format("%d", item.Quantity)}'
+                android:layout_gravity="center"
+                style="@style/LearningTextViewStyle"
+                />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

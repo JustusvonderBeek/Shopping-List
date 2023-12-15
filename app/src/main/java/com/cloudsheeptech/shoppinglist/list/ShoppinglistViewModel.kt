@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
@@ -35,8 +36,8 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
     val hideKeyboard : LiveData<Boolean> get() = _hideKeyboard
 
 
-    private val _shoppinglist = MutableLiveData<List<Item>>()
-    val shoppinglist : LiveData<List<Item>> get() = _shoppinglist
+    private val _shoppinglist = MutableLiveData<List<ItemWithQuantity>>()
+    val shoppinglist : LiveData<List<ItemWithQuantity>> get() = _shoppinglist
     // TODO: Fix the list id in case another list than the default one is loaded
     val mappedItemIds = mappingDao.getMappingsForListLive(0)
 
@@ -111,19 +112,48 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
 
     fun reloadItemsInList(itemIds : List<ListMapping>) {
         // Takes the list of currently contained IDs and updates the items in the shopping list
-        val ids = itemIds.map { map -> map.ItemID }
+        val ids : List<Pair<Long, Long>> = itemIds.map { map -> Pair(map.ItemID, map.Quantity) }
         scope.launch {
             loadItemsInListFromDatabase(ids)
         }
     }
 
-    private suspend fun loadItemsInListFromDatabase(itemIds : List<Long>) {
+    private suspend fun loadItemsInListFromDatabase(itemIds : List<Pair<Long, Long>>) {
         withContext(Dispatchers.IO) {
             Log.d("ShoppinglistViewModel", "Loading the current items from the database")
-            val items = databaseDao.getItems(itemIds)
-            withContext(Dispatchers.Main) {
-                _shoppinglist.value = items
+            val items = databaseDao.getItems(itemIds.map { it.first })
+            val zipped = mutableListOf<ItemWithQuantity>()
+            for (item in items) {
+                val quant = itemIds.find { s -> s.first == item.ID }
+                zipped.add(ItemWithQuantity(item.ID, item.Name, item.ImagePath, quant!!.second))
             }
+            withContext(Dispatchers.Main) {
+                _shoppinglist.value = zipped
+            }
+        }
+    }
+
+    fun increaseItemCount(itemId : Int) {
+        scope.launch {
+            Log.d("ShoppinglistViewModel", "Tapped on item with ID: $itemId")
+            getMappingAndIncreaseCount(itemId.toLong(), 1)
+        }
+    }
+
+    private suspend fun getMappingAndIncreaseCount(itemId : Long, increase : Long) {
+        withContext(Dispatchers.IO) {
+            val itemFromList = mappingDao.getMappingForItemAndList(itemId, 0)
+            if (itemFromList.isEmpty())
+                return@withContext
+            Log.d("ShoppinglistViewModel", "Found mapping")
+            if (itemFromList.size > 1) {
+                Log.d("ShoppinglistViewModel", "Found more than a single mapping for the same list and item???")
+                return@withContext
+            }
+            val mapping = itemFromList.first()
+            mapping.Quantity += increase
+            Log.d("ShoppinglistViewModel", "Updating the mapping for mapping $mapping")
+            mappingDao.updateMapping(mapping)
         }
     }
 

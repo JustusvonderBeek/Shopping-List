@@ -15,7 +15,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="@{() -> clickListener.onClick(item)}"
+        android:onClick="@{() -> clickListener.onClick(item, 1)}"
         android:layout_marginTop="5dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
@@ -62,14 +62,36 @@
 
             </LinearLayout>
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text='@{String.format("%d", item.Quantity)}'
-                android:layout_gravity="center"
-                style="@style/LearningTextViewStyle"
-                />
+                android:orientation="horizontal">
 
+                <com.google.android.material.button.MaterialButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_minus"
+                    android:minWidth="0dp"
+                    android:onClick="@{() -> clickListener.onClick(item, -1)}"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text='@{String.format("%d", item.Quantity)}'
+                    android:layout_gravity="center"
+                    style="@style/LearningTextViewStyle"
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_plus"
+                    android:minWidth="0dp"
+                    android:onClick="@{() -> clickListener.onClick(item, 1)}"
+                    />
+
+            </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </layout>

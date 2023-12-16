@@ -52,8 +52,8 @@ class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, priv
         }
     }
 
-    class ShoppingItemClickListener(val clickListener: (wordId: Int) -> Unit) {
-        fun onClick(item: ItemWithQuantity) = clickListener(item.ID.toInt())
+    class ShoppingItemClickListener(val clickListener: (wordId: Int, count : Int) -> Unit) {
+        fun onClick(item: ItemWithQuantity, count : Int) = clickListener(item.ID.toInt(), count)
     }
 
     class WordDiffCallback : DiffUtil.ItemCallback<ItemWithQuantity>() {

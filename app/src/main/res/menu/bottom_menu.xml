@@ -5,20 +5,22 @@
         android:id="@+id/overview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:title="@string/nav_btn_overview" />
+        android:title="@string/nav_btn_overview"
+        android:icon="@drawable/ic_list"
+        />
 
     <item
         android:id="@+id/shoppinglist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:icon="@drawable/ic_edit"
+        android:icon="@drawable/ic_shopping_list"
         android:title="@string/nav_btn_list" />
 
-    <item
-        android:id="@+id/recipes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:title="@string/nav_btn_recipes"
-        />
+<!--    <item-->
+<!--        android:id="@+id/recipes"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:title="@string/nav_btn_recipes"-->
+<!--        />-->
 
 </menu>

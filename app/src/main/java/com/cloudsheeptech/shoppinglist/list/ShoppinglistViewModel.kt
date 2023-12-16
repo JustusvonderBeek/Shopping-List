@@ -136,24 +136,47 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
     fun increaseItemCount(itemId : Int) {
         scope.launch {
             Log.d("ShoppinglistViewModel", "Tapped on item with ID: $itemId")
-            getMappingAndIncreaseCount(itemId.toLong(), 1)
+            val mapping = getMapping(itemId.toLong()) ?: return@launch
+            mapping.Quantity += 1
+            setMapping(mapping)
         }
     }
 
-    private suspend fun getMappingAndIncreaseCount(itemId : Long, increase : Long) {
-        withContext(Dispatchers.IO) {
-            val itemFromList = mappingDao.getMappingForItemAndList(itemId, 0)
-            if (itemFromList.isEmpty())
-                return@withContext
-            Log.d("ShoppinglistViewModel", "Found mapping")
-            if (itemFromList.size > 1) {
-                Log.d("ShoppinglistViewModel", "Found more than a single mapping for the same list and item???")
-                return@withContext
+    fun decreaseItemCount(itemId : Int) {
+        scope.launch {
+            Log.d("ShoppinglistViewModel", "Tapped on item with ID: $itemId")
+            val mapping = getMapping(itemId.toLong()) ?: return@launch
+            mapping.Quantity -= 1
+            if (mapping.Quantity == 0L) {
+                // Remove the mapping
+                removeMapping(mapping)
+                return@launch
             }
-            val mapping = itemFromList.first()
-            mapping.Quantity += increase
-            Log.d("ShoppinglistViewModel", "Updating the mapping for mapping $mapping")
+            setMapping(mapping)
+        }
+    }
+
+    private suspend fun getMapping(itemId : Long) : ListMapping? {
+        val m = withContext(Dispatchers.IO) {
+            val mapping = mappingDao.getMappingForItemAndList(itemId, 0)
+            if (mapping.isEmpty()) {
+                return@withContext null
+            }
+            return@withContext mapping.first()
+        }
+        return m
+    }
+
+    private suspend fun setMapping(mapping : ListMapping) {
+        withContext(Dispatchers.IO) {
+            Log.d("ShoppinglistViewModel", "Updating mapping for $mapping")
             mappingDao.updateMapping(mapping)
+        }
+    }
+
+    private suspend fun removeMapping(mapping: ListMapping) {
+        withContext(Dispatchers.IO) {
+            mappingDao.deleteMapping(mapping.ID)
         }
     }
 

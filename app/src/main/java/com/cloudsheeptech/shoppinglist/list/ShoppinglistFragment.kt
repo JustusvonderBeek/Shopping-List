@@ -79,9 +79,12 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        val adapter = ShoppingListItemAdapter(ShoppingListItemAdapter.ShoppingItemClickListener { itemId ->
-            Log.i("EditFragment", "Tapped on item with ID $itemId")
-            viewModel.increaseItemCount(itemId)
+        val adapter = ShoppingListItemAdapter(ShoppingListItemAdapter.ShoppingItemClickListener { itemId, count ->
+            Log.i("EditFragment", "Tapped on item $itemId to increase count")
+            if (count > 0)
+                viewModel.increaseItemCount(itemId)
+            else if (count < 0)
+                viewModel.decreaseItemCount(itemId)
         }, resources, database.mappingDao())
         binding.itemList.adapter = adapter
         // Allow removing item with swipe

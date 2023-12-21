@@ -35,6 +35,8 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
     private val _hideKeyboard = MutableLiveData<Boolean>(false)
     val hideKeyboard : LiveData<Boolean> get() = _hideKeyboard
 
+    private val _toggleItem = MutableLiveData<Int>()
+    val toggleItem : LiveData<Int> get() = _toggleItem
 
     private val _shoppinglist = MutableLiveData<List<ItemWithQuantity>>()
     val shoppinglist : LiveData<List<ItemWithQuantity>> get() = _shoppinglist
@@ -87,7 +89,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
             databaseDao.insertItem(item)
             Log.d("ShoppinglistViewModel", "Added item $item into database")
             val rnd = Random.nextLong()
-            val mapping = ListMapping(rnd, item.ID, 0, 1)
+            val mapping = ListMapping(rnd, item.ID, 0, 1, false)
             mappingDao.insertMapping(mapping)
             Log.d("ShoppinglistViewModel", "Added mapping $mapping for item")
         }
@@ -112,24 +114,39 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
 
     fun reloadItemsInList(itemIds : List<ListMapping>) {
         // Takes the list of currently contained IDs and updates the items in the shopping list
-        val ids : List<Pair<Long, Long>> = itemIds.map { map -> Pair(map.ItemID, map.Quantity) }
+        val ids : List<Triple<Long, Long, Boolean>> = itemIds.map { map -> Triple(map.ItemID, map.Quantity, map.Checked) }
         scope.launch {
             loadItemsInListFromDatabase(ids)
         }
     }
 
-    private suspend fun loadItemsInListFromDatabase(itemIds : List<Pair<Long, Long>>) {
+    private suspend fun loadItemsInListFromDatabase(itemIds : List<Triple<Long, Long, Boolean>>) {
         withContext(Dispatchers.IO) {
             Log.d("ShoppinglistViewModel", "Loading the current items from the database")
             val items = databaseDao.getItems(itemIds.map { it.first })
             val zipped = mutableListOf<ItemWithQuantity>()
             for (item in items) {
                 val quant = itemIds.find { s -> s.first == item.ID }
-                zipped.add(ItemWithQuantity(item.ID, item.Name, item.ImagePath, quant!!.second))
+                zipped.add(ItemWithQuantity(item.ID, item.Name, item.ImagePath, quant!!.second, quant.third))
             }
             withContext(Dispatchers.Main) {
                 _shoppinglist.value = zipped
             }
+        }
+    }
+
+    fun checkItem(itemId : Int) {
+        Log.d("ShoppinglistViewModel", "Toggle item $itemId")
+        scope.launch {
+            toggleItem(itemId)
+        }
+    }
+
+    private suspend fun toggleItem(itemId: Int) {
+        withContext(Dispatchers.IO) {
+            val mapping = getMapping(itemId.toLong()) ?: return@withContext
+            mapping.Checked = mapping.Checked xor true
+            setMapping(mapping)
         }
     }
 

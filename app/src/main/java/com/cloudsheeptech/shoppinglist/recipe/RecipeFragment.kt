@@ -57,7 +57,7 @@ class RecipeFragment : Fragment(), MenuProvider {
 
         viewModel.navigateToEdit.observe(viewLifecycleOwner, Observer { selectedId ->
             if (selectedId > 0) {
-                findNavController().navigate(RecipeFragmentDirections.actionLearningToEditFragment(selectedId))
+                findNavController().navigate(RecipeFragmentDirections.actionRecipesToShoppinglist())
                 viewModel.navigatedToEditWord()
             }
         })

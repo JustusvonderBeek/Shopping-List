@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.core.view.MenuProvider
+import androidx.core.view.get
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -67,7 +68,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_shoppinglist, container, false)
 
         // Adding the dropdown menu in the toolbar
-        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
+//        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         val shoppingListId = args.ListID
 
@@ -85,11 +86,16 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
                 viewModel.increaseItemCount(itemId)
             else if (count < 0)
                 viewModel.decreaseItemCount(itemId)
+        }, ShoppingListItemAdapter.ShoppingItemCheckboxClickListener { itemId ->
+            Log.d("ShoppinglistFragment", "Tapped on item $itemId to toggle checkbox")
+            viewModel.checkItem(itemId)
         }, resources, database.mappingDao())
         binding.itemList.adapter = adapter
+
         // Allow removing item with swipe
         val deleteHelper = ItemTouchHelper(SwipeToDeleteHandler(adapter))
         deleteHelper.attachToRecyclerView(binding.itemList)
+
 
         viewModel.mappedItemIds.observe(viewLifecycleOwner, Observer {
             it?.let {

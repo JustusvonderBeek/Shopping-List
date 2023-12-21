@@ -51,6 +51,9 @@ class CreateShoppinglistViewModel(database : ShoppingListDatabase) : ViewModel()
             shoppingListDao.insertList(list)
             Log.d("CreateShoppingListViewModel", "Stored list to database")
         }
+        withContext(Dispatchers.Main) {
+            navigateBack()
+        }
     }
 
     fun navigateBack() {

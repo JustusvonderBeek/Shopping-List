@@ -39,6 +39,13 @@ class CreateShoppinglistFragment : Fragment() {
             }
         })
 
+        viewModel.navigateBack.observe(viewLifecycleOwner, Observer { navigate ->
+            if (navigate) {
+                viewModel.onBackNavigated()
+                findNavController().navigateUp()
+            }
+        })
+
         return binding.root
     }
 

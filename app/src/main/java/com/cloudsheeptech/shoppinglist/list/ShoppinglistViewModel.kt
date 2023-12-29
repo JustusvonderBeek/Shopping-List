@@ -138,7 +138,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
             val zipped = mutableListOf<ItemWithQuantity>()
             for (item in items) {
                 val quant = itemIds.find { s -> s.first == item.ID }
-                zipped.add(ItemWithQuantity(item.ID, item.Name, item.ImagePath, quant!!.second, quant.third))
+                zipped.add(ItemWithQuantity(item.ID, item.Name, item.ImagePath, quant!!.second, quant.third, 0L))
             }
             withContext(Dispatchers.Main) {
                 _shoppinglist.value = zipped

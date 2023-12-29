@@ -4,13 +4,9 @@ import android.content.res.Resources
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.cloudsheeptech.shoppinglist.R
-import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.database.ItemListMappingDao
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemBinding
@@ -67,7 +63,7 @@ class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, val 
 
     class WordDiffCallback : DiffUtil.ItemCallback<ItemWithQuantity>() {
         override fun areItemsTheSame(oldItem: ItemWithQuantity, newItem: ItemWithQuantity): Boolean {
-            return oldItem.ID == newItem.ID && oldItem.Name == newItem.Name && oldItem.ImagePath == newItem.ImagePath
+            return oldItem.ID == newItem.ID && oldItem.Name == newItem.Name && oldItem.IconPath == newItem.IconPath
         }
 
         override fun areContentsTheSame(oldItem: ItemWithQuantity, newItem: ItemWithQuantity): Boolean {

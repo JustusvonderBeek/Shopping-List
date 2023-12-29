@@ -1,36 +1,20 @@
 <resources>
     <string name="app_name">Shopping List</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="btn_get_data">Get Data</string>
-    <string name="btn_next_word">Next Word</string>
+    <string name="btn_get_data">Synchronize</string>
     <string name="nav_btn_overview">Shopping Lists</string>
-    <string name="nav_btn_list">List</string>
+    <string name="nav_btn_list">Shopping List</string>
     <string name="recipe_name_hint">Recipe Name</string>
     <string name="trans_ipt_hint">Description</string>
     <string name="btn_recipe_add">Add Recipe</string>
     <string name="nav_btn_add">Add Recipe</string>
     <string name="btn_edit_add">Insert item</string>
-    <string name="btn_edit">Edit word</string>
-    <string name="btn_rmv_word">Remove Word</string>
     <string name="nav_btn_recipes">Recepies</string>
-    <string name="recap_fragment_name">Recap</string>
-    <string name="edit_fragment_title">Edit Word</string>
     <string name="recap_input_hint">Enter username</string>
-    <string name="recap_correct">Correct</string>
-    <string name="recap_incorrect">Incorrect</string>
     <string name="btn_start_app">Start</string>
     <string name="btn_add_to_list">Add all to list</string>
-    <string name="btn_start_recap">Start Recap</string>
     <string name="notification_channel_name" translatable="false">Reminder</string>
-    <string name="notification_description">Recap your vocabular</string>
     <string name="CHANNEL_ID" translatable="false">RecapChannel</string>
-    <string name="btn_count_correct">Count correct</string>
-    <string name="btn_swap_word">Swap Fields</string>
-    <string name="nav_start_recap_title">Start Recap</string>
-    <string name="recap_start_title">Select the recap direction</string>
-    <string name="recap_direction_both">Both</string>
-    <string name="recap_direction_german_to_spanish">German to Spanish</string>
-    <string name="recap_direction_spanish_to_german">Spanish to German</string>
-    <string name="recap_start_word_cnt">Number of Words for Recap</string>
+    <string name="nav_start_recap_title">Shopping Lists</string>
+    <string name="notification_description">Notification</string>
 </resources>

@@ -1,34 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Vocabulary</string>
-    <string name="hello_blank_fragment">¡Hola!</string>
-    <string name="btn_get_data">Recordar vocabulario</string>
-    <string name="btn_next_word">Palabra siguiente</string>
-    <string name="nav_btn_overview">Aprender</string>
-    <string name="nav_btn_list">Editar</string>
-    <string name="recipe_name_hint">Item</string>
-    <string name="trans_ipt_hint">Aleman</string>
-    <string name="btn_recipe_add">Enviar vocabulario</string>
+    <string name="btn_get_data">Sincronizar</string>
+    <string name="nav_btn_overview">Listas de compras</string>
+    <string name="nav_btn_list">Lista de compras</string>
+    <string name="recipe_name_hint">Receta</string>
+    <string name="trans_ipt_hint">Descripcion</string>
+    <string name="btn_recipe_add">Receta</string>
     <string name="nav_btn_add">Añadir vocabulario</string>
-    <string name="btn_edit_add">Actualizar vocabulario</string>
-    <string name="btn_edit">Editar palabra</string>
-    <string name="btn_rmv_word">Eliminar palabra</string>
+    <string name="btn_edit_add">Inserto item</string>
     <string name="nav_btn_recipes">Consulta</string>
-    <string name="recap_fragment_name">Consulta</string>
-    <string name="edit_fragment_title">Editar palabra</string>
     <string name="recap_input_hint">Introducir traducción</string>
-    <string name="recap_correct">Correcto</string>
-    <string name="recap_incorrect">Incorrecto</string>
-    <string name="btn_start_app">Consulte</string>
+    <string name="btn_start_app">Empezar</string>
     <string name="btn_add_to_list">Palabra anterior</string>
-    <string name="btn_start_recap">Iniciar repetición</string>
-    <string name="notification_description">Consulta vocabulario</string>
-    <string name="btn_count_correct">Es correcto</string>
-    <string name="btn_swap_word">Cambiar palabras</string>
-    <string name="nav_start_recap_title">Iniciar repeticion</string>
-    <string name="recap_start_title">Seleccione la direccion de repeticion</string>
-    <string name="recap_direction_both">Ambos</string>
-    <string name="recap_direction_german_to_spanish">De aleman a espanol</string>
-    <string name="recap_direction_spanish_to_german">De espanol a aleman</string>
-    <string name="recap_start_word_cnt">Numeros de vocabulario por repeticion</string>
+    <string name="nav_start_recap_title">Listas de compras</string>
+    <string name="notification_description">Notification</string>
 </resources>

@@ -6,10 +6,15 @@ import kotlinx.serialization.Serializable
 
 @Entity(tableName = "list_table")
 data class ShoppingList(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     var ID : Long,
-    var Title : String,
-    var Description : String,
-    var Image : String,
-    var Creator : User
+    var Name : String,
+    var CreatedBy : User
+)
+
+@Serializable
+data class ShoppingListWire(
+    var ID : Long,
+    var Name : String,
+    var CreatedBy : Long
 )

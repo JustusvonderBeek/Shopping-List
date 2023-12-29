@@ -1,41 +1,74 @@
 package com.cloudsheeptech.shoppinglist.network
 
+import android.app.Application
 import android.util.Log
+import com.auth0.android.jwt.JWT
 import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
+import com.cloudsheeptech.shoppinglist.data.User
 //import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.basicAuth
 import io.ktor.client.request.get
+import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.caseInsensitiveMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import java.io.File
+import java.util.Calendar
+import java.util.Date
 
 object Networking {
 
 //    private val baseUrl = "https://vocabulary.cloudsheeptech.com:41308/"
     private val baseUrl = "https://10.0.2.2:46152/"
+    private lateinit var applicationDir : String
     private var token = ""
+    private val calendar = Calendar.getInstance()
+    private var tokenValid : Date? = null
 
     private lateinit var client : HttpClient
     private var init = false
+    private var login = false
 
-    fun updateToken(token : String) {
-        if (token.isEmpty())
-            return
-        this.token = token
-        init = false
+    @Serializable
+    data class Token(
+        var token : String
+    )
+
+    fun registerApplicationDir(dir : String) {
+        applicationDir = dir
+    }
+
+    private fun loginRequired() : Boolean {
+        if (tokenValid == null)
+            return true
+        return tokenValid!!.before(Calendar.getInstance().time)
     }
 
     suspend fun GET(requestUrlPath : String, responseHandler : suspend (response : HttpResponse) -> Unit) {
         withContext(Dispatchers.IO) {
             if (!init) {
                 init()
+            }
+            if (loginRequired()) {
+                login = false
+            }
+            if (!login) {
+                login()
             }
             try {
                 val response : HttpResponse = client.get(baseUrl + requestUrlPath)
@@ -51,6 +84,12 @@ object Networking {
             if (!init) {
                 init()
             }
+            if (loginRequired()) {
+                login = false
+            }
+            if (!login) {
+                login()
+            }
             try {
                 val response : HttpResponse = client.post(baseUrl + requestUrlPath) {
                     setBody(data)
@@ -62,6 +101,59 @@ object Networking {
             }
         }
         return "Error"
+    }
+
+    private fun updateToken(token : String) {
+        if (token.isEmpty())
+            return
+        try {
+            this.token = token
+            val jwtToken = JWT(token)
+            tokenValid = jwtToken.expiresAt
+//            Log.d("Networking", "Updated token to: $token")
+            Log.d("Networking", "Token valid until: $tokenValid")
+        } catch (ex : Exception) {
+            Log.w("Networking", "Failed to update JWT token! $ex")
+        }
+    }
+
+    private suspend fun login() {
+        val decodedToken = withContext(Dispatchers.IO) {
+            try {
+                val file = File(applicationDir, "user.json")
+                if (!file.exists()) {
+                    Log.d("Networking", "User file does not exist!")
+                    return@withContext null
+                }
+                val reader = file.reader(Charsets.UTF_8)
+                val content = reader.readText()
+//                Log.d("Networking", "Content of file '$content'")
+                val user = Json.decodeFromString<User>(content)
+                val response: HttpResponse = client.post(baseUrl + "auth/login") {
+                    contentType(ContentType.Application.Json)
+                    setBody(user)
+                }
+                if (response.status != HttpStatusCode.OK) {
+                    Log.w("Networking", "Login failed!")
+                    return@withContext null
+                }
+                // Extracting token and storing it locally
+                val body = response.bodyAsText(Charsets.UTF_8)
+//                Log.d("Networking", "Login got $body as response")
+                return@withContext Json.decodeFromString<Token>(body)
+            } catch (ex: Exception) {
+                Log.w("Networking", "Failed to login: $ex")
+            }
+            return@withContext null
+        }
+        if (decodedToken == null) {
+            Log.d("Networking", "Cannot login because token is nil")
+            return
+        }
+        withContext(Dispatchers.Main) {
+            updateToken(decodedToken.token)
+            login = true
+        }
     }
 
     private suspend fun init() {

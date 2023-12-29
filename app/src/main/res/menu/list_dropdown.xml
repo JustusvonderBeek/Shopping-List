@@ -4,13 +4,13 @@
         android:id="@+id/dd_edit_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:title="@string/btn_edit"
+        android:title="edit"
         android:icon="@drawable/ic_edit"
         />
     <item
         android:id="@+id/dd_delete_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:title="@string/btn_rmv_word"
+        android:title="remove"
         />
 </menu>

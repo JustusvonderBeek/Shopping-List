@@ -4,11 +4,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -39,7 +37,7 @@ class CreateShoppinglistViewModel(database : ShoppingListDatabase) : ViewModel()
         }
         if (description.value == null)
             description.value = ""
-        val creator = User(ID = 100, Name = "TestNutzer", FavouriteRecipe = -1)
+        val creator = User(ID = 100, Username = "TestNutzer", Password = "")
         val newShoppingList = ShoppingList(ID=0, Title = title.value!!, Description = description.value!!, Image = "", Creator = creator)
         createSLCoroutine.launch {
             storeShoppingListDatabase(newShoppingList)

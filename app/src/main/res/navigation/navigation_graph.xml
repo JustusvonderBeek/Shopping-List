@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation_graph"
-    app:startDestination="@id/shoppinglist">
+    app:startDestination="@id/overview">
 
     <fragment
         android:id="@+id/recipes"
@@ -38,8 +38,8 @@
     <fragment
         android:id="@+id/usernameSelection"
         android:name="com.cloudsheeptech.shoppinglist.start.StartFragment"
-        android:label="@string/recap_fragment_name"
-        tools:layout="@layout/fragment_start" >
+        android:label="startFragment"
+        tools:layout="@layout/fragment_start">
         <action
             android:id="@+id/action_usernameSelection_to_shoppinglist"
             app:destination="@id/shoppinglist"
@@ -48,7 +48,7 @@
     <fragment
         android:id="@+id/editItem"
         android:name="com.cloudsheeptech.shoppinglist.edit.EditFragment"
-        android:label="@string/edit_fragment_title">
+        android:label="editItem">
         <argument
             android:name="selectedId"
             app:argType="integer" />

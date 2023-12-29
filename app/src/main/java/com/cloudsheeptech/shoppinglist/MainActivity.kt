@@ -14,8 +14,8 @@ import androidx.navigation.ui.setupWithNavController
 import com.cloudsheeptech.shoppinglist.databinding.ActivityMainBinding
 import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModel
 import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModelFactory
-import com.cloudsheeptech.shoppinglist.start.StartViewModel
-import com.cloudsheeptech.shoppinglist.start.StartViewModelFactory
+import com.cloudsheeptech.shoppinglist.create.user.StartViewModel
+import com.cloudsheeptech.shoppinglist.create.user.StartViewModelFactory
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {

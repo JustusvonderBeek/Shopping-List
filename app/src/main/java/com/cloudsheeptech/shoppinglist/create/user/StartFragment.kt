@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.start
+package com.cloudsheeptech.shoppinglist.create.user
 
 import android.content.Context
 import android.os.Bundle

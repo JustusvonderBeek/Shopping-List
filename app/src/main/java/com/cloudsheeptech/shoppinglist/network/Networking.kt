@@ -8,6 +8,9 @@ import com.cloudsheeptech.shoppinglist.data.User
 //import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerTokens
+import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.basicAuth
 import io.ktor.client.request.get
@@ -54,9 +57,7 @@ object Networking {
     }
 
     private fun loginRequired() : Boolean {
-        if (tokenValid == null)
-            return true
-        return tokenValid!!.before(Calendar.getInstance().time)
+        return tokenValid == null || tokenValid!!.before(Calendar.getInstance().time)
     }
 
     suspend fun GET(requestUrlPath : String, responseHandler : suspend (response : HttpResponse) -> Unit) {
@@ -72,6 +73,9 @@ object Networking {
             }
             try {
                 val response : HttpResponse = client.get(baseUrl + requestUrlPath)
+                if (response.status == HttpStatusCode.Unauthorized) {
+                    login = false
+                }
                 responseHandler(response)
             } catch (ex : Exception) {
                 Log.w("Networking", "Failed to send GET request to $baseUrl$requestUrlPath: $ex")
@@ -93,6 +97,9 @@ object Networking {
             try {
                 val response : HttpResponse = client.post(baseUrl + requestUrlPath) {
                     setBody(data)
+                }
+                if (response.status == HttpStatusCode.Unauthorized) {
+                    login = false
                 }
                 responseHandler(response)
                  response.bodyAsText()
@@ -152,7 +159,7 @@ object Networking {
         }
         withContext(Dispatchers.Main) {
             updateToken(decodedToken.token)
-            login = true
+            init = false
         }
     }
 
@@ -160,7 +167,6 @@ object Networking {
         withContext(Dispatchers.IO) {
             client = HttpClient(OkHttp) {
                 engine {
-                 addInterceptor(AuthenticationInterceptor(token = token))
                     config {
                         hostnameVerifier {
                             // TODO: Include verification of the hostname
@@ -170,6 +176,16 @@ object Networking {
                 }
                 install(ContentNegotiation) {
                     json()
+                }
+                install(Auth) {
+                    bearer {
+                        loadTokens {
+                            BearerTokens(token, token)
+                        }
+                        sendWithoutRequest { request ->
+                            request.url.host == "10.0.2.2" || request.url.host == "shop.cloudsheeptech.com"
+                        }
+                    }
                 }
             }
         }

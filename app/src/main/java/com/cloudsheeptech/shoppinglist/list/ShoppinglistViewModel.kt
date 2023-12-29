@@ -7,8 +7,12 @@ import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
+import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
+import com.cloudsheeptech.shoppinglist.network.Networking
+import io.ktor.client.call.NoTransformationFoundException
+import io.ktor.client.call.body
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,6 +26,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
     private val scope = CoroutineScope(Dispatchers.IO + job)
     private val databaseDao = database.itemListDao()
     private val mappingDao = database.mappingDao()
+    private val listDao = database.shoppingListDao()
 
     private val _refreshing = MutableLiveData<Boolean>()
     val refreshing : LiveData<Boolean>
@@ -40,11 +45,13 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
 
     private val _shoppinglist = MutableLiveData<List<ItemWithQuantity>>()
     val shoppinglist : LiveData<List<ItemWithQuantity>> get() = _shoppinglist
-    // TODO: Fix the list id in case another list than the default one is loaded
-    val mappedItemIds = mappingDao.getMappingsForListLive(0)
+    val mappedItemIds = mappingDao.getMappingsForListLive(shoppingListId)
 
-    var itemName = MutableLiveData<String>("")
-    var title = MutableLiveData<String>("Test")
+    private val _listInformation = listDao.getShoppingList(shoppingListId)
+    val listInformation : LiveData<ShoppingList> get() = _listInformation
+
+    val itemName = MutableLiveData<String>("")
+    var title = MutableLiveData<String>("Liste")
 
     // ----
 
@@ -54,12 +61,21 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
 //            shoppingListData = databaseDao.getItemLive(shoppingListId)
     }
 
-    fun updateVocabulary() {
+    fun updateShoppinglist() {
         scope.launch {
             withContext(Dispatchers.Main) {
-                _refreshing.value = false
+                _refreshing.value = true
             }
-//            vocabulary.updateVocabulary()
+            // TODO: Implement refreshing of this concrete list
+            Networking.GET("list/$shoppingListId") { resp ->
+                Log.d("ShoppinglistViewModel", "Got response with updated list")
+                try {
+                    val body = resp.body<List<ItemWithQuantity>>()
+                } catch (ex : NoTransformationFoundException) {
+                    Log.w("ShoppinglistViewModel", "The received data is in incorrect format!")
+                    return@GET
+                }
+            }
             withContext(Dispatchers.Main) {
                 _refreshing.value = false
             }
@@ -89,7 +105,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
             databaseDao.insertItem(item)
             Log.d("ShoppinglistViewModel", "Added item $item into database")
             val rnd = Random.nextLong()
-            val mapping = ListMapping(rnd, item.ID, 0, 1, false)
+            val mapping = ListMapping(rnd, item.ID, shoppingListId, 1, false)
             mappingDao.insertMapping(mapping)
             Log.d("ShoppinglistViewModel", "Added mapping $mapping for item")
         }
@@ -107,11 +123,6 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
         }
     }
 
-    fun editWord(id : Int) {
-//        val oldWord = vocabulary.wordList[id]
-//        _navigateToEditWord.value = oldWord.ID
-    }
-
     fun reloadItemsInList(itemIds : List<ListMapping>) {
         // Takes the list of currently contained IDs and updates the items in the shopping list
         val ids : List<Triple<Long, Long, Boolean>> = itemIds.map { map -> Triple(map.ItemID, map.Quantity, map.Checked) }
@@ -122,7 +133,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
 
     private suspend fun loadItemsInListFromDatabase(itemIds : List<Triple<Long, Long, Boolean>>) {
         withContext(Dispatchers.IO) {
-            Log.d("ShoppinglistViewModel", "Loading the current items from the database")
+            Log.d("ShoppinglistViewModel", "Loading the current items for list $shoppingListId from the database")
             val items = databaseDao.getItems(itemIds.map { it.first })
             val zipped = mutableListOf<ItemWithQuantity>()
             for (item in items) {
@@ -175,7 +186,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
 
     private suspend fun getMapping(itemId : Long) : ListMapping? {
         val m = withContext(Dispatchers.IO) {
-            val mapping = mappingDao.getMappingForItemAndList(itemId, 0)
+            val mapping = mappingDao.getMappingForItemAndList(itemId, shoppingListId)
             if (mapping.isEmpty()) {
                 return@withContext null
             }

@@ -70,15 +70,18 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         // Adding the dropdown menu in the toolbar
 //        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        val shoppingListId = args.ListID
+        var shoppingListId = args.ListID
+        Log.d("ShoppinglistFragment", "Navigated to list with ID $shoppingListId")
+        if (shoppingListId < 0)
+            findNavController().navigateUp()
 
         val database = ShoppingListDatabase.getInstance(requireContext())
         val itemListWithName = ItemListWithName<Item>()
         val viewModelFactory = ShoppingListViewModelFactory(itemListWithName, database, shoppingListId)
 
-        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[ShoppinglistViewModel::class.java]
+        viewModel = ViewModelProvider(this, viewModelFactory)[ShoppinglistViewModel::class.java]
         binding.viewModel = viewModel
-        binding.lifecycleOwner = this
+        binding.lifecycleOwner = requireActivity()
 
         val adapter = ShoppingListItemAdapter(ShoppingListItemAdapter.ShoppingItemClickListener { itemId, count ->
             Log.i("EditFragment", "Tapped on item $itemId to increase count")
@@ -112,9 +115,15 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             }
         })
 
+        viewModel.listInformation.observe(viewLifecycleOwner, Observer { info ->
+            if (info != null) {
+                requireActivity().title = info.Title
+            }
+        })
+
         binding.refreshLayout.setOnRefreshListener {
             Log.i("EditFragment", "On refresh called")
-            viewModel.updateVocabulary()
+            viewModel.updateShoppinglist()
         }
 
         viewModel.refreshing.observe(viewLifecycleOwner, Observer {

@@ -7,10 +7,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingListBinding
-import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 
 class ShoppingListAdapter(val clickListener: ListClickListener, private val resource : Resources, private val itemList : List<ShoppingList>) : ListAdapter<ShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(ItemDiffCallback()) {
 
@@ -49,7 +47,7 @@ class ShoppingListAdapter(val clickListener: ListClickListener, private val reso
 
     class ItemDiffCallback : DiffUtil.ItemCallback<ShoppingList>() {
         override fun areItemsTheSame(oldItem: ShoppingList, newItem: ShoppingList): Boolean {
-            return oldItem.ID == newItem.ID && oldItem.Title == newItem.Title && oldItem.Image == newItem.Image
+            return oldItem.ID == newItem.ID && oldItem.Name == newItem.Name
         }
 
         override fun areContentsTheSame(oldItem: ShoppingList, newItem: ShoppingList): Boolean {

@@ -8,17 +8,20 @@ import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import kotlin.random.Random
 
 class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: ShoppingListDatabase, val shoppingListId : Long) : ViewModel() {
@@ -68,7 +71,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
                 _refreshing.value = true
             }
             // TODO: Implement refreshing of this concrete list
-            Networking.GET("list/$shoppingListId") { resp ->
+            Networking.GET("v1/list/$shoppingListId") { resp ->
                 Log.d("ShoppinglistViewModel", "Got response with updated list")
                 try {
                     if (resp.status == HttpStatusCode.NotFound) {
@@ -83,7 +86,9 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
                         Log.w("ShoppinglistViewModel", "Request was not successful! HTTP: ${resp.status}")
                         return@GET
                     }
-                    val body = resp.body<List<ItemWithQuantity>>()
+                    val body = resp.bodyAsText(Charsets.UTF_8)
+                    val list = Json.decodeFromString<ShoppingListWire>(body)
+                    Log.d("ShoppinglistViewModel", "Got list: ${body} as $list")
                     // TODO: Update the current list with what was found online
                 } catch (ex : NoTransformationFoundException) {
                     Log.w("ShoppinglistViewModel", "The received data is in incorrect format!")

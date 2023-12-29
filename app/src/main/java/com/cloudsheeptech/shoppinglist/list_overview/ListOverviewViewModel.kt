@@ -35,6 +35,9 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private val _navigateList = MutableLiveData<Long>(-1)
     val navigateList : LiveData<Long> get() = _navigateList
 
+    private val _navigateUser = MutableLiveData<Boolean>(false)
+    val navigateUser : LiveData<Boolean> get() = _navigateUser
+
     val shoppingList = shoppingListDao.getShoppingLists()
 
     init {
@@ -76,6 +79,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
                     return@withContext false
                 }
                 reader.close()
+                Log.i("ListOverviewViewModel", "Load user $user from disk")
             } catch (ex : Exception) {
                 Log.w("ListOverviewViewModel", "Failed to write username to file: $ex")
             }
@@ -83,6 +87,28 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
         }
         if (!result) {
             Log.d("ListOverviewViewModel", "Failed to load user. Okay for now")
+            navigateToCreateUser()
+        }
+    }
+
+    fun removeUser() {
+        vmCoroutine.launch {
+            deleteUserFromDisk()
+        }
+    }
+
+    private suspend fun deleteUserFromDisk() {
+        withContext(Dispatchers.IO) {
+            try {
+                val userfile = File(getApplication<Application>().filesDir, "username.json")
+                if (!userfile.exists()) {
+                    Log.d("ListOverviewViewModel", "Found no user at ${userfile.absolutePath}")
+                    return@withContext false
+                }
+                userfile.delete()
+            } catch (ex : Exception) {
+                Log.w("ListOverviewViewModel", "Failed to write username to file: $ex")
+            }
         }
     }
 
@@ -100,6 +126,14 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     fun onCreateListNavigated() {
         _createList.value = false
+    }
+
+    private fun navigateToCreateUser() {
+        _navigateUser.value = true
+    }
+
+    fun onCreateUserNavigated() {
+        _navigateUser.value = false
     }
 
 }

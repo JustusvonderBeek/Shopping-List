@@ -13,6 +13,7 @@ import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -70,7 +71,20 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
             Networking.GET("list/$shoppingListId") { resp ->
                 Log.d("ShoppinglistViewModel", "Got response with updated list")
                 try {
+                    if (resp.status == HttpStatusCode.NotFound) {
+                        Log.w("ShoppinglistViewModel", "Queried resource not found")
+                        return@GET
+                    }
+                    if (resp.status == HttpStatusCode.Unauthorized) {
+                        Log.w("ShoppinglistViewModel", "Unauthorized. Try repeating the request")
+                        return@GET
+                    }
+                    if (resp.status != HttpStatusCode.OK) {
+                        Log.w("ShoppinglistViewModel", "Request was not successful! HTTP: ${resp.status}")
+                        return@GET
+                    }
                     val body = resp.body<List<ItemWithQuantity>>()
+                    // TODO: Update the current list with what was found online
                 } catch (ex : NoTransformationFoundException) {
                     Log.w("ShoppinglistViewModel", "The received data is in incorrect format!")
                     return@GET

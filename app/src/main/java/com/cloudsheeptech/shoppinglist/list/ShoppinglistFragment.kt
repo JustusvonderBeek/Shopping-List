@@ -12,10 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.core.view.MenuProvider
-import androidx.core.view.get
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -117,7 +115,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
 
         viewModel.listInformation.observe(viewLifecycleOwner, Observer { info ->
             if (info != null) {
-                requireActivity().title = info.Title
+                requireActivity().title = info.Name
             }
         })
 

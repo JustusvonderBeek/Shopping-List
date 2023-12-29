@@ -1,6 +1,7 @@
 package com.cloudsheeptech.shoppinglist.network
 
 import android.util.Log
+import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
 //import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -19,9 +20,17 @@ object Networking {
 
 //    private val baseUrl = "https://vocabulary.cloudsheeptech.com:41308/"
     private val baseUrl = "https://10.0.2.2:46152/"
+    private var token = ""
 
     private lateinit var client : HttpClient
     private var init = false
+
+    fun updateToken(token : String) {
+        if (token.isEmpty())
+            return
+        this.token = token
+        init = false
+    }
 
     suspend fun GET(requestUrlPath : String, responseHandler : suspend (response : HttpResponse) -> Unit) {
         withContext(Dispatchers.IO) {
@@ -59,9 +68,10 @@ object Networking {
         withContext(Dispatchers.IO) {
             client = HttpClient(OkHttp) {
                 engine {
-//                 addInterceptor(AuthenticationInterceptor(token = "todo"))
+                 addInterceptor(AuthenticationInterceptor(token = token))
                     config {
                         hostnameVerifier {
+                            // TODO: Include verification of the hostname
                             _, _ -> true
                         }
                     }

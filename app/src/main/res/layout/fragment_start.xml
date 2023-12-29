@@ -6,14 +6,14 @@
     <data>
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.start.StartViewModel" />
+            type="com.cloudsheeptech.shoppinglist.create.user.StartViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/recapLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".start.StartFragment"
+        tools:context=".create.user.StartFragment"
         android:orientation="vertical">
 
         <LinearLayout

@@ -16,6 +16,7 @@ import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModel
 import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModelFactory
 import com.cloudsheeptech.shoppinglist.create.user.StartViewModel
 import com.cloudsheeptech.shoppinglist.create.user.StartViewModelFactory
+import com.cloudsheeptech.shoppinglist.network.Networking
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -56,6 +57,9 @@ class MainActivity : AppCompatActivity() {
             recapViewModel.navigateToApp()
             navController.navigate(R.id.overview)
         }
+
+        // Dirty hack to avoid storing application context in this object class
+        Networking.registerApplicationDir(application.filesDir.absolutePath)
 
         // Create notifications
         createNotificationChannel()

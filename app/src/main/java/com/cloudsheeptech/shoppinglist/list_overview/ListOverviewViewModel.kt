@@ -61,7 +61,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private suspend fun loadUser() {
         val result = withContext(Dispatchers.IO) {
             try {
-                val userfile = File(getApplication<Application>().filesDir, "username.json")
+                val userfile = File(getApplication<Application>().filesDir, "user.json")
                 if (!userfile.exists()) {
                     Log.d("ListOverviewViewModel", "Found no user at ${userfile.absolutePath}")
                     return@withContext false

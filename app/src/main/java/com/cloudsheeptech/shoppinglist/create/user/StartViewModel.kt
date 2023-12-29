@@ -90,7 +90,7 @@ class StartViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 decodedUser.Password = password
                 val encodedUser = jsonSerializer.encodeToString(decodedUser)
-                val file = File(getApplication<Application>().filesDir, "username.json")
+                val file = File(getApplication<Application>().filesDir, "user.json")
                 val writer = file.writer(Charsets.UTF_8)
                 writer.write(encodedUser)
                 writer.close()

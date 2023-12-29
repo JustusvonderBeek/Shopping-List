@@ -37,14 +37,9 @@
     </fragment>
     <fragment
         android:id="@+id/usernameSelection"
-        android:name="com.cloudsheeptech.shoppinglist.start.StartFragment"
+        android:name="com.cloudsheeptech.shoppinglist.create.user.StartFragment"
         android:label="startFragment"
-        tools:layout="@layout/fragment_start">
-        <action
-            android:id="@+id/action_usernameSelection_to_shoppinglist"
-            app:destination="@id/shoppinglist"
-            app:popUpTo="@id/shoppinglist" />
-    </fragment>
+        tools:layout="@layout/fragment_start"/>
     <fragment
         android:id="@+id/editItem"
         android:name="com.cloudsheeptech.shoppinglist.edit.EditFragment"
@@ -67,6 +62,9 @@
         <action
             android:id="@+id/action_overview_to_shoppinglist"
             app:destination="@id/shoppinglist" />
+        <action
+            android:id="@+id/action_overview_to_usernameSelection"
+            app:destination="@id/usernameSelection" />
     </fragment>
     <fragment
         android:id="@+id/createShoppinglistFragment"

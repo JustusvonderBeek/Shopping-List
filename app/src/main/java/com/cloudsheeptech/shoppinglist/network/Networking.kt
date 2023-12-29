@@ -18,12 +18,12 @@ import kotlinx.coroutines.withContext
 object Networking {
 
 //    private val baseUrl = "https://vocabulary.cloudsheeptech.com:41308/"
-    private val baseUrl = "https://10.0.2.2:41308/"
+    private val baseUrl = "https://10.0.2.2:46152/"
 
     private lateinit var client : HttpClient
     private var init = false
 
-    suspend fun GET(requestUrlPath : String, responseHandler : (response : HttpResponse) -> Unit) {
+    suspend fun GET(requestUrlPath : String, responseHandler : suspend (response : HttpResponse) -> Unit) {
         withContext(Dispatchers.IO) {
             if (!init) {
                 init()

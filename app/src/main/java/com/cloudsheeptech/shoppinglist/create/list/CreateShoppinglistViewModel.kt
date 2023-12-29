@@ -37,8 +37,8 @@ class CreateShoppinglistViewModel(database : ShoppingListDatabase) : ViewModel()
         if (title.value == null || title.value!!.isEmpty()) {
             return
         }
-        if (description.value == null || description.value!!.isEmpty())
-            return
+        if (description.value == null)
+            description.value = ""
         val creator = User(ID = 100, Name = "TestNutzer", FavouriteRecipe = -1)
         val newShoppingList = ShoppingList(ID=0, Title = title.value!!, Description = description.value!!, Image = "", Creator = creator)
         createSLCoroutine.launch {

@@ -3,7 +3,7 @@ package com.cloudsheeptech.shoppinglist.list_overview
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.cloudsheeptech.shoppinglist.start.StartViewModel
+import com.cloudsheeptech.shoppinglist.create.user.StartViewModel
 
 class ListOverviewViewModelFactory(val application: Application) : ViewModelProvider.Factory {
 

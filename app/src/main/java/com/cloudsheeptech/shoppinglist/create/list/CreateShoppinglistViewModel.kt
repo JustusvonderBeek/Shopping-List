@@ -5,22 +5,26 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.network.Networking
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-class CreateShoppinglistViewModel(database : ShoppingListDatabase) : ViewModel() {
+class CreateShoppinglistViewModel(private val user: User, private val database : ShoppingListDatabase) : ViewModel() {
 
     private val job = Job()
     private val createSLCoroutine = CoroutineScope(Dispatchers.Main + job)
 
     val title = MutableLiveData<String>("")
-    val description = MutableLiveData<String>("")
-    val image = MutableLiveData<String>()
 
     private val _navigateBack = MutableLiveData<Boolean>(false)
     val navigateBack : LiveData<Boolean> get() = _navigateBack
@@ -30,28 +34,63 @@ class CreateShoppinglistViewModel(database : ShoppingListDatabase) : ViewModel()
 
     private val shoppingListDao = database.shoppingListDao()
 
+    init {
+        if (user.ID == 0L) {
+            Log.w("CreateShoppinglistViewModel", "User not correctly initialized")
+        }
+    }
+
     fun create() {
         Log.d("CreateShoppinglistViewModel", "Creating list pressed")
         if (title.value == null || title.value!!.isEmpty()) {
             return
         }
-        if (description.value == null)
-            description.value = ""
-        val creator = User(ID = 100, Username = "TestNutzer", Password = "")
-        val newShoppingList = ShoppingList(ID=0, Title = title.value!!, Description = description.value!!, Image = "", Creator = creator)
+        if (user.ID == 0L) {
+            Log.w("CreateShoppinglistViewModel", "Because the user is not correctly initialized we cannot create this list!")
+            return
+        }
+        // Let the server assign the ID
+        val newShoppingList = ShoppingList(ID=0, Name = title.value!!, CreatedBy = user)
         createSLCoroutine.launch {
-            storeShoppingListDatabase(newShoppingList)
+            val updatedIdList = storeShoppingListOnline(newShoppingList)
+            storeShoppingListDatabase(updatedIdList)
         }
     }
 
     private suspend fun storeShoppingListDatabase(list : ShoppingList) {
         withContext(Dispatchers.IO) {
+            if (list.ID == 0L) {
+                Log.w("CreateShoppinglistViewModel", "Cannot create list because the ID == 0")
+                return@withContext
+            }
             shoppingListDao.insertList(list)
             Log.d("CreateShoppingListViewModel", "Stored list to database")
         }
         withContext(Dispatchers.Main) {
             navigateBack()
         }
+    }
+
+    private suspend fun storeShoppingListOnline(list: ShoppingList): ShoppingList {
+        val updatedList = withContext(Dispatchers.IO) {
+            val wireList = ShoppingListWire(list.ID, list.Name, user.ID)
+            val serialized = Json.encodeToString(wireList)
+            var decodedList: ShoppingListWire? = null
+            Networking.POST("v1/list", serialized) { resp ->
+                if (resp.status != HttpStatusCode.Created) {
+                    Log.w(
+                        "CreateShoppinglistViewModel",
+                        "Creation of list at server was not successful"
+                    )
+                    return@POST
+                }
+                val body = resp.bodyAsText(Charsets.UTF_8)
+                Log.d("CreateShoppinglistViewModel", "Got answer: $body")
+                decodedList = Json.decodeFromString<ShoppingListWire>(body)
+            }
+            return@withContext decodedList
+        } ?: return list
+        return ShoppingList(updatedList.ID, list.Name, list.CreatedBy)
     }
 
     fun navigateBack() {

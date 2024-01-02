@@ -17,7 +17,7 @@
     </fragment>
     <fragment
         android:id="@+id/addRecipe"
-        android:name="com.cloudsheeptech.shoppinglist.add_recipe.AddRecipeFragment"
+        android:name="com.cloudsheeptech.shoppinglist.create.recipe.AddRecipeFragment"
         android:label="@string/nav_btn_add" >
         <action
             android:id="@+id/action_addRecipe_to_recipes"

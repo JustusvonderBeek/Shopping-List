@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.add_recipe
+package com.cloudsheeptech.shoppinglist.create.recipe
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

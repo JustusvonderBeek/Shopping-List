@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.add_recipe
+package com.cloudsheeptech.shoppinglist.create.recipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

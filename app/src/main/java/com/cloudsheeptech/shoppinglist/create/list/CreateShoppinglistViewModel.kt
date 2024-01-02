@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 class CreateShoppinglistViewModel(private val user: User, private val database : ShoppingListDatabase) : ViewModel() {
 
@@ -50,7 +52,9 @@ class CreateShoppinglistViewModel(private val user: User, private val database :
             return
         }
         // Let the server assign the ID
-        val newShoppingList = ShoppingList(ID=0, Name = title.value!!, CreatedBy = user)
+        Log.d("CreateShoppinglistViewModel", "Instant Now: ${Instant.now()}")
+        val nowFormatted = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+        val newShoppingList = ShoppingList(ID=0, Name = title.value!!, CreatedBy = user, nowFormatted)
         createSLCoroutine.launch {
             val updatedIdList = storeShoppingListOnline(newShoppingList)
             storeShoppingListDatabase(updatedIdList)
@@ -73,7 +77,7 @@ class CreateShoppinglistViewModel(private val user: User, private val database :
 
     private suspend fun storeShoppingListOnline(list: ShoppingList): ShoppingList {
         val updatedList = withContext(Dispatchers.IO) {
-            val wireList = ShoppingListWire(list.ID, list.Name, user.ID)
+            val wireList = ShoppingListWire(list.ID, list.Name, user.ID, list.LastEdited)
             val serialized = Json.encodeToString(wireList)
             var decodedList: ShoppingListWire? = null
             Networking.POST("v1/list", serialized) { resp ->
@@ -90,7 +94,7 @@ class CreateShoppinglistViewModel(private val user: User, private val database :
             }
             return@withContext decodedList
         } ?: return list
-        return ShoppingList(updatedList.ID, list.Name, list.CreatedBy)
+        return ShoppingList(updatedList.ID, list.Name, list.CreatedBy, list.LastEdited)
     }
 
     fun navigateBack() {

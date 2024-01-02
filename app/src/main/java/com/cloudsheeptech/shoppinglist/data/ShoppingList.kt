@@ -9,12 +9,14 @@ data class ShoppingList(
     @PrimaryKey(autoGenerate = false)
     var ID : Long,
     var Name : String,
-    var CreatedBy : User
+    var CreatedBy : User,
+    var LastEdited : String
 )
 
 @Serializable
 data class ShoppingListWire(
     var ID : Long,
     var Name : String,
-    var CreatedBy : Long
+    var CreatedBy : Long,
+    var LastEdited : String
 )

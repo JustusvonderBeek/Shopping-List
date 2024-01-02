@@ -12,7 +12,8 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="30dp"
+        android:layout_height="wrap_content"
+        android:textSize="25sp"
         android:text="@{item.name}"
         android:onClick="@{() -> clickListener.onClick(item)}"
         />

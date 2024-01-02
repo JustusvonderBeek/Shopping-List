@@ -93,6 +93,17 @@ class ListOverviewFragment : Fragment(), MenuProvider {
             }
         })
 
+        binding.listOverviewRefresher.setOnRefreshListener {
+            Log.d("ListOverviewFragment", "On refresh called")
+            viewModel.updateAllLists()
+        }
+
+        viewModel.refreshing.observe(viewLifecycleOwner, Observer {  refresh ->
+            if (!refresh) {
+                binding.listOverviewRefresher.isRefreshing = false
+            }
+        })
+
         return binding.root
     }
 

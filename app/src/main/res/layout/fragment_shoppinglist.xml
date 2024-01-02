@@ -48,6 +48,14 @@
                 android:text="@={viewModel.itemName}"
                 />
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/shoppingItemSelectView"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:scrollbars="vertical"
+                />
+
             <com.google.android.material.button.MaterialButton
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

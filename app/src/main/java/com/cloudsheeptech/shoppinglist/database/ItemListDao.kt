@@ -34,6 +34,12 @@ interface ItemListDao {
     @Query("SELECT * FROM items WHERE ID IN (:keys)")
     fun getItemsLive(keys : List<Long>) : LiveData<List<Item>>
 
+    @Query("SELECT * FROM items WHERE name = :name")
+    fun getItemFromName(name : String) : Item?
+
+    @Query("SELECT * FROM items WHERE INSTR(Name, :name) > 0")
+    fun getItemsFromName(name : String) : List<Item>
+
     @Query("SELECT COUNT(ID) FROM items")
     fun getCurrentId() : Long
 

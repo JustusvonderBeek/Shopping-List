@@ -7,13 +7,13 @@ import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
+import com.cloudsheeptech.shoppinglist.data.ListShare
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.call.NoTransformationFoundException
-import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +21,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
 
@@ -290,6 +292,27 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
             return@withContext itemDao.getItem(id)
         }
         return item
+    }
+
+    fun shareThisList() {
+        scope.launch {
+            shareListOnline()
+        }
+    }
+
+    private suspend fun shareListOnline() {
+        withContext(Dispatchers.IO) {
+            Log.d("ShoppinglistViewModel", "Sharing list $shoppingListId online")
+            val sharedList = ListShare(0, shoppingListId, -1)
+            val encoded = Json.encodeToString(sharedList)
+            Networking.POST("v1/share/$shoppingListId", encoded) { resp ->
+                if (resp.status == HttpStatusCode.BadRequest) {
+                    Log.d("ShoppinglistViewModel", "Internal error, made bad request")
+                    return@POST
+                }
+                val body = resp.bodyAsText(Charsets.UTF_8)
+            }
+        }
     }
 
     fun onEditWordNavigated() {

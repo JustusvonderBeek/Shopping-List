@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -42,7 +43,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.dd_edit_btn -> {
-//                viewModel.navigateToAddWord()
+                viewModel.shareThisList()
                 return true
             }
             R.id.dd_delete_btn -> {
@@ -66,7 +67,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_shoppinglist, container, false)
 
         // Adding the dropdown menu in the toolbar
-//        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         var shoppingListId = args.ListID
         Log.d("ShoppinglistFragment", "Navigated to list with ID $shoppingListId")

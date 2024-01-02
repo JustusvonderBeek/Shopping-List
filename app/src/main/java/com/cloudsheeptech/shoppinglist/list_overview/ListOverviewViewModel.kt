@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
@@ -23,6 +24,8 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import kotlin.Exception
 
 class ListOverviewViewModel(application : Application) : AndroidViewModel(application) {
@@ -110,7 +113,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private suspend fun deleteUserFromDisk() {
         withContext(Dispatchers.IO) {
             try {
-                val userfile = File(getApplication<Application>().filesDir, "username.json")
+                val userfile = File(getApplication<Application>().filesDir, "user.json")
                 if (!userfile.exists()) {
                     Log.d("ListOverviewViewModel", "Found no user at ${userfile.absolutePath}")
                     return@withContext false
@@ -131,19 +134,34 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
         }
     }
 
-    private suspend fun mergeUpdatedAndExistingLists(lists : List<ShoppingListWire>) {
+    private suspend fun mergeUpdatedAndExistingLists(onlineList : List<ShoppingListWire>) {
         withContext(Dispatchers.IO) {
-            for (list in lists) {
-                for (l in shoppingList.value!!) {
-                    if (list.ID == l.ID) {
-                        l.Name = list.Name
-                        break
-                    }
+            val finalList = mutableListOf<ShoppingList>()
+            for (list in onlineList) {
+                // Compare online and local list and take what is more recent
+                val localList = shoppingList.value!!.find { x -> x.ID == list.ID }
+                if (localList == null) {
+                    // TODO: Create new list
+                    val newList = ShoppingList(list.ID, list.Name, User(list.CreatedBy), list.LastEdited)
+                    shoppingListDao.insertList(newList)
+                    continue
                 }
-            }
-        }
-        withContext(Dispatchers.Main) {
+                if (list.LastEdited != localList.LastEdited) {
+                    // Convert string into date and compare which one is newer
+                    val formatter = SimpleDateFormat(DateTimeFormatter.ISO_INSTANT.toString())
+                    val convertedOnline = formatter.parse(list.LastEdited)!!
+                    val convertedLocal = formatter.parse(localList.LastEdited)!!
+                    if (convertedOnline.after(convertedLocal)) {
+                        Log.d("ListOverviewViewModel", "Online list ${list.ID} is newer than local list! Updating")
+                        val responsibleUser = User(list.CreatedBy)
+                        val convertedOnlineToLocal = ShoppingList(list.ID, list.Name, responsibleUser, list.LastEdited)
+                        shoppingListDao.updateList(convertedOnlineToLocal)
+                    }
+                } else {
+                    Log.d("ListOverviewViewModel", "Both lists are the same")
+                }
 
+            }
         }
     }
 

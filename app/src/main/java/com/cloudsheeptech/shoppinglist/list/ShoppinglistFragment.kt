@@ -91,7 +91,14 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             Log.d("ShoppinglistFragment", "Tapped on item $itemId to toggle checkbox")
             viewModel.checkItem(itemId)
         }, resources, database.mappingDao())
+        // The adapter for the preview items
+        val previewAdapter = ItemPreviewAdapter(ItemPreviewAdapter.ItemPreviewClickListener { itemId ->
+            Log.d("ShoppinglistFragment", "Got preview ID $itemId")
+            viewModel.addTappedItem(itemId)
+            viewModel.clearItemPreview()
+        })
         binding.itemList.adapter = adapter
+        binding.shoppingItemSelectView.adapter = previewAdapter
 
         // Allow removing item with swipe
         val deleteHelper = ItemTouchHelper(SwipeToDeleteHandler(adapter))
@@ -110,6 +117,20 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             it?.let {
                 adapter.submitList(it)
                 adapter.notifyDataSetChanged()
+            }
+        })
+
+        viewModel.itemName.observe(viewLifecycleOwner, Observer {  name ->
+            name?.let {
+                viewModel.showItemPreview(name)
+            }
+        })
+
+        viewModel.previewItems.observe(viewLifecycleOwner, Observer { list ->
+            list?.let {
+                Log.d("ShoppinglistFragment", "New list (${list.size}) observed")
+                previewAdapter.submitList(list)
+                previewAdapter.notifyDataSetChanged()
             }
         })
 

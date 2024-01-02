@@ -31,10 +31,14 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
     private val databaseDao = database.itemListDao()
     private val mappingDao = database.mappingDao()
     private val listDao = database.shoppingListDao()
+    private val itemDao = database.itemListDao()
 
     private val _refreshing = MutableLiveData<Boolean>()
     val refreshing : LiveData<Boolean>
         get() = _refreshing
+
+    val itemName = MutableLiveData<String>("")
+    val title = MutableLiveData<String>("Liste")
 
     // Navigation
     private val _navigateToAddWord = MutableLiveData<Boolean>(false)
@@ -51,11 +55,11 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
     val shoppinglist : LiveData<List<ItemWithQuantity>> get() = _shoppinglist
     val mappedItemIds = mappingDao.getMappingsForListLive(shoppingListId)
 
+    private val _previewItems = MutableLiveData<List<Item>>()
+    val previewItems : LiveData<List<Item>> get() = _previewItems
+
     private val _listInformation = listDao.getShoppingList(shoppingListId)
     val listInformation : LiveData<ShoppingList> get() = _listInformation
-
-    val itemName = MutableLiveData<String>("")
-    var title = MutableLiveData<String>("Liste")
 
     // ----
 
@@ -109,25 +113,45 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
         }
         val item = Item(ID = 0, Name=itemName.value!!, ImagePath = "ic_item")
         scope.launch {
-            addItemToDatabase(item)
+            val databaseItem = addItemToDatabase(item)
+            addItemToList(databaseItem)
         }
         hideKeyboard()
         clearItemNameInput()
     }
 
-    private suspend fun addItemToDatabase(item : Item) {
+    private suspend fun addItemToList(item : Item) {
         withContext(Dispatchers.IO) {
+            // Check if the item is already in the list
+            val itemsInList = mappingDao.getMappingForItemAndList(item.ID, shoppingListId)
+            if (itemsInList.isNotEmpty()) {
+                Log.d("ShoppinglistViewModel", "The item is already in the list")
+                increaseItemCount(item.ID.toInt())
+                return@withContext
+            }
+            val rnd = Random.nextLong()
+            val mapping = ListMapping(rnd, item.ID, shoppingListId, 1, false)
+            mappingDao.insertMapping(mapping)
+            Log.d("ShoppinglistViewModel", "Added mapping $mapping for item")
+        }
+    }
+
+    private suspend fun addItemToDatabase(item : Item) : Item {
+        val returnItem = withContext(Dispatchers.IO) {
+            // Check if an item with the same name already exists
+            val possibleItem = itemDao.getItemFromName(item.Name)
+            if (possibleItem != null) {
+                return@withContext possibleItem
+            }
             var currentId = databaseDao.getCurrentId()
             currentId += 1
 //            Log.d("ShoppinglistViewModel", "Current ID is: $currentId")
             item.ID = currentId
             databaseDao.insertItem(item)
             Log.d("ShoppinglistViewModel", "Added item $item into database")
-            val rnd = Random.nextLong()
-            val mapping = ListMapping(rnd, item.ID, shoppingListId, 1, false)
-            mappingDao.insertMapping(mapping)
-            Log.d("ShoppinglistViewModel", "Added mapping $mapping for item")
+            return@withContext item
         }
+        return returnItem
     }
 
     fun clearAll() {
@@ -151,7 +175,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
     }
 
     private suspend fun loadItemsInListFromDatabase(itemIds : List<Triple<Long, Long, Boolean>>) {
-        withContext(Dispatchers.IO) {
+         withContext(Dispatchers.IO) {
             Log.d("ShoppinglistViewModel", "Loading the current items for list $shoppingListId from the database")
             val items = databaseDao.getItems(itemIds.map { it.first })
             val zipped = mutableListOf<ItemWithQuantity>()
@@ -225,6 +249,47 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
         withContext(Dispatchers.IO) {
             mappingDao.deleteMapping(mapping.ID)
         }
+    }
+
+    fun showItemPreview(enteredName : String) {
+        Log.d("ShoppinglistViewModel", "User entered: $enteredName")
+        if (enteredName.isEmpty()) {
+            _previewItems.value = emptyList()
+            return
+        }
+        scope.launch {
+            loadMatchingItems(enteredName)
+        }
+    }
+
+    fun clearItemPreview() {
+        itemName.value = ""
+    }
+
+    private suspend fun loadMatchingItems(name : String) {
+        withContext(Dispatchers.IO) {
+            val items = itemDao.getItemsFromName(name)
+            Log.d("ShoppinglistViewModel", "Got ${items.size} from database")
+            withContext(Dispatchers.Main) {
+                _previewItems.value = items
+            }
+        }
+    }
+
+    fun addTappedItem(id : Long) {
+        Log.d("ShoppinglistViewModel", "Adding item with ID $id")
+        scope.launch {
+            val item = itemDao.getItem(id) ?: return@launch
+            Log.d("ShoppinglistViewModel", "Found item to add")
+            addItemToList(item)
+        }
+    }
+
+    private suspend fun loadItemFromDatabase(id : Long) : Item? {
+        val item = withContext(Dispatchers.IO) {
+            return@withContext itemDao.getItem(id)
+        }
+        return item
     }
 
     fun onEditWordNavigated() {

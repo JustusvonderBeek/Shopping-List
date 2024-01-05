@@ -99,7 +99,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
             return@withContext true
         }
         if (!result) {
-            Log.d("ListOverviewViewModel", "Failed to load user. Okay for now")
+            Log.d("ListOverviewViewModel", "Failed to load user: Starting creation")
             navigateToCreateUser()
         }
     }
@@ -119,6 +119,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
                     return@withContext false
                 }
                 userfile.delete()
+                Log.d("ListOverviewViewModel", "User deleted")
             } catch (ex : Exception) {
                 Log.w("ListOverviewViewModel", "Failed to write username to file: $ex")
             }

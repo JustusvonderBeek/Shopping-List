@@ -31,7 +31,7 @@ class NetworkingTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.cloudsheeptech.shop", appContext.packageName)
+        assertEquals("com.cloudsheeptech.shoppinglist", appContext.packageName)
     }
 
     private suspend fun createUserAccount(fileDirPath : String) : Boolean {

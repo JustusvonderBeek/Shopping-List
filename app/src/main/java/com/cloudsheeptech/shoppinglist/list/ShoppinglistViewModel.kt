@@ -116,6 +116,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
         scope.launch {
             val databaseItem = addItemToDatabase(item)
             addItemToList(databaseItem)
+            pushListToServer()
         }
         hideKeyboard()
         clearItemNameInput()
@@ -131,9 +132,22 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
                 return@withContext
             }
             val rnd = Random.nextLong()
-            val mapping = ListMapping(rnd, item.ID, shoppingListId, 1, false)
+            val mapping = ListMapping(rnd, item.ID, shoppingListId, 1, false, 1)
             mappingDao.insertMapping(mapping)
             Log.d("ShoppinglistViewModel", "Added mapping $mapping for item")
+        }
+    }
+
+    private suspend fun pushItemToServer(item : Item) {
+        withContext(Dispatchers.IO) {
+            val encoded = Json.encodeToString(item)
+            Networking.POST("v1/item", encoded) { resp ->
+                if (resp.status != HttpStatusCode.Created) {
+                    Log.w("ShoppinglistViewModel", "Failed to push item to server")
+                    return@POST
+                }
+                Log.i("ShoppinglistViewModel", "Pushed item ${item.ID} to server")
+            }
         }
     }
 
@@ -150,9 +164,27 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
             item.ID = currentId
             databaseDao.insertItem(item)
             Log.d("ShoppinglistViewModel", "Added item $item into database")
+            pushItemToServer(item)
             return@withContext item
         }
         return returnItem
+    }
+
+    private suspend fun pushListToServer() {
+        Log.d("ShoppinglistViewModel", "Pushing list with ${_shoppinglist.value!!.size} to server")
+        if (_shoppinglist.value!!.isEmpty())
+            return
+        withContext(Dispatchers.IO) {
+            val encoded = Json.encodeToString(_shoppinglist.value)
+            Networking.POST("v1/list/items", encoded) { resp ->
+                Log.d("ShoppinglistViewModel", "Got an answer with updated mapping ids")
+                if (resp.status != HttpStatusCode.Created) {
+                    Log.w("ShoppinglistViewModel", "Failed to push list to server")
+                    return@POST
+                }
+                Log.i("ShoppinglistViewModel", "Pushed list to server")
+            }
+        }
     }
 
     fun clearAll() {

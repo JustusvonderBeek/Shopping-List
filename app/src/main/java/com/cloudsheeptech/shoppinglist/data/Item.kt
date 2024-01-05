@@ -10,7 +10,7 @@ data class Item(
     @PrimaryKey(autoGenerate = true)
     var ID: Long,
     var Name: String,
-    var ImagePath: String
+    var Icon: String
 ) : Comparable<Item> {
     override fun compareTo(other: Item): Int {
         if (other.ID == this.ID)

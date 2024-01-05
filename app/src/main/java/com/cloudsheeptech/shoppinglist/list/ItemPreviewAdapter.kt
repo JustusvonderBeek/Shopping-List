@@ -1,19 +1,12 @@
 package com.cloudsheeptech.shoppinglist.list
 
-import android.content.res.Resources
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.Item
-import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
-import com.cloudsheeptech.shoppinglist.database.ItemListMappingDao
-import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemBinding
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemPreviewBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class ItemPreviewAdapter(val clickListener: ItemPreviewClickListener) : ListAdapter<Item, ItemPreviewAdapter.ItemViewHolder>(ItemDiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -46,7 +39,7 @@ class ItemPreviewAdapter(val clickListener: ItemPreviewClickListener) : ListAdap
 
     class ItemDiffCallback : DiffUtil.ItemCallback<Item>() {
         override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
-            return oldItem.ID == newItem.ID && oldItem.Name == newItem.Name && oldItem.ImagePath == newItem.ImagePath
+            return oldItem.ID == newItem.ID && oldItem.Name == newItem.Name && oldItem.Icon == newItem.Icon
         }
 
         override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {

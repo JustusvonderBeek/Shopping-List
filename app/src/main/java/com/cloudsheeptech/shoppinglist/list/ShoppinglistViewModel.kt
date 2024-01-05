@@ -21,7 +21,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
@@ -113,7 +112,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
             Log.i("ShoppinglistViewModel", "Do not add empty item")
             return
         }
-        val item = Item(ID = 0, Name=itemName.value!!, ImagePath = "ic_item")
+        val item = Item(ID = 0, Name=itemName.value!!, Icon = "ic_item")
         scope.launch {
             val databaseItem = addItemToDatabase(item)
             addItemToList(databaseItem)
@@ -183,7 +182,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
             val zipped = mutableListOf<ItemWithQuantity>()
             for (item in items) {
                 val quant = itemIds.find { s -> s.first == item.ID }
-                zipped.add(ItemWithQuantity(item.ID, item.Name, item.ImagePath, quant!!.second, quant.third, 0L))
+                zipped.add(ItemWithQuantity(item.ID, item.Name, item.Icon, quant!!.second, quant.third, 0L))
             }
             withContext(Dispatchers.Main) {
                 _shoppinglist.value = zipped

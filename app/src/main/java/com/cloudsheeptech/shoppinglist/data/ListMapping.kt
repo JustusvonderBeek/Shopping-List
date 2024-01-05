@@ -13,4 +13,5 @@ data class ListMapping(
     var ListID : Long,
     var Quantity : Long,
     var Checked : Boolean,
+    var AddedBy : Long
 )

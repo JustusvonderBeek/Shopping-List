@@ -30,9 +30,12 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import okhttp3.Interceptor
+import okhttp3.Request
 import java.io.File
 import java.util.Calendar
 import java.util.Date
+import kotlin.math.log
 
 object Networking {
 
@@ -44,6 +47,7 @@ object Networking {
     private var tokenValid : Date? = null
 
     private lateinit var client : HttpClient
+    private var tokenInterceptor = JwtTokenInterceptor()
     private var init = false
     private var login = false
 
@@ -57,24 +61,22 @@ object Networking {
     }
 
     private fun loginRequired() : Boolean {
-        return tokenValid == null || tokenValid!!.before(Calendar.getInstance().time)
+        return token == "" || tokenValid == null || tokenValid!!.before(Calendar.getInstance().time)
     }
 
+    // TODO: Automatically login / authorize and repeat the request
     suspend fun GET(requestUrlPath : String, responseHandler : suspend (response : HttpResponse) -> Unit) {
         withContext(Dispatchers.IO) {
             if (!init) {
                 init()
             }
             if (loginRequired()) {
-                login = false
-            }
-            if (!login) {
                 login()
             }
             try {
                 val response : HttpResponse = client.get(baseUrl + requestUrlPath)
                 if (response.status == HttpStatusCode.Unauthorized) {
-                    login = false
+                    token = ""
                 }
                 responseHandler(response)
             } catch (ex : Exception) {
@@ -89,9 +91,6 @@ object Networking {
                 init()
             }
             if (loginRequired()) {
-                login = false
-            }
-            if (!login) {
                 login()
             }
             try {
@@ -99,10 +98,10 @@ object Networking {
                     setBody(data)
                 }
                 if (response.status == HttpStatusCode.Unauthorized) {
-                    login = false
+                    token = ""
                 }
                 responseHandler(response)
-                 response.bodyAsText()
+                response.bodyAsText()
             } catch (ex : Exception) {
                 Log.w("Networking", "Failed to send POST request to $baseUrl$requestUrlPath: $ex")
             }
@@ -117,6 +116,7 @@ object Networking {
             this.token = token
             val jwtToken = JWT(token)
             tokenValid = jwtToken.expiresAt
+            tokenInterceptor.updateToken(token)
 //            Log.d("Networking", "Updated token to: $token")
             Log.d("Networking", "Token valid until: $tokenValid")
         } catch (ex : Exception) {
@@ -125,6 +125,7 @@ object Networking {
     }
 
     private suspend fun login() {
+        Log.d("Networking", "Performing login")
         val decodedToken = withContext(Dispatchers.IO) {
             try {
                 val file = File(applicationDir, "user.json")
@@ -168,6 +169,9 @@ object Networking {
             client = HttpClient(OkHttp) {
                 engine {
                     config {
+                        addInterceptor {
+                            tokenInterceptor.intercept(it)
+                        }
                         hostnameVerifier {
                             // TODO: Include verification of the hostname
                             _, _ -> true
@@ -177,16 +181,16 @@ object Networking {
                 install(ContentNegotiation) {
                     json()
                 }
-                install(Auth) {
-                    bearer {
-                        loadTokens {
-                            BearerTokens(token, token)
-                        }
-                        sendWithoutRequest { request ->
-                            request.url.host == "10.0.2.2" || request.url.host == "shop.cloudsheeptech.com"
-                        }
-                    }
-                }
+//                install(Auth) {
+//                    bearer {
+//                        loadTokens {
+//                            BearerTokens(token, token)
+//                        }
+//                        sendWithoutRequest { request ->
+//                            request.url.host == "10.0.2.2" || request.url.host == "shop.cloudsheeptech.com"
+//                        }
+//                    }
+//                }
             }
         }
         withContext(Dispatchers.Main) {

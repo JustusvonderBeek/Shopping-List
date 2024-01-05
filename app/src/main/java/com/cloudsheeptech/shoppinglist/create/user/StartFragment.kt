@@ -30,6 +30,8 @@ class StartFragment : Fragment() {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_start, container, false)
 
+        requireActivity().actionBar?.setDisplayHomeAsUpEnabled(false)
+
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
@@ -44,6 +46,7 @@ class StartFragment : Fragment() {
         viewModel.navigateToApp.observe(viewLifecycleOwner, Observer { navigate ->
             if (navigate) {
                 findNavController().navigateUp()
+//                findNavController().navigate(StartFragmentDirections.actionUsernameSelectionToOverview())
                 viewModel.onAppNavigated()
             }
         })

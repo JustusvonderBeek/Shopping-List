@@ -6,6 +6,26 @@
     app:startDestination="@id/overview">
 
     <fragment
+        android:id="@+id/usernameSelection"
+        android:name="com.cloudsheeptech.shoppinglist.create.user.StartFragment"
+        android:label="Create a User"
+        tools:layout="@layout/fragment_start"/>
+    <fragment
+        android:id="@+id/overview"
+        android:name="com.cloudsheeptech.shoppinglist.list_overview.ListOverviewFragment"
+        android:label="@string/nav_start_recap_title"
+        tools:layout="@layout/fragment_list_overview">
+        <action
+            android:id="@+id/action_overview_to_createShoppinglistFragment"
+            app:destination="@id/createShoppinglistFragment" />
+        <action
+            android:id="@+id/action_overview_to_shoppinglist"
+            app:destination="@id/shoppinglist" />
+        <action
+            android:id="@+id/action_overview_to_usernameSelection"
+            app:destination="@id/usernameSelection" />
+    </fragment>
+    <fragment
         android:id="@+id/recipes"
         android:name="com.cloudsheeptech.shoppinglist.recipe.RecipeFragment"
         android:label="@string/nav_btn_overview"
@@ -36,11 +56,6 @@
             android:defaultValue="-1L" />
     </fragment>
     <fragment
-        android:id="@+id/usernameSelection"
-        android:name="com.cloudsheeptech.shoppinglist.create.user.StartFragment"
-        android:label="startFragment"
-        tools:layout="@layout/fragment_start"/>
-    <fragment
         android:id="@+id/editItem"
         android:name="com.cloudsheeptech.shoppinglist.edit.EditFragment"
         android:label="editItem">
@@ -51,21 +66,7 @@
             android:id="@+id/action_editItem_to_addRecipe"
             app:destination="@id/addRecipe" />
     </fragment>
-    <fragment
-        android:id="@+id/overview"
-        android:name="com.cloudsheeptech.shoppinglist.list_overview.ListOverviewFragment"
-        android:label="@string/nav_start_recap_title"
-        tools:layout="@layout/fragment_list_overview">
-        <action
-            android:id="@+id/action_overview_to_createShoppinglistFragment"
-            app:destination="@id/createShoppinglistFragment" />
-        <action
-            android:id="@+id/action_overview_to_shoppinglist"
-            app:destination="@id/shoppinglist" />
-        <action
-            android:id="@+id/action_overview_to_usernameSelection"
-            app:destination="@id/usernameSelection" />
-    </fragment>
+
     <fragment
         android:id="@+id/createShoppinglistFragment"
         android:name="com.cloudsheeptech.shoppinglist.create.list.CreateShoppinglistFragment"

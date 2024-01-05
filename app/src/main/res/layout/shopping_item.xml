@@ -88,13 +88,13 @@
                     android:onClick="@{() -> clickListener.onClick(item, -1)}"
                     android:src="@drawable/ic_minus" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text='@{String.format("%d", item.Quantity)}'
-                    android:layout_gravity="center"
-                    style="@style/LearningTextViewStyle"
-                    />
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text='@{String.format("%d", item.Quantity)}'-->
+<!--                    android:layout_gravity="center"-->
+<!--                    style="@style/LearningTextViewStyle"-->
+<!--                    />-->
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:layout_width="wrap_content"

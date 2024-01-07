@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -22,7 +23,7 @@ import java.io.File
 class CreateShoppinglistFragment : Fragment() {
 
     private lateinit var binding : FragmentCreateShoppinglistBinding
-    private lateinit var viewModel : CreateShoppinglistViewModel
+    private val viewModel : CreateShoppinglistViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,17 +32,10 @@ class CreateShoppinglistFragment : Fragment() {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_create_shoppinglist, container, false)
 
-        val database = ShoppingListDatabase.getInstance(requireContext())
-        val userFile = File(requireActivity().filesDir, "user.json")
-        var user = User()
-        if (!userFile.exists()) {
-            Log.w("CreateShoppinglistFragment", "Cannot load user file!!! Should NOT happen!")
-        } else {
-            user = Json.decodeFromString<User>(userFile.readText(Charsets.UTF_8))
-        }
-        val viewModelFactory = CreateShoppinglistViewModelFactory(user, database)
+//        val database = ShoppingListDatabase.getInstance(requireContext())
+//        val viewModelFactory = CreateShoppinglistViewModelFactory(database)
         // Don't keep track of the state in the creation fragment, therefore destroy everything when we navigate away
-        viewModel = ViewModelProvider(this, viewModelFactory)[CreateShoppinglistViewModel::class.java]
+//        viewModel = ViewModelProvider(this, viewModelFactory)[CreateShoppinglistViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 

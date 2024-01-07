@@ -1,9 +1,12 @@
 package com.cloudsheeptech.shoppinglist.create.list
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.cloudsheeptech.shoppinglist.data.AppUser
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.User
@@ -21,7 +24,7 @@ import kotlinx.serialization.json.Json
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 
-class CreateShoppinglistViewModel(private val user: User, private val database : ShoppingListDatabase) : ViewModel() {
+class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(application) {
 
     private val job = Job()
     private val createSLCoroutine = CoroutineScope(Dispatchers.Main + job)
@@ -34,27 +37,31 @@ class CreateShoppinglistViewModel(private val user: User, private val database :
     private val _navigateToCreatedList = MutableLiveData<Long>(-1)
     val navigateToCreatedList : LiveData<Long> get() = _navigateToCreatedList
 
+    private val database = ShoppingListDatabase.getInstance(application.applicationContext)
     private val shoppingListDao = database.shoppingListDao()
+    private val userDao = database.userDao()
 
-    init {
-        if (user.ID == 0L) {
-            Log.w("CreateShoppinglistViewModel", "User not correctly initialized")
-        }
-    }
+    private val user = userDao.getUserLive()
+
+//    init {
+//        if (user.value == null || user.value!!.ID == 0L) {
+//            Log.w("CreateShoppinglistViewModel", "User not correctly initialized")
+//        }
+//    }
 
     fun create() {
         Log.d("CreateShoppinglistViewModel", "Creating list pressed")
         if (title.value == null || title.value!!.isEmpty()) {
             return
         }
-        if (user.ID == 0L) {
+        if (!AppUser.Initialized()) {   // SHOULD never happen
             Log.w("CreateShoppinglistViewModel", "Because the user is not correctly initialized we cannot create this list!")
             return
         }
         // Let the server assign the ID
-        Log.d("CreateShoppinglistViewModel", "Instant Now: ${Instant.now()}")
+//        Log.d("CreateShoppinglistViewModel", "Instant Now: ${Instant.now()}")
         val nowFormatted = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-        val newShoppingList = ShoppingList(ID=0, Name = title.value!!, CreatedBy = user, nowFormatted)
+        val newShoppingList = ShoppingList(ID=0, Name = title.value!!, CreatedBy = AppUser.getUser(), nowFormatted)
         createSLCoroutine.launch {
             val updatedIdList = storeShoppingListOnline(newShoppingList)
             storeShoppingListDatabase(updatedIdList)
@@ -77,7 +84,7 @@ class CreateShoppinglistViewModel(private val user: User, private val database :
 
     private suspend fun storeShoppingListOnline(list: ShoppingList): ShoppingList {
         val updatedList = withContext(Dispatchers.IO) {
-            val wireList = ShoppingListWire(list.ID, list.Name, user.ID, list.LastEdited)
+            val wireList = ShoppingListWire(list.ID, list.Name, AppUser.ID, list.LastEdited)
             val serialized = Json.encodeToString(wireList)
             var decodedList: ShoppingListWire? = null
             Networking.POST("v1/list", serialized) { resp ->

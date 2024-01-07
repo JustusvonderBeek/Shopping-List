@@ -20,6 +20,9 @@ interface ShoppingListDao {
     @Query("DELETE FROM list_table WHERE ID = :key")
     fun deleteList(key : Long)
 
+    @Query("DELETE FROM list_table")
+    fun reset()
+
     @Query("SELECT ID FROM list_table ORDER BY ID ASC LIMIT 1")
     fun getLatestListId() : LiveData<Long?>
 

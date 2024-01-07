@@ -38,6 +38,10 @@ class ListOverviewFragment : Fragment(), MenuProvider {
                 viewModel.removeUser()
                 return true
             }
+            R.id.dd_clear_btn -> {
+                viewModel.clearDatabase()
+                return true
+            }
         }
         return false
     }

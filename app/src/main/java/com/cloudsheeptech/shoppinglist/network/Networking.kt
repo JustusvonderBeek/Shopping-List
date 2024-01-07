@@ -3,8 +3,11 @@ package com.cloudsheeptech.shoppinglist.network
 import android.app.Application
 import android.util.Log
 import com.auth0.android.jwt.JWT
+import com.cloudsheeptech.shoppinglist.data.AppUser
 import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
 import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.database.UserDao
 //import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -42,6 +45,8 @@ object Networking {
 //    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
     private val baseUrl = "https://10.0.2.2:46152/"
     private lateinit var applicationDir : String
+    private lateinit var database : ShoppingListDatabase
+    private lateinit var userDao : UserDao
     private var token = ""
     private val calendar = Calendar.getInstance()
     private var tokenValid : Date? = null
@@ -56,8 +61,10 @@ object Networking {
         var token : String
     )
 
-    fun registerApplicationDir(dir : String) {
+    fun registerApplicationDir(dir : String, db: ShoppingListDatabase) {
         applicationDir = dir
+        database = db
+        userDao = db.userDao()
     }
 
     private fun loginRequired() : Boolean {
@@ -124,19 +131,40 @@ object Networking {
         }
     }
 
+    private suspend fun pushUserToServer(user : User) : User {
+        withContext(Dispatchers.IO) {
+            val response : HttpResponse = client.post(baseUrl + "auth/create") {
+                contentType(ContentType.Application.Json)
+                setBody(user)
+            }
+            if (response.status != HttpStatusCode.Created) {
+                Log.e("Networking", "Failed to push user to server!")
+                return@withContext
+            }
+            val body = response.bodyAsText(Charsets.UTF_8)
+            val decoded = Json.decodeFromString<User>(body)
+            user.ID = decoded.ID
+        }
+        return user
+    }
+
     private suspend fun login() {
         Log.d("Networking", "Performing login")
         val decodedToken = withContext(Dispatchers.IO) {
             try {
-                val file = File(applicationDir, "user.json")
-                if (!file.exists()) {
-                    Log.d("Networking", "User file does not exist!")
-                    return@withContext null
+                // Should only happen when opened for the first time
+                var user = userDao.getUser() ?: return@withContext null
+                if (user.ID == 0L) {
+                    Log.i("Networking", "User was not push to server yet")
+                    user = pushUserToServer(user)
+                    if (user.ID == 0L) {
+                        // Failed to push again. No need to login, as this won't work with an ID = =
+                        return@withContext null
+                    }
+                    AppUser.ID = user.ID
+                    AppUser.Username = user.Username
+                    AppUser.Password = user.Password
                 }
-                val reader = file.reader(Charsets.UTF_8)
-                val content = reader.readText()
-//                Log.d("Networking", "Content of file '$content'")
-                val user = Json.decodeFromString<User>(content)
                 val response: HttpResponse = client.post(baseUrl + "auth/login") {
                     contentType(ContentType.Application.Json)
                     setBody(user)
@@ -181,16 +209,6 @@ object Networking {
                 install(ContentNegotiation) {
                     json()
                 }
-//                install(Auth) {
-//                    bearer {
-//                        loadTokens {
-//                            BearerTokens(token, token)
-//                        }
-//                        sendWithoutRequest { request ->
-//                            request.url.host == "10.0.2.2" || request.url.host == "shop.cloudsheeptech.com"
-//                        }
-//                    }
-//                }
             }
         }
         withContext(Dispatchers.Main) {

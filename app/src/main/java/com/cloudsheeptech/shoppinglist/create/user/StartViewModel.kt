@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.cloudsheeptech.shoppinglist.data.AppUser
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
@@ -73,9 +74,10 @@ class StartViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun storeUser(user : User) {
         withContext(Dispatchers.IO) {
             try {
-                userDao.resetUser()
-                // Checking in the fragment if the user is found and navigate in this case
-                userDao.insertUser(user)
+                AppUser.ID = user.ID
+                AppUser.Username = user.Username
+                AppUser.Password = user.Password
+                AppUser.storeUser()
                 Log.i("StartViewModel", "Stored user to database")
             } catch (ex : Exception) {
                 Log.w("StartViewModel", "Failed to save user: $ex")

@@ -5,13 +5,10 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -20,22 +17,28 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import kotlin.Exception
 
+/*
+* This class is the main HUB of the application, taking care of user initialization etc.
+* When no user is found, navigate to the user creation and only allow navigating back if a user is found
+ */
 class ListOverviewViewModel(application : Application) : AndroidViewModel(application) {
 
     private val job = Job()
     private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
 
-    private var user = User()
+    // -----------------------------------------------
+
     private val database = ShoppingListDatabase.getInstance(application.applicationContext)
     private val shoppingListDao = database.shoppingListDao()
+    private val userDao = database.userDao()
+
+    // Navigation variables
 
     private  val _createList = MutableLiveData<Boolean>(false)
     val createList : LiveData<Boolean> get() = _createList
@@ -46,18 +49,30 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private val _navigateUser = MutableLiveData<Boolean>(false)
     val navigateUser : LiveData<Boolean> get() = _navigateUser
     private val _refreshing = MutableLiveData<Boolean>(false)
+
+    // UI State changes
+
     val refreshing : LiveData<Boolean> get() = _refreshing
 
+    // Data
+
+    val jsonSerializer = Json {
+        encodeDefaults = true
+        ignoreUnknownKeys = false
+    }
+    val user = userDao.getUserLive()
     val shoppingList = shoppingListDao.getShoppingLists()
+
+    // -----------------------------------------------
 
     init {
         checkInitialized()
     }
 
     private fun checkInitialized() {
-        Log.i("ListOverviewViewModel", "Checking if already initialized")
-        vmCoroutine.launch {
-           loadUser()
+        if (user.value == null) {
+            Log.d("ListOverviewViewModel", "User is not initialized. Creating user")
+            navigateToCreateUser()
         }
     }
 
@@ -68,61 +83,15 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
         navigateToCreateList()
     }
 
-    private suspend fun loadUser() {
-        val result = withContext(Dispatchers.IO) {
-            try {
-                val userfile = File(getApplication<Application>().filesDir, "user.json")
-                if (!userfile.exists()) {
-                    Log.d("ListOverviewViewModel", "Found no user at ${userfile.absolutePath}")
-                    return@withContext false
-                }
-                val reader = userfile.reader(Charsets.UTF_8)
-                val content = reader.readText()
-                val jsonSerializer = Json {
-                    encodeDefaults = true
-                    ignoreUnknownKeys = false
-                }
-                val user = jsonSerializer.decodeFromString<User>(content)
-                if (user.ID == 0L) {
-                    Log.w("ListOverviewViewModel", "Found user with ID == 0! Incorrect state! Deleting and setting up new user")
-                    userfile.delete()
-                    return@withContext false
-                }
-                reader.close()
-                Log.i("ListOverviewViewModel", "Load user $user from disk")
-                withContext(Dispatchers.Main) {
-                    this@ListOverviewViewModel.user = user
-                }
-            } catch (ex : Exception) {
-                Log.w("ListOverviewViewModel", "Failed to write username to file: $ex")
-            }
-            return@withContext true
-        }
-        if (!result) {
-            Log.d("ListOverviewViewModel", "Failed to load user: Starting creation")
-            navigateToCreateUser()
-        }
-    }
-
     fun removeUser() {
         vmCoroutine.launch {
-            deleteUserFromDisk()
+            deleteUserFromDatabase()
         }
     }
 
-    private suspend fun deleteUserFromDisk() {
+    private suspend fun deleteUserFromDatabase() {
         withContext(Dispatchers.IO) {
-            try {
-                val userfile = File(getApplication<Application>().filesDir, "user.json")
-                if (!userfile.exists()) {
-                    Log.d("ListOverviewViewModel", "Found no user at ${userfile.absolutePath}")
-                    return@withContext false
-                }
-                userfile.delete()
-                Log.d("ListOverviewViewModel", "User deleted")
-            } catch (ex : Exception) {
-                Log.w("ListOverviewViewModel", "Failed to write username to file: $ex")
-            }
+            userDao.resetUser()
         }
     }
 
@@ -168,7 +137,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     private suspend fun updateListOverview() {
         withContext(Dispatchers.IO) {
-            Networking.GET("v1/lists/${user.ID}") { resp ->
+            Networking.GET("v1/lists/${user.value!!.ID}") { resp ->
                 if (resp.status != HttpStatusCode.OK) {
                     Log.w("ListOverviewViewModel", "Fetching lists failed")
                     return@GET
@@ -187,6 +156,8 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
             _refreshing.value = false
         }
     }
+
+    // -----------------------------------------------
 
     fun navigateToShoppingList(id : Long) {
         _navigateList.value = id
@@ -210,6 +181,11 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     fun onCreateUserNavigated() {
         _navigateUser.value = false
+//        if (user.value != null) {
+//
+//        } else {
+//            Log.d("ListOverviewViewModel", "User is still null")
+//        }
     }
 
 }

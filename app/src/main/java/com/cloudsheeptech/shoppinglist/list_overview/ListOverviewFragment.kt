@@ -84,10 +84,9 @@ class ListOverviewFragment : Fragment(), MenuProvider {
             }
         })
 
-        viewModel.navigateUser.observe(viewLifecycleOwner, Observer { navigate ->
-            if (navigate) {
+        viewModel.user.observe(viewLifecycleOwner, Observer { user ->
+            if (user == null) {
                 findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToUsernameSelection())
-                viewModel.onCreateUserNavigated()
             }
         })
 

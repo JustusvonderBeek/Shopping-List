@@ -12,11 +12,14 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.cloudsheeptech.shoppinglist.create.list.CreateShoppinglistViewModel
+import com.cloudsheeptech.shoppinglist.create.list.CreateShoppinglistViewModelFactory
 import com.cloudsheeptech.shoppinglist.databinding.ActivityMainBinding
 import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModel
 import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModelFactory
 import com.cloudsheeptech.shoppinglist.create.user.StartViewModel
 import com.cloudsheeptech.shoppinglist.create.user.StartViewModelFactory
+import com.cloudsheeptech.shoppinglist.data.AppUser
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.database.UserDao
@@ -45,6 +48,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Setup user
+        AppUser.loadUser(application)
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         val botNav : BottomNavigationView = binding.bottomNavigation
@@ -54,10 +61,13 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfig)
         botNav.setupWithNavController(navController)
 
+        val database = ShoppingListDatabase.getInstance(application.applicationContext)
+
 //        val vocabularyFile = File(applicationContext.filesDir, "vocabulary.json")
 //        val vocabulary = Vocabulary.getInstance(vocabularyFile)
         val startViewModel by viewModels<StartViewModel> { StartViewModelFactory(application) }
         val overviewViewModel by viewModels<ListOverviewViewModel> { ListOverviewViewModelFactory(application) }
+        val createViewModel by viewModels<CreateShoppinglistViewModel> { CreateShoppinglistViewModelFactory(application) }
 //        val activityViewModel by viewModels<LearningViewModel> { LearningViewModelFactory(vocabulary) }
 //        learningViewModel = activityViewModel
 //        val actViewModel by viewModels<RecapViewModel> { RecapViewModelFactory(vocabulary) }
@@ -73,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Dirty hack to avoid storing application context in this object class
-        Networking.registerApplicationDir(application.filesDir.absolutePath)
+        Networking.registerApplicationDir(application.filesDir.absolutePath, database)
 
         // Create notifications
         createNotificationChannel()

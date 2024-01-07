@@ -10,6 +10,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentStartBinding
@@ -32,6 +33,8 @@ class StartFragment : Fragment() {
 
         requireActivity().actionBar?.setDisplayHomeAsUpEnabled(false)
 
+        val viewModelFactory = StartViewModelFactory(requireActivity().application)
+        val viewModel = ViewModelProvider(this, viewModelFactory)[StartViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
@@ -43,11 +46,9 @@ class StartFragment : Fragment() {
             }
         })
 
-        viewModel.navigateToApp.observe(viewLifecycleOwner, Observer { navigate ->
-            if (navigate) {
+        viewModel.user.observe(viewLifecycleOwner, Observer { user ->
+            user?.let {
                 findNavController().navigateUp()
-//                findNavController().navigate(StartFragmentDirections.actionUsernameSelectionToOverview())
-                viewModel.onAppNavigated()
             }
         })
 

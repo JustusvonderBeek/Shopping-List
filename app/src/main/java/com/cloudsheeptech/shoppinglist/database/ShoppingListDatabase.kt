@@ -9,14 +9,16 @@ import androidx.room.TypeConverters
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.User
 
-@Database(entities = [ShoppingList::class, Item::class, ListMapping::class], version=6, exportSchema = false)
+@Database(entities = [ShoppingList::class, Item::class, ListMapping::class, User::class], version=7, exportSchema = false)
 @TypeConverters(value = [DatabaseTypeConverter::class])
 abstract class ShoppingListDatabase : RoomDatabase() {
 
     abstract fun shoppingListDao() : ShoppingListDao
     abstract fun itemListDao() : ItemListDao
     abstract fun mappingDao() : ItemListMappingDao
+    abstract fun userDao() : UserDao
 
     companion object {
         @Volatile

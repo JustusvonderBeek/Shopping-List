@@ -21,6 +21,15 @@ interface UserDao {
     @Delete
     fun deleteUser(user : User)
 
-    @Query("SELECT * FROM user_table")
+    @Query("DELETE FROM user_table")
+    fun resetUser()
+
+    // -----------------------------------------------
+    // Expecting only one user in total for the methods below to work!
+    // -----------------------------------------------
+    @Query("SELECT * FROM user_table LIMIT 1")
     fun getUser() : User?
+
+    @Query("SELECT * FROM user_table LIMIT 1")
+    fun getUserLive() : LiveData<User>
 }

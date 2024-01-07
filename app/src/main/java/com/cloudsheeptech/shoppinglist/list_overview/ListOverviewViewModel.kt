@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.User
@@ -36,6 +37,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     private val database = ShoppingListDatabase.getInstance(application.applicationContext)
     private val shoppingListDao = database.shoppingListDao()
+    private val itemDao = database.itemListDao()
     private val userDao = database.userDao()
 
     // Navigation variables
@@ -95,6 +97,19 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
         }
     }
 
+    private suspend fun removeItemsAndListsFromDatabase() {
+        withContext(Dispatchers.IO) {
+            shoppingListDao.reset()
+            itemDao.deleteAll()
+        }
+    }
+
+    fun clearDatabase() {
+        vmCoroutine.launch {
+            removeItemsAndListsFromDatabase()
+        }
+    }
+
     fun updateAllLists() {
         Log.d("ListOverviewViewModel", "Updating all list for this user")
         _refreshing.value = true
@@ -130,7 +145,6 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
                 } else {
                     Log.d("ListOverviewViewModel", "Both lists are the same")
                 }
-
             }
         }
     }

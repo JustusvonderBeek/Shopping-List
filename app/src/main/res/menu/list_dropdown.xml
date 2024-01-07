@@ -13,4 +13,9 @@
         android:layout_height="wrap_content"
         android:title="remove"
         />
+    <item
+        android:id="@+id/dd_clear_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="clear db" />
 </menu>

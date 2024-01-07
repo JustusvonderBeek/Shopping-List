@@ -18,11 +18,17 @@ import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModelFactor
 import com.cloudsheeptech.shoppinglist.create.user.StartViewModel
 import com.cloudsheeptech.shoppinglist.create.user.StartViewModelFactory
 import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.database.UserDao
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import okhttp3.internal.wait
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
@@ -36,36 +42,6 @@ class MainActivity : AppCompatActivity() {
 
     private var notificationId = 0
 
-//    private suspend fun loadUser() {
-//        withContext(Dispatchers.IO) {
-//            try {
-//                val userfile = File(application.filesDir, "user.json")
-//                if (!userfile.exists()) {
-//                    Log.d("ListOverviewViewModel", "Found no user at ${userfile.absolutePath}")
-//                    return@withContext false
-//                }
-//                val reader = userfile.reader(Charsets.UTF_8)
-//                val content = reader.readText()
-//                val jsonSerializer = Json {
-//                    encodeDefaults = true
-//                    ignoreUnknownKeys = false
-//                }
-//                val user = jsonSerializer.decodeFromString<User>(content)
-//                if (user.ID == 0L) {
-//                    Log.w("ListOverviewViewModel", "Found user with ID == 0! Incorrect state! Deleting and setting up new user")
-//                    userfile.delete()
-//                    return@withContext false
-//                }
-//                reader.close()
-//                Log.i("ListOverviewViewModel", "Load user $user from disk")
-//                withContext(Dispatchers.Main) {
-//                    this@ListOverviewViewModel.user = user
-//                }
-//            } catch (ex : Exception) {
-//                Log.w("ListOverviewViewModel", "Failed to write username to file: $ex")
-//            }
-//        }
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +52,6 @@ class MainActivity : AppCompatActivity() {
         val navIds = navController.graph
         val appBarConfig = AppBarConfiguration.Builder(navIds).build()
         setupActionBarWithNavController(navController, appBarConfig)
-//        NavigationUI.setupActionBarWithNavController(this, navController)
         botNav.setupWithNavController(navController)
 
 //        val vocabularyFile = File(applicationContext.filesDir, "vocabulary.json")
@@ -88,12 +63,12 @@ class MainActivity : AppCompatActivity() {
 //        val actViewModel by viewModels<RecapViewModel> { RecapViewModelFactory(vocabulary) }
 //        recapViewModel = actViewModel
 
-        // Check if we are coming from a notification
+        // TODO: Check if we are coming from a notification; NOT yet necessary
         val redirect = intent.extras?.getString("redirect")
         if (redirect != null && redirect == "recapFragment") {
             Log.i("MainActivity", "Coming from a notification!")
             // Navigate to the fragment
-            recapViewModel.navigateToApp()
+//            recapViewModel.navigateToApp()
             navController.navigate(R.id.overview)
         }
 

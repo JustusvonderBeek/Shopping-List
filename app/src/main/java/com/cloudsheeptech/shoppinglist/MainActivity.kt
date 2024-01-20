@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Setup user
-        AppUser.loadUser(application)
+        AppUser.loadUser(application.applicationContext)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 

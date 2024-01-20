@@ -39,6 +39,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private val shoppingListDao = database.shoppingListDao()
     private val itemDao = database.itemListDao()
     private val userDao = database.userDao()
+    private val itemMappingDao = database.mappingDao()
 
     // Navigation variables
 
@@ -101,6 +102,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
         withContext(Dispatchers.IO) {
             shoppingListDao.reset()
             itemDao.deleteAll()
+            itemMappingDao.clearAll()
         }
     }
 
@@ -124,10 +126,10 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
             val finalList = mutableListOf<ShoppingList>()
             for (list in onlineList) {
                 // Compare online and local list and take what is more recent
-                val localList = shoppingList.value!!.find { x -> x.ID == list.ID }
+                val localList = shoppingList.value!!.find { x -> x.ID == list.ListId }
                 if (localList == null) {
                     // TODO: Create new list
-                    val newList = ShoppingList(list.ID, list.Name, User(list.CreatedBy), list.LastEdited)
+                    val newList = ShoppingList(list.ListId, list.Name, User(list.CreatedBy), list.LastEdited)
                     shoppingListDao.insertList(newList)
                     continue
                 }
@@ -137,9 +139,9 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
                     val convertedOnline = formatter.parse(list.LastEdited)!!
                     val convertedLocal = formatter.parse(localList.LastEdited)!!
                     if (convertedOnline.after(convertedLocal)) {
-                        Log.d("ListOverviewViewModel", "Online list ${list.ID} is newer than local list! Updating")
+                        Log.d("ListOverviewViewModel", "Online list ${list.ListId} is newer than local list! Updating")
                         val responsibleUser = User(list.CreatedBy)
-                        val convertedOnlineToLocal = ShoppingList(list.ID, list.Name, responsibleUser, list.LastEdited)
+                        val convertedOnlineToLocal = ShoppingList(list.ListId, list.Name, responsibleUser, list.LastEdited)
                         shoppingListDao.updateList(convertedOnlineToLocal)
                     }
                 } else {

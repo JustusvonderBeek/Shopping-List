@@ -36,6 +36,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.Request
 import java.io.File
+import java.time.Duration
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.log
@@ -164,6 +165,7 @@ object Networking {
                     AppUser.ID = user.ID
                     AppUser.Username = user.Username
                     AppUser.Password = user.Password
+                    AppUser.storeUser()
                 }
                 val response: HttpResponse = client.post(baseUrl + "auth/login") {
                     contentType(ContentType.Application.Json)
@@ -197,6 +199,7 @@ object Networking {
             client = HttpClient(OkHttp) {
                 engine {
                     config {
+                        connectTimeout(Duration.ofSeconds(3))
                         addInterceptor {
                             tokenInterceptor.intercept(it)
                         }

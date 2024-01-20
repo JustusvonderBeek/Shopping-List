@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -65,7 +66,8 @@ class NetworkingTest {
 
     private suspend fun getTestPathUnauth() : Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        Networking.registerApplicationDir(appContext.filesDir.absolutePath)
+        val db = ShoppingListDatabase.getInstance(appContext)
+        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
         var success = false
         Networking.GET("test/unauth") { resp ->
             println("Got an answer: ${resp.bodyAsText(Charsets.UTF_8)}")
@@ -88,7 +90,8 @@ class NetworkingTest {
 
     private suspend fun getTestPathAuth() : Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        Networking.registerApplicationDir(appContext.filesDir.absolutePath)
+        val db = ShoppingListDatabase.getInstance(appContext)
+        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
         // For debugging, create a new user first
         var success = createUserAccount(appContext.filesDir.absolutePath)
         assert(success)
@@ -128,7 +131,8 @@ class NetworkingTest {
 
     private suspend fun postTestPathAuth() : Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        Networking.registerApplicationDir(appContext.filesDir.absolutePath)
+        val db = ShoppingListDatabase.getInstance(appContext)
+        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
         // For debugging, create a new user first
         var success = createUserAccount(appContext.filesDir.absolutePath)
         assert(success)

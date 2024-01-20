@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.cloudsheeptech.shoppinglist.data.AppUser
 import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.ItemWire
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ListShare
@@ -21,8 +23,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
 class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: ShoppingListDatabase, val shoppingListId : Long) : ViewModel() {
@@ -70,12 +75,27 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
 //            shoppingListData = databaseDao.getItemLive(shoppingListId)
     }
 
+    private suspend fun updateLocalList(list : ShoppingListWire) {
+        withContext(Dispatchers.IO) {
+            for (item in list.Items) {
+                var dbItem = itemDao.getItemFromName(item.Name)
+                if (dbItem == null) {
+                    dbItem = Item(ID = 0, Name=item.Name, Icon = item.Icon)
+                }
+                addItemToDatabase(dbItem)
+                setItemInList(dbItem, item.Quantity, item.Checked)
+            }
+        }
+        withContext(Dispatchers.Main) {
+            title.value = list.Name
+        }
+    }
+
     fun updateShoppinglist() {
         scope.launch {
             withContext(Dispatchers.Main) {
                 _refreshing.value = true
             }
-            // TODO: Implement refreshing of this concrete list
             Networking.GET("v1/list/$shoppingListId") { resp ->
                 Log.d("ShoppinglistViewModel", "Got response with updated list")
                 try {
@@ -93,8 +113,8 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
                     }
                     val body = resp.bodyAsText(Charsets.UTF_8)
                     val list = Json.decodeFromString<ShoppingListWire>(body)
-                    Log.d("ShoppinglistViewModel", "Got list: ${body} as $list")
-                    // TODO: Update the current list with what was found online
+                    Log.d("ShoppinglistViewModel", "Got list: $list")
+                    updateLocalList(list)
                 } catch (ex : NoTransformationFoundException) {
                     Log.w("ShoppinglistViewModel", "The received data is in incorrect format!")
                     return@GET
@@ -122,23 +142,40 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
         clearItemNameInput()
     }
 
-    private suspend fun addItemToList(item : Item) {
+    private suspend fun setItemInList(item : Item, quantity: Long = 1L, checked: Boolean = false) {
+        withContext(Dispatchers.IO) {
+            val itemsInList = mappingDao.getMappingForItemAndList(item.ID, shoppingListId)
+            var rnd = Random.nextLong()
+            if (!itemsInList.isEmpty()) {
+                rnd = itemsInList[0].ID
+            }
+            val mapping = ListMapping(rnd, item.ID, shoppingListId, quantity, checked, AppUser.ID)
+            mappingDao.updateMapping(mapping)
+        }
+    }
+
+    private suspend fun addItemToList(item : Item, quantity : Long = 1L, checked : Boolean = false) {
         withContext(Dispatchers.IO) {
             // Check if the item is already in the list
             val itemsInList = mappingDao.getMappingForItemAndList(item.ID, shoppingListId)
             if (itemsInList.isNotEmpty()) {
                 Log.d("ShoppinglistViewModel", "The item is already in the list")
-                increaseItemCount(item.ID.toInt())
+                if (quantity != 1L) {
+                    setItemQuantity(item.ID.toInt(), quantity)
+                } else {
+                    increaseItemCount(item.ID.toInt(), quantity)
+                }
                 return@withContext
             }
             val rnd = Random.nextLong()
-            val mapping = ListMapping(rnd, item.ID, shoppingListId, 1, false, 1)
+            val mapping = ListMapping(rnd, item.ID, shoppingListId, quantity, checked, AppUser.ID)
             mappingDao.insertMapping(mapping)
             Log.d("ShoppinglistViewModel", "Added mapping $mapping for item")
         }
     }
 
-    private suspend fun pushItemToServer(item : Item) {
+    private suspend fun pushItemToServer(item : Item) : Item {
+        var responseItem = item
         withContext(Dispatchers.IO) {
             val encoded = Json.encodeToString(item)
             Networking.POST("v1/item", encoded) { resp ->
@@ -147,8 +184,12 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
                     return@POST
                 }
                 Log.i("ShoppinglistViewModel", "Pushed item ${item.ID} to server")
+                val body = resp.bodyAsText(Charsets.UTF_8)
+                responseItem = Json.decodeFromString<Item>(body)
+                Log.d("ShoppinglistViewModel", "Got item ID ${responseItem.ID} back")
             }
         }
+        return responseItem
     }
 
     private suspend fun addItemToDatabase(item : Item) : Item {
@@ -158,25 +199,50 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
             if (possibleItem != null) {
                 return@withContext possibleItem
             }
-            var currentId = databaseDao.getCurrentId()
-            currentId += 1
+//            val updateItem = pushItemToServer(item)
+            val currentId = databaseDao.getCurrentId() + 1
+//            if (updateItem.ID == 0L) {
+//                currentId += 1
+//            } else {
+//                currentId = updateItem.ID
+//            }
 //            Log.d("ShoppinglistViewModel", "Current ID is: $currentId")
             item.ID = currentId
             databaseDao.insertItem(item)
             Log.d("ShoppinglistViewModel", "Added item $item into database")
-            pushItemToServer(item)
+//            pushItemToServer(item)
             return@withContext item
         }
         return returnItem
     }
 
+    private suspend fun createWireList() : ShoppingListWire {
+        val list = withContext(Dispatchers.IO) {
+            val nowFormatted = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+            val wireList = ShoppingListWire(shoppingListId, title.value!!, AppUser.ID, nowFormatted, mutableListOf())
+            val itemsInList = mappingDao.getMappingsForList(shoppingListId)
+            if (itemsInList.isEmpty())
+                return@withContext wireList
+            for (item in itemsInList) {
+                val dbItem = itemDao.getItem(item.ItemID) ?: continue
+                val converted = ItemWire(dbItem.Name, dbItem.Icon, item.Quantity, item.Checked)
+                wireList.Items.add(converted)
+            }
+            return@withContext wireList
+        }
+        return list
+    }
+
     private suspend fun pushListToServer() {
         Log.d("ShoppinglistViewModel", "Pushing list with ${_shoppinglist.value!!.size} to server")
-        if (_shoppinglist.value!!.isEmpty())
-            return
+
         withContext(Dispatchers.IO) {
-            val encoded = Json.encodeToString(_shoppinglist.value)
-            Networking.POST("v1/list/items", encoded) { resp ->
+            val wireList = createWireList()
+            //            val itemsInList = mappingDao.getMappingsForList(shoppingListId)
+//            if (itemsInList.isEmpty())
+//                return@withContext
+            val encoded = Json.encodeToString(wireList)
+            Networking.POST("v1/list", encoded) { resp ->
                 Log.d("ShoppinglistViewModel", "Got an answer with updated mapping ids")
                 if (resp.status != HttpStatusCode.Created) {
                     Log.w("ShoppinglistViewModel", "Failed to push list to server")
@@ -237,12 +303,21 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
         }
     }
 
-    fun increaseItemCount(itemId : Int) {
+    fun setItemQuantity(itemId : Int, quantity: Long = 1L) {
+        scope.launch {
+            val mapping = getMapping(itemId.toLong()) ?: return@launch
+            mapping.Quantity = quantity
+            setMapping(mapping)
+        }
+    }
+
+    fun increaseItemCount(itemId : Int, quantity : Long = 1L) {
         scope.launch {
             Log.d("ShoppinglistViewModel", "Tapped on item with ID: $itemId")
             val mapping = getMapping(itemId.toLong()) ?: return@launch
-            mapping.Quantity += 1
+            mapping.Quantity += quantity
             setMapping(mapping)
+
         }
     }
 

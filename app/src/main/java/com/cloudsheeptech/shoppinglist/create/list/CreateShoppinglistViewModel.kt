@@ -23,6 +23,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
 import java.time.format.DateTimeFormatter
+import kotlin.random.Random
+import kotlin.random.nextULong
 
 class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -71,8 +73,8 @@ class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(a
     private suspend fun storeShoppingListDatabase(list : ShoppingList) {
         withContext(Dispatchers.IO) {
             if (list.ID == 0L) {
-                Log.w("CreateShoppinglistViewModel", "Cannot create list because the ID == 0")
-                return@withContext
+                Log.w("CreateShoppinglistViewModel", "User not stored online yet")
+//                return@withContext
             }
             shoppingListDao.insertList(list)
             Log.d("CreateShoppingListViewModel", "Stored list to database")
@@ -84,9 +86,20 @@ class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(a
 
     private suspend fun storeShoppingListOnline(list: ShoppingList): ShoppingList {
         val updatedList = withContext(Dispatchers.IO) {
-            val wireList = ShoppingListWire(list.ID, list.Name, AppUser.ID, list.LastEdited)
+            val latestId = shoppingListDao.getLatestListId()
+            val wireList = ShoppingListWire(list.ID, list.Name, AppUser.ID, list.LastEdited, mutableListOf())
+            if (latestId.value != null) {
+                wireList.ListId = latestId.value!! + 1L
+            } else {
+                // At least something instead of always the same list id
+                wireList.ListId = Random.nextLong()
+                while (wireList.ListId < 0)
+                    wireList.ListId = Random.nextLong()
+            }
+            Log.d("CreateShoppinglistViewModel", "Storing list with ID ${wireList.ListId} online")
             val serialized = Json.encodeToString(wireList)
-            var decodedList: ShoppingListWire? = null
+            Log.d("CreateShoppinglistViewModel", "Sending $serialized")
+//            var decodedList: ShoppingListWire? = null
             Networking.POST("v1/list", serialized) { resp ->
                 if (resp.status != HttpStatusCode.Created) {
                     Log.w(
@@ -95,13 +108,13 @@ class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(a
                     )
                     return@POST
                 }
-                val body = resp.bodyAsText(Charsets.UTF_8)
-                Log.d("CreateShoppinglistViewModel", "Got answer: $body")
-                decodedList = Json.decodeFromString<ShoppingListWire>(body)
+//                val body = resp.bodyAsText(Charsets.UTF_8)
+//                Log.d("CreateShoppinglistViewModel", "Got answer: $body")
+//                decodedList = Json.decodeFromString<ShoppingListWire>(body)
             }
-            return@withContext decodedList
+            return@withContext wireList
         } ?: return list
-        return ShoppingList(updatedList.ID, list.Name, list.CreatedBy, list.LastEdited)
+        return ShoppingList(updatedList.ListId, list.Name, list.CreatedBy, list.LastEdited)
     }
 
     fun navigateBack() {

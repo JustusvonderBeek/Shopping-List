@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Entity(tableName = "list_table")
 data class ShoppingList(
-    @PrimaryKey(autoGenerate = false)
+    @PrimaryKey(autoGenerate = true)
     var ID : Long,
     var Name : String,
     var CreatedBy : User,
@@ -15,8 +15,9 @@ data class ShoppingList(
 
 @Serializable
 data class ShoppingListWire(
-    var ID : Long,
+    var ListId : Long,
     var Name : String,
     var CreatedBy : Long,
-    var LastEdited : String
+    var LastEdited : String,
+    var Items : MutableList<ItemWire>
 )

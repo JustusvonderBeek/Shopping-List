@@ -1,6 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.database.UserDao
@@ -47,8 +48,8 @@ object AppUser {
         }
     }
 
-    fun loadUser(application: Application) {
-        database = ShoppingListDatabase.getInstance(application.applicationContext)
+    fun loadUser(appContext: Context) {
+        database = ShoppingListDatabase.getInstance(appContext)
         userDao = database!!.userDao()
         scope.launch {
             loadUserDatabase()

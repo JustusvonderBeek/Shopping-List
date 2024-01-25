@@ -1,10 +1,10 @@
-package com.cloudsheeptech.shoppinglist.list
+package com.cloudsheeptech.shoppinglist.fragments.list
 
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.AppUser
+import com.cloudsheeptech.shoppinglist.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWire
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
@@ -12,7 +12,7 @@ import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ListShare
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.call.NoTransformationFoundException
@@ -23,7 +23,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
@@ -416,7 +415,7 @@ class ShoppinglistViewModel(val list: ItemListWithName<Item>, val database: Shop
                     Log.d("ShoppinglistViewModel", "Internal error, made bad request")
                     return@POST
                 }
-                val body = resp.bodyAsText(Charsets.UTF_8)
+//                val body = resp.bodyAsText(Charsets.UTF_8)
             }
         }
     }

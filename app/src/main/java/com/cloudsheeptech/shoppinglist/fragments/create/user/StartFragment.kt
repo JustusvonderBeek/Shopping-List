@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.create.user
+package com.cloudsheeptech.shoppinglist.fragments.create.user
 
 import android.content.Context
 import android.os.Bundle

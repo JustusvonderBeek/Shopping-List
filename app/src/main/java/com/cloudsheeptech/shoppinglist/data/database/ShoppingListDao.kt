@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.database
+package com.cloudsheeptech.shoppinglist.data.database
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

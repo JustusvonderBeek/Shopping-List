@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.database
+package com.cloudsheeptech.shoppinglist.data.database
 
 import androidx.room.TypeConverter
 import com.cloudsheeptech.shoppinglist.data.User

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data
+package com.cloudsheeptech.shoppinglist.network
 
 import okhttp3.Interceptor
 import okhttp3.Response

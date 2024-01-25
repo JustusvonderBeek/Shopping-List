@@ -1,6 +1,5 @@
 package com.cloudsheeptech.shoppinglist
 
-import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Bundle
@@ -12,27 +11,17 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.cloudsheeptech.shoppinglist.create.list.CreateShoppinglistViewModel
-import com.cloudsheeptech.shoppinglist.create.list.CreateShoppinglistViewModelFactory
+import com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistViewModel
+import com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistViewModelFactory
 import com.cloudsheeptech.shoppinglist.databinding.ActivityMainBinding
-import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModel
-import com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModelFactory
-import com.cloudsheeptech.shoppinglist.create.user.StartViewModel
-import com.cloudsheeptech.shoppinglist.create.user.StartViewModelFactory
-import com.cloudsheeptech.shoppinglist.data.AppUser
-import com.cloudsheeptech.shoppinglist.data.User
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.database.UserDao
+import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModel
+import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModelFactory
+import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel
+import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModelFactory
+import com.cloudsheeptech.shoppinglist.user.AppUser
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import okhttp3.internal.wait
-import java.io.File
 
 class MainActivity : AppCompatActivity() {
 

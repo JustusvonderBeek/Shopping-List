@@ -1,45 +1,31 @@
 package com.cloudsheeptech.shoppinglist.network
 
-import android.app.Application
 import android.util.Log
 import com.auth0.android.jwt.JWT
-import com.cloudsheeptech.shoppinglist.data.AppUser
-import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
+import com.cloudsheeptech.shoppinglist.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.User
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.database.UserDao
-//import com.cloudsheeptech.shoppinglist.data.AuthenticationInterceptor
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.database.UserDao
+//import com.cloudsheeptech.shoppinglist.network.AuthenticationInterceptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.basicAuth
 import io.ktor.client.request.get
-import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.caseInsensitiveMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import okhttp3.Interceptor
-import okhttp3.Request
-import java.io.File
 import java.time.Duration
 import java.util.Calendar
 import java.util.Date
-import kotlin.math.log
 
 object Networking {
 

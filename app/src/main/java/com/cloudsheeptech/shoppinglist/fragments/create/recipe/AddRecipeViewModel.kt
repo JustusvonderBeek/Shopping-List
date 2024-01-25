@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.create.recipe
+package com.cloudsheeptech.shoppinglist.fragments.create.recipe
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

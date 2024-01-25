@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.list_overview
+package com.cloudsheeptech.shoppinglist.fragments.list_overview
 
 import android.content.res.Resources
 import android.util.Log
@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingListBinding
 
-class ShoppingListAdapter(val clickListener: ListClickListener, private val resource : Resources, private val itemList : List<ShoppingList>) : ListAdapter<ShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(ItemDiffCallback()) {
+class ShoppingListAdapter(val clickListener: ListClickListener, private val resource : Resources, private val itemList : List<ShoppingList>) : ListAdapter<ShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
+    ItemDiffCallback()
+) {
 
     suspend fun deleteItemAt(position : Int) {
         Log.i("WordListItemAdapter", "Remove item at $position")

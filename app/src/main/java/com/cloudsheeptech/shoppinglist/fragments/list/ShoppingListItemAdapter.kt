@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.list
+package com.cloudsheeptech.shoppinglist.fragments.list
 
 import android.content.res.Resources
 import android.util.Log
@@ -8,12 +8,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
-import com.cloudsheeptech.shoppinglist.database.ItemListMappingDao
+import com.cloudsheeptech.shoppinglist.data.database.ItemListMappingDao
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, val checkboxClickListener: ShoppingItemCheckboxClickListener, private val resource : Resources, private val mappingDao: ItemListMappingDao) : ListAdapter<ItemWithQuantity, ShoppingListItemAdapter.WordListItemViewHolder>(WordDiffCallback()) {
+class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, val checkboxClickListener: ShoppingItemCheckboxClickListener, private val resource : Resources, private val mappingDao: ItemListMappingDao) : ListAdapter<ItemWithQuantity, ShoppingListItemAdapter.WordListItemViewHolder>(
+    WordDiffCallback()
+) {
 
     suspend fun deleteItemAt(position : Int) {
         Log.i("WordListItemAdapter", "Remove item at $position")

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.list
+package com.cloudsheeptech.shoppinglist.fragments.list
 
 import android.content.Context
 import android.os.Bundle
@@ -23,10 +23,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentShoppinglistBinding
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
-import com.cloudsheeptech.shoppinglist.recipe.RecipeViewModel
+import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
 
 class ShoppinglistFragment : Fragment(), MenuProvider {
 
@@ -48,6 +48,10 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             }
             R.id.dd_delete_btn -> {
                 viewModel.clearAll()
+                return true
+            }
+            R.id.dd_clear_btn -> {
+//                viewModel.clearAll()
                 return true
             }
         }

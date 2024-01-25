@@ -6,10 +6,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
-import com.cloudsheeptech.shoppinglist.create.list.CreateShoppinglistViewModel
-import com.cloudsheeptech.shoppinglist.create.list.CreateShoppinglistViewModelFactory
-import com.cloudsheeptech.shoppinglist.data.AppUser
+import com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistViewModel
+import com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistViewModelFactory
+import com.cloudsheeptech.shoppinglist.user.AppUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext

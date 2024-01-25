@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.recipe
+package com.cloudsheeptech.shoppinglist.fragments.recipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

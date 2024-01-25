@@ -1,10 +1,10 @@
-package com.cloudsheeptech.shoppinglist.data
+package com.cloudsheeptech.shoppinglist.user
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.database.UserDao
+import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.database.UserDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

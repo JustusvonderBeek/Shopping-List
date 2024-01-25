@@ -3,7 +3,7 @@ package com.cloudsheeptech.shoppinglist.data
 import android.util.Log
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.list.ShoppingListItemAdapter
+import com.cloudsheeptech.shoppinglist.fragments.list.ShoppingListItemAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

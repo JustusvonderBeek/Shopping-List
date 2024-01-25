@@ -1,10 +1,10 @@
-package com.cloudsheeptech.shoppinglist.create.list
+package com.cloudsheeptech.shoppinglist.fragments.create.list
 
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.cloudsheeptech.shoppinglist.data.User
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 
 class CreateShoppinglistViewModelFactory(val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

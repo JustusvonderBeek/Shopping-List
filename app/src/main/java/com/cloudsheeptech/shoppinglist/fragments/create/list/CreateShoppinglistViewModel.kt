@@ -1,18 +1,15 @@
-package com.cloudsheeptech.shoppinglist.create.list
+package com.cloudsheeptech.shoppinglist.fragments.create.list
 
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.AppUser
+import com.cloudsheeptech.shoppinglist.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
-import com.cloudsheeptech.shoppinglist.data.User
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +21,6 @@ import kotlinx.serialization.json.Json
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
-import kotlin.random.nextULong
 
 class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -63,6 +59,7 @@ class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(a
         // Let the server assign the ID
 //        Log.d("CreateShoppinglistViewModel", "Instant Now: ${Instant.now()}")
         val nowFormatted = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+        Log.d("CreateShoppinglistViewModel", "Now: $nowFormatted")
         val newShoppingList = ShoppingList(ID=0, Name = title.value!!, CreatedBy = AppUser.getUser(), nowFormatted)
         createSLCoroutine.launch {
             val updatedIdList = storeShoppingListOnline(newShoppingList)
@@ -92,9 +89,9 @@ class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(a
                 wireList.ListId = latestId.value!! + 1L
             } else {
                 // At least something instead of always the same list id
-                wireList.ListId = Random.nextLong()
+                wireList.ListId = Random.nextInt().toLong()
                 while (wireList.ListId < 0)
-                    wireList.ListId = Random.nextLong()
+                    wireList.ListId = Random.nextInt().toLong()
             }
             Log.d("CreateShoppinglistViewModel", "Storing list with ID ${wireList.ListId} online")
             val serialized = Json.encodeToString(wireList)

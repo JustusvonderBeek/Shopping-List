@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.create.list
+package com.cloudsheeptech.shoppinglist.fragments.create.list
 
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +13,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.User
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentCreateShoppinglistBinding
-import com.cloudsheeptech.shoppinglist.list.ShoppinglistViewModel
+import com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistViewModel
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File

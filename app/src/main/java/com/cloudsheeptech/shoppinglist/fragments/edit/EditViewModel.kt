@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.edit
+package com.cloudsheeptech.shoppinglist.fragments.edit
 
 import android.util.Log
 import androidx.lifecycle.LiveData

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.edit
+package com.cloudsheeptech.shoppinglist.fragments.edit
 
 import android.os.Bundle
 import android.util.Log
@@ -12,7 +12,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentEditBinding
-import java.io.File
 
 class EditFragment : Fragment() {
 

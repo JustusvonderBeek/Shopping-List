@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.edit
+package com.cloudsheeptech.shoppinglist.fragments.edit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

@@ -7,12 +7,12 @@
 
     <fragment
         android:id="@+id/usernameSelection"
-        android:name="com.cloudsheeptech.shoppinglist.create.user.StartFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.create.user.StartFragment"
         android:label="Create a User"
         tools:layout="@layout/fragment_start"/>
     <fragment
         android:id="@+id/overview"
-        android:name="com.cloudsheeptech.shoppinglist.list_overview.ListOverviewFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewFragment"
         android:label="@string/nav_start_recap_title"
         tools:layout="@layout/fragment_list_overview">
         <action
@@ -27,7 +27,7 @@
     </fragment>
     <fragment
         android:id="@+id/recipes"
-        android:name="com.cloudsheeptech.shoppinglist.recipe.RecipeFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeFragment"
         android:label="@string/nav_btn_overview"
         tools:layout="@layout/fragment_recipe" >
         <action
@@ -37,7 +37,7 @@
     </fragment>
     <fragment
         android:id="@+id/addRecipe"
-        android:name="com.cloudsheeptech.shoppinglist.create.recipe.AddRecipeFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.create.recipe.AddRecipeFragment"
         android:label="@string/nav_btn_add" >
         <action
             android:id="@+id/action_addRecipe_to_recipes"
@@ -45,7 +45,7 @@
     </fragment>
     <fragment
         android:id="@+id/shoppinglist"
-        android:name="com.cloudsheeptech.shoppinglist.list.ShoppinglistFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistFragment"
         android:label="@string/nav_btn_list" >
         <action
             android:id="@+id/action_edit_to_editFragment"
@@ -57,7 +57,7 @@
     </fragment>
     <fragment
         android:id="@+id/editItem"
-        android:name="com.cloudsheeptech.shoppinglist.edit.EditFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.edit.EditFragment"
         android:label="editItem">
         <argument
             android:name="selectedId"
@@ -69,7 +69,7 @@
 
     <fragment
         android:id="@+id/createShoppinglistFragment"
-        android:name="com.cloudsheeptech.shoppinglist.create.list.CreateShoppinglistFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistFragment"
         android:label="fragment_create_shoppinglist"
         tools:layout="@layout/fragment_create_shoppinglist" >
         <action

@@ -5,7 +5,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.edit.EditViewModel" />
+            type="com.cloudsheeptech.shoppinglist.fragments.edit.EditViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

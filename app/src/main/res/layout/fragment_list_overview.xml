@@ -2,12 +2,12 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".list_overview.ListOverviewFragment">
+    tools:context=".fragments.list_overview.ListOverviewFragment">
 
     <data>
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.list_overview.ListOverviewViewModel" />
+            type="com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModel" />
     </data>
     
     <LinearLayout

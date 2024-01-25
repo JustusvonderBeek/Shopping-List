@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.list
+package com.cloudsheeptech.shoppinglist.fragments.list
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,7 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemPreviewBinding
 
-class ItemPreviewAdapter(val clickListener: ItemPreviewClickListener) : ListAdapter<Item, ItemPreviewAdapter.ItemViewHolder>(ItemDiffCallback()) {
+class ItemPreviewAdapter(val clickListener: ItemPreviewClickListener) : ListAdapter<Item, ItemPreviewAdapter.ItemViewHolder>(
+    ItemDiffCallback()
+) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         return ItemViewHolder.from(parent)
     }

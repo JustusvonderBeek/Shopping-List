@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.list_overview
+package com.cloudsheeptech.shoppinglist.fragments.list_overview
 
 import android.app.Application
 import android.util.Log
@@ -6,10 +6,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.User
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -20,8 +22,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.util.Locale
 import kotlin.Exception
 
 /*
@@ -129,20 +137,46 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
                 val localList = shoppingList.value!!.find { x -> x.ID == list.ListId }
                 if (localList == null) {
                     // TODO: Create new list
+                    Log.d("ListOverviewViewModel", "Creating new list")
                     val newList = ShoppingList(list.ListId, list.Name, User(list.CreatedBy), list.LastEdited)
                     shoppingListDao.insertList(newList)
                     continue
                 }
                 if (list.LastEdited != localList.LastEdited) {
                     // Convert string into date and compare which one is newer
-                    val formatter = SimpleDateFormat(DateTimeFormatter.ISO_INSTANT.toString())
-                    val convertedOnline = formatter.parse(list.LastEdited)!!
-                    val convertedLocal = formatter.parse(localList.LastEdited)!!
-                    if (convertedOnline.after(convertedLocal)) {
-                        Log.d("ListOverviewViewModel", "Online list ${list.ListId} is newer than local list! Updating")
-                        val responsibleUser = User(list.CreatedBy)
-                        val convertedOnlineToLocal = ShoppingList(list.ListId, list.Name, responsibleUser, list.LastEdited)
-                        shoppingListDao.updateList(convertedOnlineToLocal)
+                    try {
+//                        Log.d("ListOverviewViewModel", "Format: ${formatter.parse(list.LastEdited)}")
+                        val convertedOnline = Instant.parse(list.LastEdited)
+//                        Log.d("ListOverviewViewModel", "Converted online parsed")
+                        val convertedLocal = Instant.parse(localList.LastEdited)
+//                        Log.d("ListOverviewViewModel", "Local parsed")
+                        if (convertedOnline.isAfter(convertedLocal)) {
+                            Log.d("ListOverviewViewModel", "Online list ${list.ListId} is newer than local list! Updating")
+                            val responsibleUser = User(list.CreatedBy)
+                            val convertedOnlineToLocal = ShoppingList(list.ListId, list.Name, responsibleUser, list.LastEdited)
+                            shoppingListDao.updateList(convertedOnlineToLocal)
+                            // Fill the list with items
+                            for (item in list.Items) {
+                                var dbItem = itemDao.getItemFromName(item.Name)
+                                if (dbItem == null) {
+                                    dbItem = Item(0, item.Name, item.Icon)
+                                    itemDao.insertItem(dbItem)
+                                    dbItem = itemDao.getItemFromName(item.Name)
+                                }
+                                var dbMapping = itemMappingDao.getMappingForItemAndList(dbItem!!.ID, list.ListId)
+                                if (dbMapping.isEmpty()) {
+                                    val mapping = ListMapping(0, dbItem.ID, list.ListId, item.Quantity, item.Checked, list.CreatedBy)
+                                    itemMappingDao.insertMapping(mapping)
+                                } else {
+                                    val mapping = dbMapping[0]
+                                    mapping.Quantity = item.Quantity
+                                    mapping.Checked = item.Checked
+                                    itemMappingDao.updateMapping(mapping)
+                                }
+                            }
+                        }
+                    } catch (ex : Exception) {
+                        Log.w("ListOverviewViewModel", "Failed to merge lists: $ex")
                     }
                 } else {
                     Log.d("ListOverviewViewModel", "Both lists are the same")
@@ -160,7 +194,9 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
                 }
                 try {
                     val body = resp.bodyAsText(Charsets.UTF_8)
+                    Log.d("ListOverviewViewModel", "Got response: $body")
                     val lists = Json.decodeFromString<List<ShoppingListWire>>(body)
+                    Log.d("ListOverviewViewModel", "Got ${lists.size} lists")
                     mergeUpdatedAndExistingLists(lists)
                 } catch (ex : Exception) {
                     Log.w("ListOverviewViewModel", "Failed to process server response: $ex")

@@ -11,7 +11,7 @@ import com.cloudsheeptech.shoppinglist.data.ShoppingList
 interface ShoppingListDao {
 
     @Insert
-    fun insertList(list : ShoppingList)
+    fun insertList(list : ShoppingList) : Long
 
     @Update
     fun updateList(list : ShoppingList)
@@ -35,6 +35,9 @@ interface ShoppingListDao {
     fun getShoppingLists() : List<ShoppingList>
 
     @Query("SELECT * FROM list_table WHERE ID = :key")
-    fun getShoppingList(key : Long) : LiveData<ShoppingList>
+    fun getShoppingListLive(key : Long) : LiveData<ShoppingList>
+
+    @Query("SELECT * FROM list_table WHERE ID = :key")
+    fun getShoppingList(key : Long) : ShoppingList?
 
 }

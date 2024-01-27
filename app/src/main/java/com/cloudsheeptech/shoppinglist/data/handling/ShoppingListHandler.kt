@@ -3,7 +3,6 @@ package com.cloudsheeptech.shoppinglist.data.handling
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWire
-import com.cloudsheeptech.shoppinglist.data.ListCreated
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire

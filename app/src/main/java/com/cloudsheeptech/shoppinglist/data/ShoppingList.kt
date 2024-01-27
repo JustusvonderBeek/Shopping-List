@@ -12,12 +12,3 @@ data class ShoppingList(
     var CreatedBy : User,
     var LastEdited : String
 )
-
-@Serializable
-data class ShoppingListWire(
-    var ListId : Long,
-    var Name : String,
-    var CreatedBy : Long,
-    var LastEdited : String,
-    var Items : MutableList<ItemWire>
-)

@@ -8,13 +8,13 @@ import androidx.room.Update
 import com.cloudsheeptech.shoppinglist.data.Item
 
 @Dao
-interface ItemListDao {
+interface ItemDao {
 
     @Insert
-    fun insertItem(item : Item)
+    fun insertItem(item : Item) : Long
 
     @Update
-    fun updateItem(item : Item)
+    fun updateItem(item : Item) : Long
 
     @Query("DELETE FROM items WHERE ID = :key")
     fun deleteItem(key : Long)

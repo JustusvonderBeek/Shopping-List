@@ -9,6 +9,7 @@ import com.cloudsheeptech.shoppinglist.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +23,7 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
-class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(application) {
+class CreateShoppinglistViewModel(application: Application, private val listHandler : ShoppingListHandler) : AndroidViewModel(application) {
 
     private val job = Job()
     private val createSLCoroutine = CoroutineScope(Dispatchers.Main + job)
@@ -57,6 +58,7 @@ class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(a
             return
         }
         // Let the server assign the ID
+        listHandler.CreateNewShoppingList(title.value!!)
 //        Log.d("CreateShoppinglistViewModel", "Instant Now: ${Instant.now()}")
         val nowFormatted = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
         Log.d("CreateShoppinglistViewModel", "Now: $nowFormatted")
@@ -83,7 +85,7 @@ class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(a
 
     private suspend fun storeShoppingListOnline(list: ShoppingList): ShoppingList {
         val updatedList = withContext(Dispatchers.IO) {
-            val latestId = shoppingListDao.getLatestListId()
+            val latestId = shoppingListDao.getLatestListIdLive()
             val wireList = ShoppingListWire(list.ID, list.Name, AppUser.ID, list.LastEdited, mutableListOf())
             if (latestId.value != null) {
                 wireList.ListId = latestId.value!! + 1L

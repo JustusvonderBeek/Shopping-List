@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
@@ -21,15 +20,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import java.io.File
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatterBuilder
-import java.util.Locale
 import kotlin.Exception
 
 /*
@@ -72,7 +63,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
         ignoreUnknownKeys = false
     }
     val user = userDao.getUserLive()
-    val shoppingList = shoppingListDao.getShoppingLists()
+    val shoppingList = shoppingListDao.getShoppingListsLive()
 
     // -----------------------------------------------
 

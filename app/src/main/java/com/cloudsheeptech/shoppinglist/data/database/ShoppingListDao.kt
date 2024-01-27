@@ -1,7 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.database
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -24,10 +23,16 @@ interface ShoppingListDao {
     fun reset()
 
     @Query("SELECT ID FROM list_table ORDER BY ID ASC LIMIT 1")
-    fun getLatestListId() : LiveData<Long?>
+    fun getLatestListIdLive() : LiveData<Long?>
+
+    @Query("SELECT ID FROM list_table ORDER BY ID ASC LIMIT 1")
+    fun getLatestListId() : Long?
 
     @Query("SELECT * FROM list_table ORDER BY ID ASC")
-    fun getShoppingLists() : LiveData<List<ShoppingList>>
+    fun getShoppingListsLive() : LiveData<List<ShoppingList>>
+
+    @Query("SELECT * FROM list_table ORDER BY ID ASC")
+    fun getShoppingLists() : List<ShoppingList>
 
     @Query("SELECT * FROM list_table WHERE ID = :key")
     fun getShoppingList(key : Long) : LiveData<ShoppingList>

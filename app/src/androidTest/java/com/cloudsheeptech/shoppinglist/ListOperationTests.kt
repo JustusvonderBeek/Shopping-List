@@ -4,6 +4,9 @@ import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.cloudsheeptech.shoppinglist.data.ListCreator
+import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
@@ -16,7 +19,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ListOperationTests {
 
-    private suspend fun createList() : Boolean {
+    private fun createList() : Boolean {
 //        val listTitle = "New List"
         val application = ApplicationProvider.getApplicationContext<Application>()
         AppUser.loadUser(application)
@@ -49,11 +52,70 @@ class ListOperationTests {
         return true
     }
 
+    // This test should:
+    // - Check if creating a new list works
+    // - Check if the list is correctly stored in the database
+    // - Check if the request online is made correctly
     @Test
     fun testCreateList() = runTest {
         Log.i("ListOperationTest", "Testing creating new list")
         val success = createList()
         assert(success)
+    }
+
+
+    private fun updateNonExistingList() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val database = ShoppingListDatabase.getInstance(application)
+        val sl = database.shoppingListDao()
+        val list = ShoppingList(ID=0, Name = "1", CreatedBy = ListCreator(12, ""), LastEdited = "")
+        sl.updateList(list)
+        val lists = sl.getShoppingLists()
+        for (list in lists) {
+            println(list)
+        }
+    }
+
+    private fun createEntryInDb() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val database = ShoppingListDatabase.getInstance(application)
+        val sl = database.shoppingListDao()
+        val list = ShoppingList(ID=0, Name = "1", CreatedBy = ListCreator(12, ""), LastEdited = "")
+        val list2 = ShoppingList(ID=0, Name = "2", CreatedBy = ListCreator(12, ""), LastEdited = "")
+        sl.insertList(list)
+        sl.insertList(list)
+        val testId = sl.insertList(list2)
+        Assert.assertEquals(3L, testId)
+        val lists = sl.getShoppingLists()
+        for (list in lists) {
+            println(list)
+        }
+    }
+
+    private fun insertExistingList() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val database = ShoppingListDatabase.getInstance(application)
+        val sl = database.shoppingListDao()
+        val list = ShoppingList(ID=0, Name = "1", CreatedBy = ListCreator(12, ""), LastEdited = "")
+        sl.insertList(list)
+        var lists = sl.getShoppingLists()
+        for (list in lists) {
+            println(list)
+        }
+        list.Name = "Updated list"
+        sl.insertList(list)
+        lists = sl.getShoppingLists()
+        for (list in lists) {
+            println(list)
+        }
+    }
+
+    @Test
+    fun AuxiliaryTest() = runTest {
+//        createEntryInDb()
+//        updateNonExistingList()
+//        insertExistingList()
+        Assert.fail("Not implemented")
     }
 
     fun testShareList() {

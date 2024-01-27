@@ -20,6 +20,7 @@ import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel
 import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModelFactory
 import com.cloudsheeptech.shoppinglist.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -51,7 +52,7 @@ class MainActivity : AppCompatActivity() {
         botNav.setupWithNavController(navController)
 
         val database = ShoppingListDatabase.getInstance(application.applicationContext)
-
+        val shoppingListHandler = ShoppingListHandler(database)
 //        val vocabularyFile = File(applicationContext.filesDir, "vocabulary.json")
 //        val vocabulary = Vocabulary.getInstance(vocabularyFile)
         val startViewModel by viewModels<StartViewModel> { StartViewModelFactory(application) }

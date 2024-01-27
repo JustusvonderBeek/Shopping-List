@@ -25,6 +25,9 @@ interface ItemListMappingDao {
     @Query("DELETE FROM item_to_list_mapping")
     fun clearAll()
 
+    @Query("SELECT * FROM item_to_list_mapping WHERE ID = :mappingId")
+    fun getMapping(mappingId : Long) : ListMapping?
+
     @Query("SELECT * FROM item_to_list_mapping WHERE ListID = :listId")
     fun getMappingsForList(listId : Long) : List<ListMapping>
 

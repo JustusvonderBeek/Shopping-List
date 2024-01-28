@@ -21,11 +21,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.cloudsheeptech.shoppinglist.R
-import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentShoppinglistBinding
-import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
 
 class ShoppinglistFragment : Fragment(), MenuProvider {
@@ -43,7 +41,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.dd_edit_btn -> {
-//                viewModel.shareThisList()
+                viewModel.shareThisList()
                 return true
             }
             R.id.dd_delete_btn -> {
@@ -98,7 +96,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         // The adapter for the preview items
         val previewAdapter = ItemPreviewAdapter(ItemPreviewAdapter.ItemPreviewClickListener { itemId ->
             Log.d("ShoppinglistFragment", "Got preview ID $itemId")
-//            viewModel.addTappedItem(itemId)
+            viewModel.AddTappedItem(itemId)
             viewModel.clearItemPreview()
         })
         binding.itemList.adapter = adapter
@@ -108,26 +106,15 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         val deleteHelper = ItemTouchHelper(SwipeToDeleteHandler(adapter))
         deleteHelper.attachToRecyclerView(binding.itemList)
 
-
-        viewModel.mappedItemIds.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                // The received list is not empty
-                // Use the updated mapping to select the items that are in the list
-//                viewModel.reloadItemsInList(it)
-                viewModel.updateShoppinglist()
-            }
-        })
-
-        viewModel.shoppinglist.observe(viewLifecycleOwner, Observer {
+        viewModel.itemsInList.observe(viewLifecycleOwner, Observer {
             it?.let {
                 adapter.submitList(it)
-                adapter.notifyDataSetChanged()
             }
         })
 
-        viewModel.itemName.observe(viewLifecycleOwner, Observer {  name ->
+        viewModel.itemName.observe(viewLifecycleOwner, Observer { name ->
             name?.let {
-//                viewModel.showItemPreview(name)
+                viewModel.showItemPreview(name)
             }
         })
 
@@ -135,7 +122,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             list?.let {
                 Log.d("ShoppinglistFragment", "New list (${list.size}) observed")
                 previewAdapter.submitList(list)
-                previewAdapter.notifyDataSetChanged()
+//                previewAdapter.notifyDataSetChanged()
             }
         })
 

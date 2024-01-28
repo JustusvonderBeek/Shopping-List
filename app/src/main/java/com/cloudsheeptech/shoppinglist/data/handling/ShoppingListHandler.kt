@@ -6,6 +6,7 @@ import com.cloudsheeptech.shoppinglist.data.ItemWire
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.ListMapping
+import com.cloudsheeptech.shoppinglist.data.ListShare
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
@@ -336,6 +337,22 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return success
     }
 
+    private suspend fun shareListOnline(listId : Long, sharedWithId: Long) : Boolean {
+        var success = false
+        withContext(Dispatchers.IO) {
+            val sharedListObject = ListShare(0L, listId, sharedWithId)
+            val serialized = Json.encodeToString(sharedListObject)
+            Networking.POST("v1/share/$listId", serialized) { resp ->
+                if (resp.status != HttpStatusCode.OK) {
+                    Log.w("ShoppingListHandler", "Failed to share list $listId online")
+                    return@POST
+                }
+                success = true
+            }
+        }
+        return success
+    }
+
 
     private suspend fun getShoppingListFromOnline(listId : Long) : ShoppingListWire? {
         var onlineList : ShoppingListWire? = null
@@ -471,6 +488,14 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                     insertMappingsInDatabase(mappings)
                 }
             }
+        }
+    }
+
+    fun ShareShoppingListOnline(listId: Long, sharedWithId : Long) {
+        Log.d("ShoppingListHandler", "Sharing list $listId with $sharedWithId")
+        localCoroutine.launch {
+            postShoppingListOnline(listId)
+            shareListOnline(listId, sharedWithId)
         }
     }
 

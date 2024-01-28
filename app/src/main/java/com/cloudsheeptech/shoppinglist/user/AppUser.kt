@@ -5,11 +5,17 @@ import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.database.UserDao
+import com.cloudsheeptech.shoppinglist.network.Networking
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 object AppUser {
 
@@ -17,7 +23,7 @@ object AppUser {
     private var userDao : UserDao? = null
 
     private val job = Job()
-    private val scope = CoroutineScope(Dispatchers.Main + job)
+    private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
 
     var ID : Long = 0L
     var Username : String = ""
@@ -51,7 +57,7 @@ object AppUser {
     fun loadUser(appContext: Context) {
         database = ShoppingListDatabase.getInstance(appContext)
         userDao = database!!.userDao()
-        scope.launch {
+        localCoroutine.launch {
             loadUserDatabase()
         }
     }
@@ -67,9 +73,32 @@ object AppUser {
         if (!Initialized())
             return
         Log.d("AppUser", "Storing user")
-        scope.launch {
+        localCoroutine.launch {
             val user = getUser()
             storeUserDatabase(user)
+        }
+    }
+
+    // TODO: Move this method here?
+    private suspend fun pushUserOnline() {
+        withContext(Dispatchers.IO) {
+            val user = getUser()
+            val serialized = Json.encodeToString(user)
+            Networking.POST("auth/create", serialized) { resp ->
+                if (resp.status != HttpStatusCode.Created) {
+                    Log.w("AppUser", "Failed to create user online")
+                }
+                Log.d("AppUser", "User online created")
+                val body = resp.bodyAsText(Charsets.UTF_8)
+                val parsedUser = Json.decodeFromString<User>(body)
+                ID = parsedUser.ID
+            }
+        }
+    }
+
+    fun PostUserOnline() {
+        localCoroutine.launch {
+            pushUserOnline()
         }
     }
 

@@ -14,7 +14,7 @@ interface ItemDao {
     fun insertItem(item : Item) : Long
 
     @Update
-    fun updateItem(item : Item) : Long
+    fun updateItem(item : Item)
 
     @Query("DELETE FROM items WHERE ID = :key")
     fun deleteItem(key : Long)

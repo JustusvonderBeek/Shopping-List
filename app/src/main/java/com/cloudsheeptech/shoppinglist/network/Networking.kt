@@ -140,18 +140,19 @@ object Networking {
         val decodedToken = withContext(Dispatchers.IO) {
             try {
                 // Should only happen when opened for the first time
-                var user = userDao.getUser() ?: return@withContext null
+                var user = AppUser.getUser()
                 if (user.ID == 0L) {
-                    Log.i("Networking", "User was not push to server yet")
+                    Log.i("Networking", "User was not pushed to server yet")
                     user = pushUserToServer(user)
                     if (user.ID == 0L) {
-                        // Failed to push again. No need to login, as this won't work with an ID = =
+                        // Failed to push again. No need to login, as this won't work with an ID = 0
                         return@withContext null
                     }
                     AppUser.ID = user.ID
                     AppUser.Username = user.Username
                     AppUser.Password = user.Password
                     AppUser.storeUser()
+                    // The following operation still might fail because of an incorrect userId
                 }
                 val response: HttpResponse = client.post(baseUrl + "auth/login") {
                     contentType(ContentType.Application.Json)

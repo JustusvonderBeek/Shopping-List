@@ -6,7 +6,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
-import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
@@ -43,7 +42,7 @@ class ListOperationTests {
         Thread.sleep(500)
 
         // Expecting two lists to be created
-        val itemDao = database.itemListDao()
+        val itemDao = database.itemDao()
         val allItems = itemDao.getAllItems()
         Assert.assertEquals(0, allItems.size)
         val listDao = database.shoppingListDao()

@@ -2,9 +2,9 @@ package com.cloudsheeptech.shoppinglist.fragments.list
 
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
@@ -14,7 +14,9 @@ import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -29,6 +31,9 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
     val itemName = MutableLiveData<String>("")
     val title = MutableLiveData<String>("Liste")
+
+    private val job = Job()
+    private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
 
     // UI State
 
@@ -48,23 +53,9 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     private val _toggleItem = MutableLiveData<Int>()
     val toggleItem : LiveData<Int> get() = _toggleItem
 
-    private val _shoppinglist = liveData<List<ItemWithQuantity>> {
-        val listLive = listDao.getShoppingListLive(shoppingListId)
-        val mappingLive = mappingDao.getMappingsForListLive(shoppingListId)
-        if (mappingLive.value == null)
-            return@liveData
-        val itemList = mutableListOf<ItemWithQuantity>()
-        for(mapping in mappingLive.value!!) {
-            withContext(Dispatchers.IO) {
-                val itemWithQuant = listHandler.mappingToItemWithQuantity(mapping) ?: return@withContext
-                itemList.add(itemWithQuant)
-            }
-        }
-        emit(itemList)
-    }
-
-    val shoppinglist : LiveData<List<ItemWithQuantity>> get() = _shoppinglist
-    val mappedItemIds = mappingDao.getMappingsForListLive(shoppingListId)
+    private val itemsMappedToList = mappingDao.getMappingsForListLive(shoppingListId)
+    // The items in this list
+    val itemsInList = MediatorLiveData<List<ItemWithQuantity>>()
 
     private val _previewItems = MutableLiveData<List<Item>>()
     val previewItems : LiveData<List<Item>> get() = _previewItems
@@ -72,12 +63,34 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     private val _listInformation = listDao.getShoppingListLive(shoppingListId)
     val listInformation : LiveData<ShoppingList> get() = _listInformation
 
+    init {
+        itemsInList.addSource(itemsMappedToList) { mappings ->
+            // When the mappings change, re-fetch the items
+            fetchItemsForList(mappings)
+        }
+    }
+
     // ----
 
-    fun updateShoppinglist() {
-        _refreshing.value = true
-        listHandler.GetShoppingList(shoppingListId)
-        _refreshing.value = false
+    private fun fetchItemsForList(mappings : List<ListMapping>) {
+        if (mappings.isEmpty()) {
+            itemsInList.value = emptyList()
+            return
+        }
+        val itemIds = mappings.map { it -> it.ItemID }
+        val liveItems = itemDao.getItemsLive(itemIds)
+        val quantityItems = mutableListOf<ItemWithQuantity>()
+        itemsInList.addSource(liveItems) {
+            mappings.forEachIndexed { index, listMapping ->
+                val quantItem = combineMappingAndItemToItemWithQuantity(listMapping, liveItems.value!![index])
+                quantityItems.add(quantItem)
+            }
+            itemsInList.value = quantityItems
+        }
+    }
+
+    private fun combineMappingAndItemToItemWithQuantity(mapping: ListMapping, item : Item) : ItemWithQuantity {
+        return ItemWithQuantity(mapping.ItemID, item.Name, item.Icon, mapping.Quantity, mapping.Checked, mapping.AddedBy)
     }
 
     fun addItem() {
@@ -107,43 +120,27 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     }
 
     private fun pushListToServer() {
-        Log.d("ShoppinglistViewModel", "Pushing list with ${_shoppinglist.value!!.size} to server")
+        Log.d("ShoppinglistViewModel", "Pushing list with ${itemsInList.value?.size} to server")
         listHandler.PostShoppingListOnline(shoppingListId)
     }
 
-//    fun reloadItemsInList(itemIds : List<ListMapping>) {
-//        // Takes the list of currently contained IDs and updates the items in the shopping list
-//        val ids : List<Triple<Long, Long, Boolean>> = itemIds.map { map -> Triple(map.ItemID, map.Quantity, map.Checked) }
-//        scope.launch {
-//            loadItemsInListFromDatabase(ids)
-//        }
-//    }
-//
-//    private suspend fun loadItemsInListFromDatabase(itemIds : List<Triple<Long, Long, Boolean>>) {
-//         withContext(Dispatchers.IO) {
-//            Log.d("ShoppinglistViewModel", "Loading the current items for list $shoppingListId from the database")
-//            val items = databaseDao.getItems(itemIds.map { it.first })
-//            val zipped = mutableListOf<ItemWithQuantity>()
-//            for (item in items) {
-//                val quant = itemIds.find { s -> s.first == item.ID }
-//                zipped.add(ItemWithQuantity(item.ID, item.Name, item.Icon, quant!!.second, quant.third, 0L))
-//            }
-//            withContext(Dispatchers.Main) {
-//                _shoppinglist.value = zipped
-//            }
-//        }
-//    }
+    fun updateShoppinglist() {
+        _refreshing.value = true
+        listHandler.GetShoppingList(shoppingListId)
+        _refreshing.value = false
+    }
 
-//    fun showItemPreview(enteredName : String) {
-//        Log.d("ShoppinglistViewModel", "User entered: $enteredName")
-//        if (enteredName.isEmpty()) {
-//            _previewItems.value = emptyList()
-//            return
-//        }
-//        scope.launch {
-//            loadMatchingItems(enteredName)
-//        }
-//    }
+
+    fun showItemPreview(enteredName : String) {
+        Log.d("ShoppinglistViewModel", "User entered: $enteredName")
+        if (enteredName.isEmpty()) {
+            _previewItems.value = emptyList()
+            return
+        }
+        localCoroutine.launch {
+            loadMatchingItems(enteredName)
+        }
+    }
 
     fun clearItemPreview() {
         itemName.value = ""
@@ -158,41 +155,27 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
             }
         }
     }
-//
-//    fun addTappedItem(id : Long) {
-//        Log.d("ShoppinglistViewModel", "Adding item with ID $id")
-//        scope.launch {
-//            val item = itemDao.getItem(id) ?: return@launch
-//            Log.d("ShoppinglistViewModel", "Found item to add")
-//            addItemToList(item)
-//        }
-//    }
 
-    private suspend fun loadItemFromDatabase(id : Long) : Item? {
-        val item = withContext(Dispatchers.IO) {
-            return@withContext itemDao.getItem(id)
+    private suspend fun addItemFromPreviewToList(itemId: Long) {
+        withContext(Dispatchers.IO) {
+            val item = itemDao.getItem(itemId) ?: return@withContext
+//            Log.d("ShoppinglistViewModel", "Found item to add")
+            listHandler.AddItemToShoppingList(item, shoppingListId)
         }
-        return item
     }
 
-//    fun shareThisList() {
-//        scope.launch {
-//            shareListOnline()
-//        }
-//    }
+    fun AddTappedItem(itemId : Long) {
+        Log.d("ShoppinglistViewModel", "Adding item with ID $itemId")
+        localCoroutine.launch {
+            addItemFromPreviewToList(itemId)
+        }
+    }
 
-    private suspend fun shareListOnline() {
-        withContext(Dispatchers.IO) {
-            Log.d("ShoppinglistViewModel", "Sharing list $shoppingListId online")
-            val sharedList = ListShare(0, shoppingListId, -1)
-            val encoded = Json.encodeToString(sharedList)
-            Networking.POST("v1/share/$shoppingListId", encoded) { resp ->
-                if (resp.status == HttpStatusCode.BadRequest) {
-                    Log.d("ShoppinglistViewModel", "Internal error, made bad request")
-                    return@POST
-                }
-//                val body = resp.bodyAsText(Charsets.UTF_8)
-            }
+    fun shareThisList() {
+        // TODO: Let user decide who to share the list with
+        // For now use '-1' == 'all'
+        localCoroutine.launch {
+            listHandler.ShareShoppingListOnline(shoppingListId, -1)
         }
     }
 

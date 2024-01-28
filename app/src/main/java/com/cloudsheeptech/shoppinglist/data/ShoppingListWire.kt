@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class ShoppingListWire(
     var ListId : Long,
     var Name : String,
-    var CreatedBy : Long,
+    var CreatedBy : ListCreator,
     var LastEdited : String,
     var Items : MutableList<ItemWire>
 )

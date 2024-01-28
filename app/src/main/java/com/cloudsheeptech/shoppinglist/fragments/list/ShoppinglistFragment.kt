@@ -43,11 +43,11 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.dd_edit_btn -> {
-                viewModel.shareThisList()
+//                viewModel.shareThisList()
                 return true
             }
             R.id.dd_delete_btn -> {
-                viewModel.clearAll()
+//                viewModel.clearAll()
                 return true
             }
             R.id.dd_clear_btn -> {
@@ -79,8 +79,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             findNavController().navigateUp()
 
         val database = ShoppingListDatabase.getInstance(requireContext())
-        val itemListWithName = ItemListWithName<Item>()
-        val viewModelFactory = ShoppingListViewModelFactory(itemListWithName, database, shoppingListId)
+        val viewModelFactory = ShoppingListViewModelFactory(database, shoppingListId)
 
         viewModel = ViewModelProvider(this, viewModelFactory)[ShoppinglistViewModel::class.java]
         binding.viewModel = viewModel
@@ -94,12 +93,12 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
                 viewModel.decreaseItemCount(itemId)
         }, ShoppingListItemAdapter.ShoppingItemCheckboxClickListener { itemId ->
             Log.d("ShoppinglistFragment", "Tapped on item $itemId to toggle checkbox")
-            viewModel.checkItem(itemId)
+            viewModel.toggleItem(itemId.toLong())
         }, resources, database.mappingDao())
         // The adapter for the preview items
         val previewAdapter = ItemPreviewAdapter(ItemPreviewAdapter.ItemPreviewClickListener { itemId ->
             Log.d("ShoppinglistFragment", "Got preview ID $itemId")
-            viewModel.addTappedItem(itemId)
+//            viewModel.addTappedItem(itemId)
             viewModel.clearItemPreview()
         })
         binding.itemList.adapter = adapter
@@ -114,7 +113,8 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             it?.let {
                 // The received list is not empty
                 // Use the updated mapping to select the items that are in the list
-                viewModel.reloadItemsInList(it)
+//                viewModel.reloadItemsInList(it)
+                viewModel.updateShoppinglist()
             }
         })
 
@@ -127,7 +127,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
 
         viewModel.itemName.observe(viewLifecycleOwner, Observer {  name ->
             name?.let {
-                viewModel.showItemPreview(name)
+//                viewModel.showItemPreview(name)
             }
         })
 

@@ -9,7 +9,6 @@ import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
-import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
@@ -36,7 +35,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     private val database = ShoppingListDatabase.getInstance(application.applicationContext)
     private val shoppingListDao = database.shoppingListDao()
-    private val itemDao = database.itemListDao()
+    private val itemDao = database.itemDao()
     private val userDao = database.userDao()
     private val itemMappingDao = database.mappingDao()
 
@@ -129,7 +128,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
                 if (localList == null) {
                     // TODO: Create new list
                     Log.d("ListOverviewViewModel", "Creating new list")
-                    val newList = ShoppingList(list.ListId, list.Name, User(list.CreatedBy), list.LastEdited)
+                    val newList = ShoppingList(list.ListId, list.Name, list.CreatedBy, list.LastEdited)
                     shoppingListDao.insertList(newList)
                     continue
                 }
@@ -143,8 +142,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 //                        Log.d("ListOverviewViewModel", "Local parsed")
                         if (convertedOnline.isAfter(convertedLocal)) {
                             Log.d("ListOverviewViewModel", "Online list ${list.ListId} is newer than local list! Updating")
-                            val responsibleUser = User(list.CreatedBy)
-                            val convertedOnlineToLocal = ShoppingList(list.ListId, list.Name, responsibleUser, list.LastEdited)
+                            val convertedOnlineToLocal = ShoppingList(list.ListId, list.Name, list.CreatedBy, list.LastEdited)
                             shoppingListDao.updateList(convertedOnlineToLocal)
                             // Fill the list with items
                             for (item in list.Items) {
@@ -156,7 +154,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
                                 }
                                 var dbMapping = itemMappingDao.getMappingForItemAndList(dbItem!!.ID, list.ListId)
                                 if (dbMapping.isEmpty()) {
-                                    val mapping = ListMapping(0, dbItem.ID, list.ListId, item.Quantity, item.Checked, list.CreatedBy)
+                                    val mapping = ListMapping(0, dbItem.ID, list.ListId, item.Quantity, item.Checked, list.CreatedBy.ID)
                                     itemMappingDao.insertMapping(mapping)
                                 } else {
                                     val mapping = dbMapping[0]

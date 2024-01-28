@@ -53,15 +53,10 @@ class MainActivity : AppCompatActivity() {
 
         val database = ShoppingListDatabase.getInstance(application.applicationContext)
         val shoppingListHandler = ShoppingListHandler(database)
-//        val vocabularyFile = File(applicationContext.filesDir, "vocabulary.json")
-//        val vocabulary = Vocabulary.getInstance(vocabularyFile)
+
         val startViewModel by viewModels<StartViewModel> { StartViewModelFactory(application) }
         val overviewViewModel by viewModels<ListOverviewViewModel> { ListOverviewViewModelFactory(application) }
-        val createViewModel by viewModels<CreateShoppinglistViewModel> { CreateShoppinglistViewModelFactory(application, shoppingListHandler) }
-//        val activityViewModel by viewModels<LearningViewModel> { LearningViewModelFactory(vocabulary) }
-//        learningViewModel = activityViewModel
-//        val actViewModel by viewModels<RecapViewModel> { RecapViewModelFactory(vocabulary) }
-//        recapViewModel = actViewModel
+        val createViewModel by viewModels<CreateShoppinglistViewModel> { CreateShoppinglistViewModelFactory(application) }
 
         // TODO: Check if we are coming from a notification; NOT yet necessary
         val redirect = intent.extras?.getString("redirect")

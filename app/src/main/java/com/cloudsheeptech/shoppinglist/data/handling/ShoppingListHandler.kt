@@ -3,6 +3,7 @@ package com.cloudsheeptech.shoppinglist.data.handling
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWire
+import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
@@ -37,7 +38,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
 
     private val listDao = database.shoppingListDao()
-    private val itemDao = database.itemListDao()
+    private val itemDao = database.itemDao()
     private val mappingDao = database.mappingDao()
 
     // ------------------------------------------------------------------------------
@@ -59,7 +60,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             // Differentiate between new and existing list
             if (insertedListId == 0L) {
                 insertedListId = listDao.insertList(list)
-                Log.d("ShoppingListHandler", "Inserted list ${list.ID} into database")
+                Log.d("ShoppingListHandler", "Inserted list $insertedListId into database")
                 return@withContext
             }
             // In this case, the ID is already existing and set in the variable returned
@@ -68,12 +69,14 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return insertedListId
     }
 
-    private suspend fun updateListInDatabase(list : ShoppingList) {
+    private suspend fun updateListInDatabase(list : ShoppingList) : Boolean {
+        var updated = false
         withContext(Dispatchers.IO) {
             val existingList = listDao.getShoppingList(list.ID)
             if (existingList == null) {
                 Log.i("ShoppingListHandler", "List ${list.ID} cannot be found but should exist")
                 listDao.insertList(list)
+                updated = true
                 return@withContext
             }
             try {
@@ -83,12 +86,15 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                 if (lastEditedExistingList.isAfter(lastEditedNewList))
                     return@withContext
                 listDao.updateList(list)
+                updated = true
                 Log.d("ShoppingListHandler", "Updated list ${list.ID} in database")
             } catch (ex : Exception) {
                 // Most likely because the instant failed to parse. Don't updated in this case
+                updated = false
                 Log.w("ShoppingListHandler", "Failed to update list: $ex")
             }
         }
+        return updated
     }
 
     private suspend fun deleteShoppingListFromDatabase(list : ShoppingList) {
@@ -118,6 +124,32 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                 mapping.ID = existingMappings.first().ID
                 updateMappingInDatabase(mapping)
             }
+        }
+    }
+
+    private suspend fun toggleMappingInDatabase(itemId : Long, listId : Long) {
+        withContext(Dispatchers.IO) {
+            val mapping = mappingDao.getMappingForItemAndList(itemId, listId)
+            if (mapping.isEmpty())
+                return@withContext
+            val toggleMapping = mapping.first()
+            toggleMapping.Checked = toggleMapping.Checked xor true
+            updateMappingInDatabase(toggleMapping)
+        }
+    }
+
+    private suspend fun increaseItemCountInDatabase(itemId : Long, listId : Long, count : Long) {
+        withContext(Dispatchers.IO) {
+            val mapping = mappingDao.getMappingForItemAndList(itemId, listId)
+            if (mapping.isEmpty())
+                return@withContext
+            val incMapping = mapping.first()
+            incMapping.Quantity += count
+            if (incMapping.Quantity == 0L) {
+                removeMappingInDatabase(itemId, listId)
+                return@withContext
+            }
+            updateMappingInDatabase(incMapping)
         }
     }
 
@@ -200,6 +232,15 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return convertedItem
     }
 
+    suspend fun mappingToItemWithQuantity(mapping: ListMapping) : ItemWithQuantity? {
+        var itemWithQuantity : ItemWithQuantity? = null
+        withContext(Dispatchers.IO) {
+            val databaseItem = itemDao.getItem(mapping.ItemID) ?: return@withContext
+            itemWithQuantity = ItemWithQuantity(ID=databaseItem.ID, Name=databaseItem.Name, IconPath=databaseItem.Icon, Quantity=mapping.Quantity, Checked = mapping.Checked, AddedBy = mapping.AddedBy)
+        }
+        return itemWithQuantity
+    }
+
     private suspend fun shoppingListToWire(list : ShoppingList) : ShoppingListWire {
         val convertedList = ShoppingListWire(ListId = list.ID, Name = list.Name, CreatedBy = list.CreatedBy, LastEdited = list.LastEdited, Items = mutableListOf())
         withContext(Dispatchers.IO) {
@@ -279,6 +320,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private suspend fun postShoppingListOnline(list : ShoppingList) : Boolean {
         var success = false
         withContext(Dispatchers.IO) {
+            // Pushing the user to the server is done by the networking stack
             val listInWireFormat = shoppingListToWire(list)
             val serializedList = Json.encodeToString(listInWireFormat)
             Networking.POST("v1/list", serializedList) { resp ->
@@ -311,9 +353,28 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return onlineList
     }
 
+    private suspend fun getShoppingListsFromOnline(lists : List<Long>) : List<ShoppingListWire> {
+        val onlineLists = mutableListOf<ShoppingListWire>()
+        withContext(Dispatchers.IO) {
+            for(listId in lists) {
+                val onlineList = getShoppingListFromOnline(listId)
+                if (onlineList != null)
+                    onlineLists.add(onlineList)
+            }
+            Log.d("ShoppingListHandler", "Retrieved ${onlineLists.size}/${lists.size} lists successfully")
+        }
+        return onlineLists
+    }
+
     // ------------------------------------------------------------------------------
     // The Public API
     // ------------------------------------------------------------------------------
+
+    fun PostShoppingListOnline(listId : Long) {
+        localCoroutine.launch {
+            postShoppingListOnline(listId)
+        }
+    }
 
     fun PostShoppingListOnline(list : ShoppingList) {
         localCoroutine.launch {
@@ -349,10 +410,36 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
+    fun AddItemAndAddToShoppingList(item : Item, list : Long) {
+        localCoroutine.launch {
+            val insertedId = insertItemInDatabase(item)
+            item.ID = insertedId
+            AddItemToShoppingList(item, list)
+        }
+    }
+
     fun RemoveItemFromShoppingList(item : Item, list : Long) {
         localCoroutine.launch {
             removeMappingInDatabase(item.ID, list)
             postShoppingListOnline(list)
+        }
+    }
+
+    fun ToggleItemInShoppingList(itemId : Long, listId : Long) {
+        localCoroutine.launch {
+            toggleMappingInDatabase(itemId, listId)
+        }
+    }
+
+    fun IncreaseItemCountInShoppingList(itemId : Long, listId : Long, count : Long = 1) {
+        localCoroutine.launch {
+            increaseItemCountInDatabase(itemId, listId, count)
+        }
+    }
+
+    fun DecreaseItemCountInShoppingList(itemId : Long, listId : Long, count : Long = 1) {
+        localCoroutine.launch {
+            increaseItemCountInDatabase(itemId, listId, -1 * count)
         }
     }
 
@@ -362,18 +449,29 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         localCoroutine.launch {
             val onlineList = getShoppingListFromOnline(listId) ?: return@launch
             // Automatically creates the items if not existing
-            // FIXME: Check if we already have a list with this name locally
-            // and only update in case the online list is newer
-            val convertedTriple = shoppingListWireToLocal(onlineList)
-            val list = convertedTriple.first
-            val mappings = convertedTriple.second
-//            val items = convertedTriple.third
+            val (list, mappings, _) = shoppingListWireToLocal(onlineList)
 //            insertItemsInDatabase(items)
-            insertShoppingListIntoDatabase(list)
-            insertMappingsInDatabase(mappings)
+            val updated = updateListInDatabase(list)
+            if (updated) {
+                // Only update the mappings in case we received a newer list
+                insertMappingsInDatabase(mappings)
+            }
         }
     }
 
-
+    fun GetAllShoppingLists() {
+        localCoroutine.launch {
+            val lists = listDao.getShoppingLists()
+            val onlineLists = getShoppingListsFromOnline(lists.map { x -> x.ID })
+            for (list in onlineLists) {
+                // Automatically creates the items if not existing
+                val (localList, mappings, _) = shoppingListWireToLocal(list)
+                val updated = updateListInDatabase(localList)
+                if (updated) {
+                    insertMappingsInDatabase(mappings)
+                }
+            }
+        }
+    }
 
 }

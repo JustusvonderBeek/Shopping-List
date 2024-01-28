@@ -9,6 +9,6 @@ data class ShoppingList(
     @PrimaryKey(autoGenerate = true)
     var ID : Long,
     var Name : String,
-    var CreatedBy : User,
+    var CreatedBy : ListCreator,
     var LastEdited : String
 )

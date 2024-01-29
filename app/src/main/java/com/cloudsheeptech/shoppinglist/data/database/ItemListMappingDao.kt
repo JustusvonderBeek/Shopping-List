@@ -22,6 +22,9 @@ interface ItemListMappingDao {
     @Query("DELETE FROM item_to_list_mapping WHERE ItemID = :itemId AND ListID = :listId")
     fun deleteMappingItemListId(itemId : Long, listId : Long)
 
+    @Query("DELETE FROM item_to_list_mapping WHERE ListID = :listId")
+    fun deleteMappingsForListId(listId : Long)
+
     @Query("DELETE FROM item_to_list_mapping")
     fun clearAll()
 

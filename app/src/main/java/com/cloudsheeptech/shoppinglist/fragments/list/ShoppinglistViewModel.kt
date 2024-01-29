@@ -8,19 +8,14 @@ import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
-import com.cloudsheeptech.shoppinglist.data.ListShare
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
-import com.cloudsheeptech.shoppinglist.network.Networking
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shoppingListId : Long) : ViewModel() {
 
@@ -49,9 +44,6 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
     private val _hideKeyboard = MutableLiveData<Boolean>(false)
     val hideKeyboard : LiveData<Boolean> get() = _hideKeyboard
-
-    private val _toggleItem = MutableLiveData<Int>()
-    val toggleItem : LiveData<Int> get() = _toggleItem
 
     private val itemsMappedToList = mappingDao.getMappingsForListLive(shoppingListId)
     // The items in this list

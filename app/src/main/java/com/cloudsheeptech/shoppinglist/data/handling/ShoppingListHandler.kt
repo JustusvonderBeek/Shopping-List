@@ -213,6 +213,37 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
+    private suspend fun updateUserIdInItems() {
+        withContext(Dispatchers.IO) {
+            val allItems = itemDao.getAllItems()
+            if (allItems.isEmpty())
+                return@withContext
+            val uninitializedItems = allItems.filter { it.ID == 0L }
+            if (uninitializedItems.isEmpty())
+                return@withContext
+            uninitializedItems.forEach {
+                it.ID = AppUser.ID
+                updateItemInDatabase(it)
+            }
+        }
+    }
+
+    private suspend fun updateUserIdInLists() {
+        withContext(Dispatchers.IO) {
+            val lists = listDao.getShoppingLists()
+            if (lists.isEmpty())
+                return@withContext
+            val uninitializedLists = lists.filter { it.CreatedBy.ID == 0L }
+            if (uninitializedLists.isEmpty())
+                return@withContext
+            val updatedCreator = ListCreator(AppUser.ID, AppUser.Username)
+            uninitializedLists.forEach {
+                it.CreatedBy = updatedCreator
+                updateListInDatabase(it)
+            }
+        }
+    }
+
     // ------------------------------------------------------------------------------
     // Conversion of Lists from and to Wire Format
     // ------------------------------------------------------------------------------

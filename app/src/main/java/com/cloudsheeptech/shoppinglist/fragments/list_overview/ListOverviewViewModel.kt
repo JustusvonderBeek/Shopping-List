@@ -10,6 +10,7 @@ import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -38,6 +39,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private val itemDao = database.itemDao()
     private val userDao = database.userDao()
     private val itemMappingDao = database.mappingDao()
+    private val listHandler = ShoppingListHandler(database)
 
     // Navigation variables
 
@@ -176,22 +178,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     private suspend fun updateListOverview() {
         withContext(Dispatchers.IO) {
-            Networking.GET("v1/lists/${user.value!!.ID}") { resp ->
-                if (resp.status != HttpStatusCode.OK) {
-                    Log.w("ListOverviewViewModel", "Fetching lists failed")
-                    return@GET
-                }
-                try {
-                    val body = resp.bodyAsText(Charsets.UTF_8)
-                    Log.d("ListOverviewViewModel", "Got response: $body")
-                    val lists = Json.decodeFromString<List<ShoppingListWire>>(body)
-                    Log.d("ListOverviewViewModel", "Got ${lists.size} lists")
-                    mergeUpdatedAndExistingLists(lists)
-                } catch (ex : Exception) {
-                    Log.w("ListOverviewViewModel", "Failed to process server response: $ex")
-                    return@GET
-                }
-            }
+            listHandler.GetAllShoppingLists()
         }
         withContext(Dispatchers.Main) {
             _refreshing.value = false

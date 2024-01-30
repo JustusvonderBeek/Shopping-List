@@ -54,6 +54,9 @@
             android:name="ListID"
             app:argType="long"
             android:defaultValue="-1L" />
+        <action
+            android:id="@+id/action_shoppinglist_to_shareFragment"
+            app:destination="@id/shareFragment" />
     </fragment>
     <fragment
         android:id="@+id/editItem"
@@ -76,4 +79,8 @@
             android:id="@+id/action_createShoppinglistFragment_to_shoppinglist"
             app:destination="@id/shoppinglist" />
     </fragment>
+    <fragment
+        android:id="@+id/shareFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.share.ShareFragment"
+        android:label="ShareFragment" />
 </navigation>

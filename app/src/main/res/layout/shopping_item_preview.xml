@@ -14,6 +14,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="25sp"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
+        android:elevation="2dp"
+        android:layout_margin="3dp"
         android:text="@{item.name}"
         android:onClick="@{() -> clickListener.onClick(item)}"
         />

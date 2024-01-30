@@ -166,9 +166,11 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     fun shareThisList() {
         // TODO: Let user decide who to share the list with
         // For now use '-1' == 'all'
-        localCoroutine.launch {
-            listHandler.ShareShoppingListOnline(shoppingListId, -1)
-        }
+        listHandler.ShareShoppingListOnline(shoppingListId, -1)
+    }
+
+    fun deleteThisList() {
+        listHandler.DeleteShoppingList(shoppingListId)
     }
 
     fun onEditWordNavigated() {

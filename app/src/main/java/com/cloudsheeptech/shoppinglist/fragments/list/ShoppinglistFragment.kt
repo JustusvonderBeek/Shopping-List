@@ -23,33 +23,29 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.databinding.FragmentShoppinglistBinding
+import com.cloudsheeptech.shoppinglist.databinding.FragmentListBinding
 import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
 
 class ShoppinglistFragment : Fragment(), MenuProvider {
 
-    private lateinit var binding : FragmentShoppinglistBinding
+    private lateinit var binding : FragmentListBinding
     private lateinit var viewModel : ShoppinglistViewModel
     private val learningViewModel : RecipeViewModel by activityViewModels()
 
     val args : ShoppinglistFragmentArgs by navArgs()
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.list_dropdown, menu)
+        menuInflater.inflate(R.menu.list_drop_down_menu, menu)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
-            R.id.dd_edit_btn -> {
+            R.id.share_list -> {
                 viewModel.shareThisList()
                 return true
             }
-            R.id.dd_delete_btn -> {
-//                viewModel.clearAll()
-                return true
-            }
-            R.id.dd_clear_btn -> {
-//                viewModel.clearAll()
+            R.id.delete_list -> {
+                viewModel.deleteThisList()
                 return true
             }
         }
@@ -66,7 +62,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_shoppinglist, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_list, container, false)
 
         // Adding the dropdown menu in the toolbar
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
@@ -121,6 +117,12 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         viewModel.previewItems.observe(viewLifecycleOwner, Observer { list ->
             list?.let {
                 Log.d("ShoppinglistFragment", "New list (${list.size}) observed")
+                if (list.isNotEmpty()) {
+                    binding.shoppingItemSelectView.visibility = View.VISIBLE
+                }
+                if (list.isEmpty()) {
+                    binding.shoppingItemSelectView.visibility = View.GONE
+                }
                 previewAdapter.submitList(list)
 //                previewAdapter.notifyDataSetChanged()
             }
@@ -157,6 +159,12 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
                 val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(requireView().windowToken, 0)
                 viewModel.keyboardHidden()
+            }
+        })
+
+        viewModel.title.observe(viewLifecycleOwner, Observer { title ->
+            title?.let {
+                requireActivity().actionBar?.title = "Bla"
             }
         })
 

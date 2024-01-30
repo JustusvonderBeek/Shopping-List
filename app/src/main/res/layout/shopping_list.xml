@@ -60,12 +60,12 @@
 
             </LinearLayout>
 
-            <CheckBox
-                android:id="@+id/list_completed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="center"
-                android:checked="false"
+                android:src="@drawable/ic_check"
+                android:visibility="gone"
                 />
 
         </LinearLayout>

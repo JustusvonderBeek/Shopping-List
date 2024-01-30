@@ -10,6 +10,7 @@ import com.cloudsheeptech.shoppinglist.data.database.UserDao
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -111,6 +112,29 @@ object Networking {
             }
         }
         return "Error"
+    }
+
+    suspend fun DELETE(requestUrlPath: String, data: String, responseHandler: suspend (HttpResponse) -> Unit) {
+        withContext(Dispatchers.IO) {
+            if (!init) {
+                init()
+            }
+            if (loginRequired()) {
+                login()
+            }
+            try {
+                val response : HttpResponse = client.delete(baseUrl + requestUrlPath) {
+                    setBody(data)
+                }
+                if (response.status == HttpStatusCode.Unauthorized) {
+                    token = ""
+                }
+                responseHandler(response)
+                response.bodyAsText()
+            } catch (ex : Exception) {
+                Log.w("Networking", "Failed to send DELETE request to $baseUrl$requestUrlPath: $ex")
+            }
+        }
     }
 
     private fun updateToken(token : String) {

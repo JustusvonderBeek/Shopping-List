@@ -51,7 +51,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginRight="5dp"
                     android:hint="Item Name"
-                    android:layout_weight="5"
+                    android:layout_weight="6"
                     android:text="@={viewModel.itemName}"
                     />
 

@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -506,6 +507,19 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return success
     }
 
+    private suspend fun unshareListOnline(listId: Long) {
+        withContext(Dispatchers.IO) {
+            val unshareObject = ListShare(listId, -1)
+            val serialized = Json.encodeToString(unshareObject)
+            Networking.DELETE("v1/share/$listId", serialized) { resp ->
+                if (resp.status != HttpStatusCode.OK) {
+                    Log.w("ShoppingListHandler", "Failed to unshare list $listId online")
+                    return@DELETE
+                }
+            }
+        }
+    }
+
 
     private suspend fun getShoppingListFromOnline(listId : Long) : ShoppingListWire? {
         var onlineList : ShoppingListWire? = null
@@ -681,11 +695,24 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
+    fun SearchUsersOnline() {
+        localCoroutine.launch {
+
+        }
+    }
+
     fun ShareShoppingListOnline(listId: Long, sharedWithId : Long) {
         Log.d("ShoppingListHandler", "Sharing list $listId with $sharedWithId")
         localCoroutine.launch {
             postShoppingListOnline(listId)
             shareListOnline(listId, sharedWithId)
+        }
+    }
+
+    fun UnshareShoppingListOnline(listId : Long) {
+        Log.d("ShoppingListHandler", "Unsharing list $listId")
+        localCoroutine.launch {
+            unshareListOnline(listId)
         }
     }
 

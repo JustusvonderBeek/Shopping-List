@@ -25,20 +25,20 @@ class ListOverviewFragment : Fragment(), MenuProvider {
     private val viewModel : ListOverviewViewModel by activityViewModels()
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.list_dropdown, menu)
+        menuInflater.inflate(R.menu.overview_drop_down_menu, menu)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
-            R.id.dd_edit_btn -> {
-//                viewModel.navigateToAddWord()
+            R.id.add_list -> {
+                viewModel.createNewList()
                 return true
             }
-            R.id.dd_delete_btn -> {
+            R.id.delete_user -> {
                 viewModel.removeUser()
                 return true
             }
-            R.id.dd_clear_btn -> {
+            R.id.clear_all_lists -> {
                 viewModel.clearDatabase()
                 return true
             }

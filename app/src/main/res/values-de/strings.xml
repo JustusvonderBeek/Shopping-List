@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Vocabulary</string>
-    <string name="btn_get_data">Synchronisieren</string>
+    <string name="app_name">Einkaufsliste</string>
     <string name="nav_btn_overview">Einkaufslisten</string>
     <string name="nav_btn_list">Einkaufsliste</string>
     <string name="recipe_name_hint">Rezeptname</string>
@@ -9,10 +8,10 @@
     <string name="btn_recipe_add">Rezept abschließen</string>
     <string name="nav_btn_add">Rezept hinzufügen</string>
     <string name="btn_edit_add">Item hinzufügen</string>
-    <string name="nav_btn_recipes">Rezepte</string>
     <string name="recap_input_hint">Benutzername eingeben</string>
     <string name="btn_start_app">Start</string>
     <string name="btn_add_to_list">Alles zur Liste hinzufügen</string>
     <string name="nav_start_recap_title">Einkaufstlisten</string>
     <string name="notification_description">Benachrichtigung</string>
+    <string name="nav_btn_create_new_list">Neue Liste erstellen</string>
 </resources>

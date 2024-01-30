@@ -9,6 +9,8 @@ import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ListShare
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
+import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.data.UserWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.user.AppUser
@@ -23,6 +25,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 /*
 * This class implements the main handling of shopping lists and other datastructures
@@ -41,6 +44,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private val listDao = database.shoppingListDao()
     private val itemDao = database.itemDao()
     private val mappingDao = database.mappingDao()
+    private val onlineUserDao = database.onlineUserDao()
 
     // ------------------------------------------------------------------------------
     // Creation of a new list + Insertion + Update
@@ -70,6 +74,26 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return insertedListId
     }
 
+    private fun setLastEditedNowInShoppingList(list : ShoppingList) : ShoppingList {
+        val now = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+        list.LastEdited = now
+        return list
+    }
+
+    private suspend fun updateLastEditedInDatabase(list : ShoppingList) {
+        withContext(Dispatchers.IO) {
+            val updatedList = setLastEditedNowInShoppingList(list)
+            updateListInDatabase(updatedList)
+        }
+    }
+
+    private suspend fun updateLastEditedInDatabase(listId : Long) {
+        withContext(Dispatchers.IO) {
+            val list = listDao.getShoppingList(listId) ?: return@withContext
+            updateLastEditedInDatabase(list)
+        }
+    }
+
     private suspend fun updateListInDatabase(list : ShoppingList) : Boolean {
         var updated = false
         withContext(Dispatchers.IO) {
@@ -82,6 +106,9 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             }
             try {
                 // Compare last edited value
+                if (list.LastEdited == "") {
+                    return@withContext
+                }
                 val lastEditedNewList = Instant.parse(list.LastEdited)
                 val lastEditedExistingList = Instant.parse(existingList.LastEdited)
                 if (lastEditedExistingList.isAfter(lastEditedNewList))
@@ -89,6 +116,9 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                 listDao.updateList(list)
                 updated = true
                 Log.d("ShoppingListHandler", "Updated list ${list.ID} in database")
+            } catch (ex : DateTimeParseException) {
+                updated = false
+                Log.w("ShoppingListHandler", "Failed to parse time (${list.LastEdited}) and (${existingList.LastEdited}): $ex")
             } catch (ex : Exception) {
                 // Most likely because the instant failed to parse. Don't updated in this case
                 updated = false
@@ -99,8 +129,8 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     }
 
     private suspend fun deleteShoppingListFromDatabase(list : ShoppingList) {
-        // TODO: Include removing all mappings for this list
         withContext(Dispatchers.IO) {
+            deleteAllMappingsForListId(list.ID)
             listDao.deleteList(list.ID)
             Log.i("ShoppingListHandler", "Deleted list ${list.Name}")
         }
@@ -147,7 +177,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             val incMapping = mapping.first()
             incMapping.Quantity += count
             if (incMapping.Quantity == 0L) {
-                removeMappingInDatabase(itemId, listId)
+                deleteMappingInDatabase(itemId, listId)
                 return@withContext
             }
             updateMappingInDatabase(incMapping)
@@ -165,7 +195,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-    private suspend fun removeMappingInDatabase(item : Long, list : Long) {
+    private suspend fun deleteMappingInDatabase(item : Long, list : Long) {
         withContext(Dispatchers.IO) {
             val existingMappings = mappingDao.getMappingForItemAndList(item, list)
             if (existingMappings.isEmpty())
@@ -173,6 +203,12 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             for(existingMapping in existingMappings) {
                 mappingDao.deleteMapping(existingMapping.ID)
             }
+        }
+    }
+
+    private suspend fun deleteAllMappingsForListId(listId : Long) {
+        withContext(Dispatchers.IO) {
+            mappingDao.deleteMappingsForListId(listId)
         }
     }
 
@@ -185,7 +221,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     }
 
     private suspend fun insertItemsInDatabase(items : List<Item>) : List<Long> {
-        var itemIds = mutableListOf<Long>()
+        val itemIds = mutableListOf<Long>()
         withContext(Dispatchers.IO) {
             for(item in items) {
                 val existingItem = itemDao.getItemFromName(item.Name)
@@ -211,6 +247,74 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             }
             itemDao.updateItem(item)
         }
+    }
+
+    private suspend fun updatedCreatedByForAllLists() {
+        withContext(Dispatchers.IO) {
+            if (AppUser.ID == 0L)
+                return@withContext
+            val allShoppingLists = listDao.getShoppingLists()
+            if (allShoppingLists.isEmpty())
+                return@withContext
+            val uninitializedLists = allShoppingLists.filter { list -> list.CreatedBy.ID == 0L }
+            for (list in uninitializedLists) {
+                list.CreatedBy.ID = AppUser.ID
+                updateListInDatabase(list)
+            }
+        }
+    }
+
+    private suspend fun insertUserInfoInDatabase(user : UserWire) {
+        withContext(Dispatchers.IO) {
+            onlineUserDao.insertUser(user)
+        }
+    }
+
+    private suspend fun deleteUserInfoInDatabase(userId: Long) {
+        withContext(Dispatchers.IO) {
+            onlineUserDao.deleteUser(userId)
+        }
+    }
+
+    private suspend fun getUserInfoFromDatabase(userId : Long) : UserWire? {
+        var onlineUser : UserWire? = null
+        withContext(Dispatchers.IO) {
+            val dbUser = onlineUserDao.getUser(userId) ?: return@withContext
+            onlineUser = dbUser
+        }
+        return onlineUser
+    }
+
+
+    private suspend fun getUserInfoFromOnline(userId : Long) : UserWire? {
+        var userInfo : UserWire? = null
+        withContext(Dispatchers.IO) {
+            Networking.GET("v1/userinfo/$userId") { resp ->
+                if (resp.status != HttpStatusCode.OK) {
+                    Log.w("ShoppingListHandler", "User $userId not found")
+                    return@GET
+                }
+                val body = resp.bodyAsText(Charsets.UTF_8)
+                val decoded = Json.decodeFromString<UserWire>(body)
+                insertUserInfoInDatabase(decoded)
+                userInfo = decoded
+            }
+        }
+        return userInfo
+    }
+
+    private suspend fun getUserInfo(userId: Long) : UserWire? {
+        var onlineUser : UserWire? = null
+        withContext(Dispatchers.IO) {
+            val storedUser = getUserInfoFromDatabase(userId)
+            if (storedUser != null) {
+                onlineUser = storedUser
+                return@withContext
+            }
+            val onlineInfo = getUserInfoFromOnline(userId) ?: return@withContext
+            onlineUser = onlineInfo
+        }
+        return onlineUser
     }
 
     private suspend fun updateUserIdInItems() {
@@ -355,7 +459,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             // Pushing the user to the server is done by the networking stack
             val listInWireFormat = shoppingListToWire(list)
             val serializedList = Json.encodeToString(listInWireFormat)
-            Networking.POST("v1/list", serializedList) { resp ->
+            Networking.POST("v1/list", serializedList, { resp ->
                 if (resp.status != HttpStatusCode.Created) {
                     Log.w("ShoppingListHandler", "Posting Shopping List online failed")
                     return@POST
@@ -363,7 +467,15 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                 // We don't expect anything from online
                 // The list ID is handled locally by us
                 success = true
-            }
+            }, {
+                // This is triggered in case we freshly updated the user
+                if (AppUser.ID == 0L)
+                    return@POST it
+                updatedCreatedByForAllLists()
+                val decoded = Json.decodeFromString<ShoppingListWire>(it)
+                decoded.CreatedBy = ListCreator(AppUser.ID, AppUser.Username)
+                return@POST Json.encodeToString(decoded)
+            })
         }
         return success
     }
@@ -371,14 +483,15 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private suspend fun shareListOnline(listId : Long, sharedWithId: Long) : Boolean {
         var success = false
         withContext(Dispatchers.IO) {
-            val sharedListObject = ListShare(0L, listId, sharedWithId)
+            val sharedListObject = ListShare(listId, sharedWithId)
             val serialized = Json.encodeToString(sharedListObject)
             Networking.POST("v1/share/$listId", serialized) { resp ->
-                if (resp.status != HttpStatusCode.OK) {
+                if (resp.status != HttpStatusCode.Created) {
                     Log.w("ShoppingListHandler", "Failed to share list $listId online")
                     return@POST
                 }
                 success = true
+                Log.d("ShoppingListHandler", "List $listId shared online with $sharedWithId")
             }
         }
         return success
@@ -412,6 +525,37 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             Log.d("ShoppingListHandler", "Retrieved ${onlineLists.size}/${lists.size} lists successfully")
         }
         return onlineLists
+    }
+
+    private suspend fun getOwnAndSharedShoppingListsFromOnline() : List<ShoppingListWire> {
+        val onlineLists = mutableListOf<ShoppingListWire>()
+        withContext(Dispatchers.IO) {
+            Networking.GET("v1/lists/${AppUser.ID}") { resp ->
+                if (resp.status != HttpStatusCode.OK) {
+                    Log.w("ShoppingListHandler", "Failed to GET all list from online")
+                    return@GET
+                }
+                val body = resp.bodyAsText(Charsets.UTF_8)
+                val decodedShoppingLists = Json.decodeFromString<List<ShoppingListWire>>(body)
+                onlineLists.addAll(decodedShoppingLists)
+                Log.d("ShoppingListHandler", "Retrieved ${onlineLists.size} lists successfully")
+            }
+        }
+        return onlineLists
+    }
+
+    private suspend fun getAllShoppingListsFromOnline() {
+        withContext(Dispatchers.IO) {
+            val onlineLists = getOwnAndSharedShoppingListsFromOnline()
+            for (list in onlineLists) {
+                // Automatically creates the items if not existing
+                val (localList, mappings, _) = shoppingListWireToLocal(list)
+                val updated = updateListInDatabase(localList)
+                if (updated) {
+                    insertMappingsInDatabase(mappings)
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------------------
@@ -454,6 +598,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         localCoroutine.launch {
             val mapping = itemToMapping(item, list)
             insertMappingInDatabase(mapping)
+            updateLastEditedInDatabase(list)
             postShoppingListOnline(list)
         }
     }
@@ -466,28 +611,35 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-    fun RemoveItemFromShoppingList(item : Item, list : Long) {
+    fun DeleteItemFromShoppingList(item : Item, list : Long) {
         localCoroutine.launch {
-            removeMappingInDatabase(item.ID, list)
+            deleteMappingInDatabase(item.ID, list)
+            updateLastEditedInDatabase(list)
             postShoppingListOnline(list)
         }
     }
 
     fun ToggleItemInShoppingList(itemId : Long, listId : Long) {
         localCoroutine.launch {
+            updateLastEditedInDatabase(listId)
             toggleMappingInDatabase(itemId, listId)
+            postShoppingListOnline(listId)
         }
     }
 
     fun IncreaseItemCountInShoppingList(itemId : Long, listId : Long, count : Long = 1) {
         localCoroutine.launch {
+            updateLastEditedInDatabase(listId)
             increaseItemCountInDatabase(itemId, listId, count)
+            postShoppingListOnline(listId)
         }
     }
 
     fun DecreaseItemCountInShoppingList(itemId : Long, listId : Long, count : Long = 1) {
         localCoroutine.launch {
+            updateLastEditedInDatabase(listId)
             increaseItemCountInDatabase(itemId, listId, -1 * count)
+            postShoppingListOnline(listId)
         }
     }
 
@@ -509,16 +661,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
 
     fun GetAllShoppingLists() {
         localCoroutine.launch {
-            val lists = listDao.getShoppingLists()
-            val onlineLists = getShoppingListsFromOnline(lists.map { x -> x.ID })
-            for (list in onlineLists) {
-                // Automatically creates the items if not existing
-                val (localList, mappings, _) = shoppingListWireToLocal(list)
-                val updated = updateListInDatabase(localList)
-                if (updated) {
-                    insertMappingsInDatabase(mappings)
-                }
-            }
+            getAllShoppingListsFromOnline()
         }
     }
 

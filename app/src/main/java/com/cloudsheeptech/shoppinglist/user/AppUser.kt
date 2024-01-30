@@ -97,6 +97,8 @@ object AppUser {
     }
 
     fun PostUserOnline() {
+        if (ID != 0L)
+            return
         localCoroutine.launch {
             pushUserOnline()
         }

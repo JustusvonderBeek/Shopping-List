@@ -29,8 +29,8 @@ import java.util.Date
 
 object Networking {
 
-//    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
-    private val baseUrl = "https://10.0.2.2:46152/"
+    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
+//    private val baseUrl = "https://10.0.2.2:46152/"
     private lateinit var applicationDir : String
     private lateinit var database : ShoppingListDatabase
     private lateinit var userDao : UserDao
@@ -79,7 +79,13 @@ object Networking {
         }
     }
 
-    suspend fun POST(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit) : String {
+    suspend fun POST(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit) {
+        POST(requestUrlPath, data, responseHandler, null)
+    }
+
+    // The content updater is meant for the case where the user was newly created online
+    // and the createdBy ID must be updated now
+    suspend fun POST(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit, contentUpdater: (suspend (String) -> String)?) : String {
         withContext(Dispatchers.IO) {
             if (!init) {
                 init()
@@ -88,8 +94,12 @@ object Networking {
                 login()
             }
             try {
+                var dataToPost = data
+                if (contentUpdater != null) {
+                    dataToPost = contentUpdater.invoke(data)
+                }
                 val response : HttpResponse = client.post(baseUrl + requestUrlPath) {
-                    setBody(data)
+                    setBody(dataToPost)
                 }
                 if (response.status == HttpStatusCode.Unauthorized) {
                     token = ""
@@ -118,6 +128,7 @@ object Networking {
         }
     }
 
+    // Keep the functionality here for now (not clean, but works)
     private suspend fun pushUserToServer(user : User) : User {
         withContext(Dispatchers.IO) {
             val response : HttpResponse = client.post(baseUrl + "auth/create") {
@@ -135,6 +146,7 @@ object Networking {
         return user
     }
 
+    // One of these functions does have side-effects because the username and ID get reset
     private suspend fun login() {
         Log.d("Networking", "Performing login")
         val decodedToken = withContext(Dispatchers.IO) {
@@ -153,6 +165,7 @@ object Networking {
                     AppUser.Password = user.Password
                     AppUser.storeUser()
                     // The following operation still might fail because of an incorrect userId
+                    // Therefore, update all the items in the list and try again
                 }
                 val response: HttpResponse = client.post(baseUrl + "auth/login") {
                     contentType(ContentType.Application.Json)

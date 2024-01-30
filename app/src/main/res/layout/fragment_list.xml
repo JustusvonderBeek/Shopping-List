@@ -41,12 +41,28 @@
             android:layout_marginBottom="10dp"
             android:orientation="vertical">
 
-            <EditText
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Item Name"
-                android:text="@={viewModel.itemName}"
-                />
+                android:orientation="horizontal">
+
+                <EditText
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
+                    android:hint="Item Name"
+                    android:layout_weight="5"
+                    android:text="@={viewModel.itemName}"
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_plus"
+                    android:layout_weight="1"
+                    android:onClick="@{() -> viewModel.addItem()}"
+                    />
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/shoppingItemSelectView"
@@ -54,17 +70,8 @@
                 android:layout_height="100dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:scrollbars="vertical"
+                android:visibility="gone"
                 />
-
-            <com.google.android.material.button.MaterialButton
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Add item"
-                android:onClick="@{() -> viewModel.addItem()}"
-                />
-
-
-
         </LinearLayout>
     </LinearLayout>
 </layout>

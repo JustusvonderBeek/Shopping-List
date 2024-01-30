@@ -128,6 +128,15 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return updated
     }
 
+    private suspend fun getShoppingListFromDatabase(listId : Long) : ShoppingList? {
+        var offlineList : ShoppingList? = null
+        withContext(Dispatchers.IO) {
+            val list = listDao.getShoppingList(listId) ?: return@withContext
+            offlineList = list
+        }
+        return offlineList
+    }
+
     private suspend fun deleteShoppingListFromDatabase(list : ShoppingList) {
         withContext(Dispatchers.IO) {
             deleteAllMappingsForListId(list.ID)
@@ -585,6 +594,13 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             val success = postShoppingListOnline(list)
         }
         // Cannot return the list here because we have the asynchronous operations before
+    }
+
+    fun DeleteShoppingList(listId : Long) {
+        localCoroutine.launch {
+            val list = getShoppingListFromDatabase(listId) ?: return@launch
+            DeleteShoppingList(list)
+        }
     }
 
     fun DeleteShoppingList(list : ShoppingList) {

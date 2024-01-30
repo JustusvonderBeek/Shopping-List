@@ -70,8 +70,8 @@
     <fragment
         android:id="@+id/createShoppinglistFragment"
         android:name="com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistFragment"
-        android:label="fragment_create_shoppinglist"
-        tools:layout="@layout/fragment_create_shoppinglist" >
+        android:label="@string/nav_btn_create_new_list"
+        tools:layout="@layout/fragment_create_shoppinglist">
         <action
             android:id="@+id/action_createShoppinglistFragment_to_shoppinglist"
             app:destination="@id/shoppinglist" />

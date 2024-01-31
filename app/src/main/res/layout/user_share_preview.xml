@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="creator"
+            type="com.cloudsheeptech.shoppinglist.data.ListCreator" />
+        <variable
+            name="clickListener"
+            type="com.cloudsheeptech.shoppinglist.fragments.share.UserShareAdapter.UserShareClickListener" />
+    </data>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@{creator.name}"
+        android:onClick="@{() -> clickListener.onClick(creator)}"
+        />
+
+</layout>

@@ -124,7 +124,9 @@ object Networking {
             }
             try {
                 val response : HttpResponse = client.delete(baseUrl + requestUrlPath) {
-                    setBody(data)
+                    if (data != "") {
+                        setBody(data)
+                    }
                 }
                 if (response.status == HttpStatusCode.Unauthorized) {
                     token = ""

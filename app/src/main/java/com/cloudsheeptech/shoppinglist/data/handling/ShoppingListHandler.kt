@@ -327,6 +327,22 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return onlineUser
     }
 
+    private suspend fun getMatchingUsersFromOnline(name: String) : List<ListCreator> {
+        var users = emptyList<ListCreator>()
+        withContext(Dispatchers.IO) {
+            Networking.GET("v1/users/$name") { resp ->
+                if (resp.status != HttpStatusCode.OK) {
+                    Log.w("ShoppingListHandler", "Failed to find users for query $name")
+                    return@GET
+                }
+                val body = resp.bodyAsText(Charsets.UTF_8)
+                val decoded = Json.decodeFromString<List<ListCreator>>(body)
+                users = decoded
+            }
+        }
+        return users
+    }
+
     private suspend fun updateUserIdInItems() {
         withContext(Dispatchers.IO) {
             val allItems = itemDao.getAllItems()
@@ -490,6 +506,18 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return success
     }
 
+    private suspend fun deleteShoppingListOnline(listId : Long) {
+        withContext(Dispatchers.IO) {
+            Networking.DELETE("v1/list/$listId", "") { resp ->
+                if (resp.status != HttpStatusCode.OK) {
+                    Log.w("ShoppingListHandler", "Failed to remove list $listId")
+                    return@DELETE
+                }
+                Log.d("ShoppingListHandler"," Removed list $listId online")
+            }
+        }
+    }
+
     private suspend fun shareListOnline(listId : Long, sharedWithId: Long) : Boolean {
         var success = false
         withContext(Dispatchers.IO) {
@@ -620,7 +648,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     fun DeleteShoppingList(list : ShoppingList) {
         localCoroutine.launch {
             deleteShoppingListFromDatabase(list)
-            postShoppingListOnline(list)
+            deleteShoppingListOnline(list.ID)
         }
     }
 
@@ -695,10 +723,13 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-    fun SearchUsersOnline() {
-        localCoroutine.launch {
-
+    suspend fun SearchUsersOnline(name : String) : List<ListCreator> {
+        var users = emptyList<ListCreator>()
+        withContext(Dispatchers.IO) {
+            val matchingUsers = getMatchingUsersFromOnline(name) ?: return@withContext
+            users = matchingUsers
         }
+        return users
     }
 
     fun ShareShoppingListOnline(listId: Long, sharedWithId : Long) {

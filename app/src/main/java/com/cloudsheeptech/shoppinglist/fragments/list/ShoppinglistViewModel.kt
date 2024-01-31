@@ -36,11 +36,11 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     val refreshing : LiveData<Boolean> get() = _refreshing
 
     // Navigation
-    private val _navigateToAddWord = MutableLiveData<Boolean>(false)
-    val navigateToAdd : LiveData<Boolean> get() = _navigateToAddWord
+    private val _navigateUp = MutableLiveData<Boolean>(false)
+    val navigateUp : LiveData<Boolean> get() = _navigateUp
 
-    private val _navigateToEditWord = MutableLiveData<Int>(-1)
-    val navigateToEdit : LiveData<Int> get() = _navigateToEditWord
+    private val _navigateShare = MutableLiveData<Long>(-1)
+    val navigateShare : LiveData<Long> get() = _navigateShare
 
     private val _hideKeyboard = MutableLiveData<Boolean>(false)
     val hideKeyboard : LiveData<Boolean> get() = _hideKeyboard
@@ -166,23 +166,29 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     fun shareThisList() {
         // TODO: Let user decide who to share the list with
         // For now use '-1' == 'all'
-        listHandler.ShareShoppingListOnline(shoppingListId, -1)
+//        listHandler.ShareShoppingListOnline(shoppingListId, -1)
+        navigateToShare()
     }
 
     fun deleteThisList() {
         listHandler.DeleteShoppingList(shoppingListId)
+        navigateUp()
     }
 
-    fun onEditWordNavigated() {
-        _navigateToEditWord.value = -1
+    fun onUpNavigated() {
+        _navigateUp.value = false
     }
 
-    fun navigateToAddWord() {
-        _navigateToAddWord.value = true
+    fun navigateUp() {
+        _navigateUp.value = true
     }
 
-    fun onAddWordNavigated() {
-        _navigateToAddWord.value = false
+    fun navigateToShare() {
+        _navigateShare.value = shoppingListId
+    }
+
+    fun onShareNavigated() {
+        _navigateShare.value = -1
     }
 
     private fun clearItemNameInput() {

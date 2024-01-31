@@ -142,15 +142,15 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         viewModel.refreshing.observe(viewLifecycleOwner, Observer {
             if (!it) {
                 Log.i("EditFragment", "Refreshing finished")
-                adapter.notifyDataSetChanged()
+//                adapter.notifyDataSetChanged()
                 binding.refreshLayout.isRefreshing = false
             }
         })
 
-        viewModel.navigateToAdd.observe(viewLifecycleOwner, Observer { navigate ->
+        viewModel.navigateUp.observe(viewLifecycleOwner, Observer { navigate ->
             if (navigate) {
-                findNavController().navigate(ShoppinglistFragmentDirections.actionEditToEditFragment(-1))
-                viewModel.onAddWordNavigated()
+                findNavController().navigateUp()
+                viewModel.onUpNavigated()
             }
         })
 
@@ -168,13 +168,12 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             }
         })
 
-//
-//        viewModel.navigateToEdit.observe(viewLifecycleOwner, Observer {selected ->
-//            if (selected > -1) {
-//                findNavController().navigate(EditlistFragmentDirections.actionEditToEditFragment(selected))
-//                viewModel.onEditWordNavigated()
-//            }
-//        })
+        viewModel.navigateShare.observe(viewLifecycleOwner, Observer { listId ->
+            if (listId > 0) {
+                findNavController().navigate(ShoppinglistFragmentDirections.actionShoppinglistToShareFragment(listId))
+                viewModel.onShareNavigated()
+            }
+        })
 
         return binding.root
     }

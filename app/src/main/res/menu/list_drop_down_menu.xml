@@ -4,16 +4,17 @@
 
     <item
         android:id="@+id/share_list"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:icon="@drawable/ic_publish"
         android:title="Share"
         app:showAsAction="always"/>
     <item
         android:id="@+id/delete_list"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:icon="@drawable/ic_trash"
         android:title="Delete List"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/clear_items_list"
+        android:icon="@drawable/ic_clear"
+        android:title="Clear Items In List"
+        app:showAsAction="ifRoom" />
 </menu>

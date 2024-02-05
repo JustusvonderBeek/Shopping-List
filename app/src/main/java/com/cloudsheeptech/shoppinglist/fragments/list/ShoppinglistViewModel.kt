@@ -14,6 +14,7 @@ import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.DEFAULT_CONCURRENCY_PROPERTY_NAME
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -45,6 +46,14 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     private val _hideKeyboard = MutableLiveData<Boolean>(false)
     val hideKeyboard : LiveData<Boolean> get() = _hideKeyboard
 
+    private val _confirmDelete = MutableLiveData<Boolean>(false)
+    val confirmDelete : LiveData<Boolean> get() = _confirmDelete
+
+    private val _confirmClear = MutableLiveData<Boolean>(false)
+    val confirmClear : LiveData<Boolean> get() = _confirmClear
+
+    // ---
+
     private val itemsMappedToList = mappingDao.getMappingsForListLive(shoppingListId)
     // The items in this list
     val itemsInList = MediatorLiveData<List<ItemWithQuantity>>()
@@ -74,7 +83,9 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         val quantityItems = mutableListOf<ItemWithQuantity>()
         itemsInList.addSource(liveItems) {
             mappings.forEachIndexed { index, listMapping ->
-                val quantItem = combineMappingAndItemToItemWithQuantity(listMapping, liveItems.value!![index])
+                // Order might not match
+                val matchingItem = liveItems.value!!.first { x -> x.ID == listMapping.ItemID }
+                val quantItem = combineMappingAndItemToItemWithQuantity(listMapping, matchingItem)
                 quantityItems.add(quantItem)
             }
             itemsInList.value = quantityItems
@@ -171,8 +182,30 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     }
 
     fun deleteThisList() {
+        _confirmDelete.value = true
+    }
+
+    fun onDeleteConfirmed() {
+        _confirmDelete.value = false
         listHandler.DeleteShoppingList(shoppingListId)
         navigateUp()
+    }
+
+    fun onDeleteCanceled() {
+        _confirmDelete.value = false
+    }
+
+    fun clearAllCheckedItems() {
+        _confirmClear.value = true
+    }
+
+    fun onClearAllItemsPositiv() {
+        _confirmClear.value = false
+        listHandler.ClearCheckedItemsInList(shoppingListId)
+    }
+
+    fun onClearAllItemsNegative() {
+        _confirmClear.value = false
     }
 
     fun onUpNavigated() {

@@ -9,7 +9,6 @@ import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ListShare
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
-import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.data.UserWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
@@ -20,7 +19,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -149,18 +147,21 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     // Helper function
     private suspend fun insertMappingInDatabase(mapping : ListMapping) {
         withContext(Dispatchers.IO) {
-            insertMappingsInDatabase(listOf(mapping))
+            insertOrRemoveMappingsInDatabase(listOf(mapping))
         }
     }
 
-    private suspend fun insertMappingsInDatabase(mappings : List<ListMapping>) {
+    private suspend fun insertOrRemoveMappingsInDatabase(mappings : List<ListMapping>) {
         withContext(Dispatchers.IO) {
             // Check if the mapping is new or does exist
+            if (mappings.isEmpty())
+                return@withContext
+            mappingDao.deleteMappingsForListId(mappings.first().ListID)
             for (mapping in mappings) {
                 val existingMappings = mappingDao.getMappingForItemAndList(mapping.ItemID, mapping.ListID)
                 if (mapping.ID == 0L && existingMappings.isEmpty()) {
                     mappingDao.insertMapping(mapping)
-                    return@withContext
+                    continue
                 }
                 mapping.ID = existingMappings.first().ID
                 updateMappingInDatabase(mapping)
@@ -213,6 +214,12 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             for(existingMapping in existingMappings) {
                 mappingDao.deleteMapping(existingMapping.ID)
             }
+        }
+    }
+
+    private suspend fun deleteAllCheckedMappingsForListId(listId: Long) {
+        withContext(Dispatchers.IO) {
+            mappingDao.deleteCheckedMappingsForListId(listId)
         }
     }
 
@@ -427,6 +434,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         withContext(Dispatchers.IO) {
             val dbItem = itemDao.getItemFromName(itemWire.Name)
             if (dbItem == null) {
+                Log.d("ShoppingListHandler", "Item ${itemWire.Name} not found")
                 item = Item(0, itemWire.Name, itemWire.Icon)
                 item.ID = insertItemInDatabase(item)
                 return@withContext
@@ -548,7 +556,6 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-
     private suspend fun getShoppingListFromOnline(listId : Long) : ShoppingListWire? {
         var onlineList : ShoppingListWire? = null
         withContext(Dispatchers.IO) {
@@ -603,7 +610,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                 val (localList, mappings, _) = shoppingListWireToLocal(list)
                 val updated = updateListInDatabase(localList)
                 if (updated) {
-                    insertMappingsInDatabase(mappings)
+                    insertOrRemoveMappingsInDatabase(mappings)
                 }
             }
         }
@@ -712,7 +719,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             val updated = updateListInDatabase(list)
             if (updated) {
                 // Only update the mappings in case we received a newer list
-                insertMappingsInDatabase(mappings)
+                insertOrRemoveMappingsInDatabase(mappings)
             }
         }
     }
@@ -744,6 +751,14 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         Log.d("ShoppingListHandler", "Unsharing list $listId")
         localCoroutine.launch {
             unshareListOnline(listId)
+        }
+    }
+
+    fun ClearCheckedItemsInList(listId: Long) {
+        Log.d("ShoppingListHandler", "Clearing all checked items for list $listId")
+        localCoroutine.launch {
+            deleteAllCheckedMappingsForListId(listId)
+            postShoppingListOnline(listId)
         }
     }
 

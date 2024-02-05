@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.fragments.list
 
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -46,6 +47,10 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             }
             R.id.delete_list -> {
                 viewModel.deleteThisList()
+                return true
+            }
+            R.id.clear_items_list -> {
+                viewModel.clearAllCheckedItems()
                 return true
             }
         }
@@ -172,6 +177,40 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             if (listId > 0) {
                 findNavController().navigate(ShoppinglistFragmentDirections.actionShoppinglistToShareFragment(listId))
                 viewModel.onShareNavigated()
+            }
+        })
+
+        val confirmClearDialog = AlertDialog.Builder(context)
+            .setMessage("Do you really want to clear all checked items?")
+            .setTitle("Confirm Clear All!")
+            .setPositiveButton("Yes, clear") { dialog, which ->
+                viewModel.onClearAllItemsPositiv()
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
+                viewModel.onClearAllItemsNegative()
+            }
+            .create()
+
+        val confirmDeleteDialog = AlertDialog.Builder(context)
+            .setMessage("Do you really want to delete this list?")
+            .setTitle("Delete List!")
+            .setPositiveButton("Yes, delete") { dialog, which ->
+                viewModel.onDeleteConfirmed()
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
+                viewModel.onDeleteCanceled()
+            }
+            .create()
+
+        viewModel.confirmClear.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                confirmClearDialog.show()
+            }
+        })
+
+        viewModel.confirmDelete.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                confirmDeleteDialog.show()
             }
         })
 

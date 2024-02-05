@@ -25,16 +25,16 @@ class RecipeFragment : Fragment(), MenuProvider {
     private lateinit var binding : FragmentRecipeBinding
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.list_dropdown, menu)
+        menuInflater.inflate(R.menu.list_drop_down_menu, menu)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
-            R.id.dd_edit_btn -> {
+            R.id.delete_list -> {
                 viewModel.editWord()
                 return true
             }
-            R.id.dd_delete_btn -> {
+            R.id.share_list -> {
                 viewModel.removeRecipe()
                 return true
             }

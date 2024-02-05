@@ -109,6 +109,12 @@ class ListOperationTests {
         }
     }
 
+    private fun updateExistingListWithItems() {
+        // TODO:
+        // test adding new items
+        // test removing old items
+    }
+
     @Test
     fun AuxiliaryTest() = runTest {
 //        createEntryInDb()

@@ -7,6 +7,8 @@ import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ListShare
+import com.cloudsheeptech.shoppinglist.data.ListShareDatabase
+import com.cloudsheeptech.shoppinglist.data.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.UserWire
@@ -44,6 +46,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private val itemDao = database.itemDao()
     private val mappingDao = database.mappingDao()
     private val onlineUserDao = database.onlineUserDao()
+    private val shareDao = database.sharedDao()
 
     // ------------------------------------------------------------------------------
     // Creation of a new list + Insertion + Update
@@ -151,12 +154,13 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-    private suspend fun insertOrRemoveMappingsInDatabase(mappings : List<ListMapping>) {
+    private suspend fun insertOrRemoveMappingsInDatabase(mappings : List<ListMapping>, remove : Boolean = false) {
         withContext(Dispatchers.IO) {
             // Check if the mapping is new or does exist
             if (mappings.isEmpty())
                 return@withContext
-            mappingDao.deleteMappingsForListId(mappings.first().ListID)
+            if (remove)
+                mappingDao.deleteMappingsForListId(mappings.first().ListID)
             for (mapping in mappings) {
                 val existingMappings = mappingDao.getMappingForItemAndList(mapping.ItemID, mapping.ListID)
                 if (mapping.ID == 0L && existingMappings.isEmpty()) {
@@ -282,8 +286,19 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     }
 
     private suspend fun insertUserInfoInDatabase(user : UserWire) {
+        return insertAllUserInfoInDatabase(listOf(user))
+    }
+
+    private suspend fun insertAllUserInfoInDatabse(users : List<ListCreator>) {
+        val converted = users.map { x -> UserWire(x.ID, x.Name) }
+        return insertAllUserInfoInDatabase(converted)
+    }
+
+    private suspend fun insertAllUserInfoInDatabase(users : List<UserWire>) {
         withContext(Dispatchers.IO) {
-            onlineUserDao.insertUser(user)
+            users.forEach { u ->
+                onlineUserDao.insertUser(u)
+            }
         }
     }
 
@@ -350,6 +365,21 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return users
     }
 
+    private suspend fun getAllSharedWithForListOffline(listId: Long) : List<ShareUserPreview> {
+        val sharedWith = mutableListOf<ShareUserPreview>()
+        withContext(Dispatchers.IO) {
+            val sharedWithUsers = shareDao.getListSharedWith(listId)
+            if (sharedWithUsers.isEmpty())
+                return@withContext
+            sharedWithUsers.forEach {
+                val sharedWithUser = getUserInfoFromDatabase(it.SharedWith)
+                if (sharedWithUser != null)
+                    sharedWith.add(ShareUserPreview(it.SharedWith, sharedWithUser.Username, true))
+            }
+        }
+        return sharedWith
+    }
+
     private suspend fun updateUserIdInItems() {
         withContext(Dispatchers.IO) {
             val allItems = itemDao.getAllItems()
@@ -378,6 +408,19 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                 it.CreatedBy = updatedCreator
                 updateListInDatabase(it)
             }
+        }
+    }
+
+    private suspend fun createSharingInDatabase(userId: Long, listId: Long) {
+        withContext(Dispatchers.IO) {
+            val share = ListShareDatabase(0, listId, userId)
+            shareDao.insertShared(share)
+        }
+    }
+
+    private suspend fun deleteSharingInDatabase(userId: Long, listId: Long) {
+        withContext(Dispatchers.IO) {
+            shareDao.deleteForUser(userId, listId)
         }
     }
 
@@ -556,6 +599,19 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
+    private suspend fun unshareListForUserOnline(userId: Long, listId: Long) {
+        withContext(Dispatchers.IO) {
+            val unshareObject = ListShare(listId, userId)
+            val serialized = Json.encodeToString(unshareObject)
+            Networking.DELETE("v1/share/$listId", serialized) { resp ->
+                if (resp.status != HttpStatusCode.OK) {
+                    Log.w("ShoppingListHandler", "Failed to unshare list $listId online")
+                    return@DELETE
+                }
+            }
+        }
+    }
+
     private suspend fun getShoppingListFromOnline(listId : Long) : ShoppingListWire? {
         var onlineList : ShoppingListWire? = null
         withContext(Dispatchers.IO) {
@@ -610,7 +666,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                 val (localList, mappings, _) = shoppingListWireToLocal(list)
                 val updated = updateListInDatabase(localList)
                 if (updated) {
-                    insertOrRemoveMappingsInDatabase(mappings)
+                    insertOrRemoveMappingsInDatabase(mappings, true)
                 }
             }
         }
@@ -734,15 +790,26 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         var users = emptyList<ListCreator>()
         withContext(Dispatchers.IO) {
             val matchingUsers = getMatchingUsersFromOnline(name) ?: return@withContext
+            insertAllUserInfoInDatabse(matchingUsers)
             users = matchingUsers
         }
         return users
+    }
+
+    suspend fun GetAllSharedUsersForList(listId: Long) : List<ShareUserPreview> {
+        var userPreview = listOf<ShareUserPreview>()
+        withContext(Dispatchers.IO) {
+            val matchingUser = getAllSharedWithForListOffline(listId) ?: return@withContext
+            userPreview = matchingUser
+        }
+        return userPreview
     }
 
     fun ShareShoppingListOnline(listId: Long, sharedWithId : Long) {
         Log.d("ShoppingListHandler", "Sharing list $listId with $sharedWithId")
         localCoroutine.launch {
             postShoppingListOnline(listId)
+            createSharingInDatabase(sharedWithId, listId)
             shareListOnline(listId, sharedWithId)
         }
     }
@@ -751,6 +818,14 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         Log.d("ShoppingListHandler", "Unsharing list $listId")
         localCoroutine.launch {
             unshareListOnline(listId)
+        }
+    }
+
+    fun UnshareShoppingListForUserOnline(userId : Long, listId : Long) {
+        Log.d("ShoppingListHandler", "Unsharing list $listId for user $userId")
+        localCoroutine.launch {
+            unshareListForUserOnline(userId, listId)
+            deleteSharingInDatabase(userId, listId)
         }
     }
 

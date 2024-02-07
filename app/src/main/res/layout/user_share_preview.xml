@@ -1,23 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
         <variable
             name="creator"
-            type="com.cloudsheeptech.shoppinglist.data.ListCreator" />
+            type="com.cloudsheeptech.shoppinglist.data.ShareUserPreview" />
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.fragments.share.UserShareAdapter.UserShareClickListener" />
+        <variable
+            name="unshareClickListener"
+            type="com.cloudsheeptech.shoppinglist.fragments.share.UserShareAdapter.UserShareClickListener" />
     </data>
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="@{creator.name}"
-        android:onClick="@{() -> clickListener.onClick(creator)}"
-        />
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textSize="22sp"
+            android:gravity="center_vertical"
+            android:text="@{creator.name}"
+            android:onClick="@{() -> clickListener.onClick(creator)}"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/preview_share_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:onClick="@{() -> clickListener.onClick(creator)}"
+            android:text="Share"
+            app:icon="@drawable/ic_share"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/preview_unshare_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Unshare"
+            android:onClick="@{() -> unshareClickListener.onClick(creator)}"
+            app:icon="@drawable/ic_unshare"
+            android:visibility="gone"
+            />
+
+    </LinearLayout>
+
+
 
 </layout>

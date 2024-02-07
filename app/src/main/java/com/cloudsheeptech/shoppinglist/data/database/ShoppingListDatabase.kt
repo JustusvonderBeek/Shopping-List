@@ -8,11 +8,12 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ListMapping
+import com.cloudsheeptech.shoppinglist.data.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.data.UserWire
 
-@Database(entities = [ShoppingList::class, Item::class, ListMapping::class, User::class, UserWire::class], version=13, exportSchema = false)
+@Database(entities = [ShoppingList::class, Item::class, ListMapping::class, User::class, UserWire::class, ListShareDatabase::class], version=14, exportSchema = false)
 @TypeConverters(value = [DatabaseTypeConverter::class])
 abstract class ShoppingListDatabase : RoomDatabase() {
 
@@ -21,6 +22,7 @@ abstract class ShoppingListDatabase : RoomDatabase() {
     abstract fun mappingDao() : ItemListMappingDao
     abstract fun userDao() : UserDao
     abstract fun onlineUserDao() : OnlineUserDao
+    abstract fun sharedDao() : SharedDao
 
     companion object {
         @Volatile

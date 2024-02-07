@@ -41,15 +41,26 @@ class ShareFragment : Fragment() {
         val adapter = UserShareAdapter(UserShareAdapter.UserShareClickListener { userId ->
             Log.d("ShareFragment", "Clicked on user $userId")
             viewModel.shareList(userId)
+        }, UserShareAdapter.UserShareClickListener { userId ->
+            Log.d("ShareFragment", "Clicked on unshare user $userId")
+            viewModel.unshareListForUser(userId)
         })
         binding.userPreviewList.adapter = adapter
 
-        viewModel.searchedUsers.observe(viewLifecycleOwner, Observer { users ->
+        viewModel.sharedPreview.observe(viewLifecycleOwner, Observer { users ->
             users.let {
                 Log.d("ShareFragment", "Got list with ${users.size} users")
                 adapter.submitList(users)
+                adapter.notifyDataSetChanged()
             }
         })
+
+//        viewModel.searchedUsers.observe(viewLifecycleOwner, Observer { users ->
+//            users.let {
+//                Log.d("ShareFragment", "Got list with ${users.size} users")
+//                adapter.submitList(users)
+//            }
+//        })
 
         viewModel.searchName.observe(viewLifecycleOwner, Observer { name ->
             Log.d("ShareFragment", "Got search query $name")

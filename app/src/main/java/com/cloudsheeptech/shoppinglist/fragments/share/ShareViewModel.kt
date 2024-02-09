@@ -5,8 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.ListCreator
-import com.cloudsheeptech.shoppinglist.data.ListShare
 import com.cloudsheeptech.shoppinglist.data.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
@@ -46,11 +44,16 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
     }
 
     private fun initPreview() {
-        _shared.addSource(_offlineShared) { offlinePreview ->
-            Log.d("ShareViewModel", "Offline changed...")
+        _shared.addSource(_searchedUsers) { onlineUsers ->
+            Log.d("ShareViewModel", "Online changed...")
             localCoroutine.launch {
-                val converted = convertListShareToPreviewUser(offlinePreview)
-                combineWithOnlineUser(converted)
+                combineUserLists(onlineUsers, _offlineShared.value)
+            }
+        }
+        _shared.addSource(_offlineShared) { offlineUsers ->
+            Log.d("ShareViewModel", "Offline changed")
+            localCoroutine.launch {
+                combineUserLists(_searchedUsers.value, offlineUsers)
             }
         }
     }
@@ -68,20 +71,34 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
         return previewUsers
     }
 
-    private fun combineWithOnlineUser(offlinePreview : List<ShareUserPreview>) {
-        val combinedShared = mutableListOf<ShareUserPreview>()
-        combinedShared.addAll(offlinePreview)
-        _shared.addSource(_searchedUsers) { onlineUsers ->
-            val onlinePreview = onlineUsers.map { x -> ShareUserPreview(x.UserId, x.Name, false) }
-            combinedShared.addAll(onlinePreview)
-            _shared.value = combinedShared
+    private suspend fun combineUserLists(onlinePreview : List<ShareUserPreview>?, offlinePreview : List<ListShareDatabase>?) {
+        Log.d("ShareViewModel", "Combine called")
+        withContext(Dispatchers.IO) {
+            val combinedUsers = mutableListOf<ShareUserPreview>()
+            Log.d("ShareViewModel", "Combine: Step before - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}")
+            offlinePreview?.let { combinedUsers.addAll(convertListShareToPreviewUser(it)) }
+            // If the offline user is already in the list, we know he was already shared
+            // Therefore don't add the online user anymore. Differentiate on UserID
+            Log.d("ShareViewModel", "Combine: Step offline - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}")
+            onlinePreview?.let {
+                it.forEach {
+                    // Compare on the UserID (overwritten in the class equals operator itself)
+                    if (!combinedUsers.contains(it)) {
+                        combinedUsers.add(it)
+                    }
+                }
+            }
+            Log.d("ShareViewModel", "Combine: Step online - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}")
+            withContext(Dispatchers.Main) {
+                _shared.value = combinedUsers
+            }
         }
     }
 
     private suspend fun searchUsersFromOnlineAndDatabase(name : String) : List<ShareUserPreview> {
         var users = emptyList<ShareUserPreview>()
         withContext(Dispatchers.IO) {
-            val onlineUsers = listHandler.SearchUsersOnline(name) ?: return@withContext
+            val onlineUsers = listHandler.SearchUsersOnline(name)
             val onlinePreview = onlineUsers.map { x -> ShareUserPreview(x.ID, x.Name, false) }
             users = onlinePreview
         }

@@ -29,6 +29,9 @@ class UserShareAdapter(val clickListener: UserShareClickListener, val unshareLis
             if (item.Shared) {
                 binding.previewUnshareButton.visibility = View.VISIBLE
                 binding.previewShareButton.visibility = View.GONE
+            } else {
+                binding.previewShareButton.visibility = View.VISIBLE
+                binding.previewUnshareButton.visibility = View.GONE
             }
 //            if (item.ID % 2L == 0L)
             binding.executePendingBindings()

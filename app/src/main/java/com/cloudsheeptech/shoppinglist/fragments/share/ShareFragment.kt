@@ -51,7 +51,7 @@ class ShareFragment : Fragment() {
             users.let {
                 Log.d("ShareFragment", "Got list with ${users.size} users")
                 adapter.submitList(users)
-                adapter.notifyDataSetChanged()
+//                adapter.notifyDataSetChanged()
             }
         })
 

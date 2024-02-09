@@ -424,6 +424,12 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
+    private suspend fun deleteAllSharingForListInDatabase(listId: Long) {
+        withContext(Dispatchers.IO) {
+            shareDao.deleteAllFromList(listId)
+        }
+    }
+
     // ------------------------------------------------------------------------------
     // Conversion of Lists from and to Wire Format
     // ------------------------------------------------------------------------------
@@ -818,6 +824,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         Log.d("ShoppingListHandler", "Unsharing list $listId")
         localCoroutine.launch {
             unshareListOnline(listId)
+            deleteAllSharingForListInDatabase(listId)
         }
     }
 

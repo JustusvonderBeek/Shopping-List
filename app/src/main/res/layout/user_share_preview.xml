@@ -47,11 +47,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Unshare"
             android:onClick="@{() -> unshareClickListener.onClick(creator)}"
-            app:icon="@drawable/ic_unshare"
+            android:text="Unshare"
             android:visibility="gone"
-            />
+            app:backgroundTint="#FF5722"
+            app:icon="@drawable/ic_unshare" />
 
     </LinearLayout>
 

@@ -39,8 +39,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Setup user
+        // Setup user (this is necessary so that we can use the value throughout the app)
         AppUser.loadUser(application.applicationContext)
+//        AppUser.PostUserOnline(applicationContext)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 

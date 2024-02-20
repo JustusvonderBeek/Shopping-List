@@ -22,7 +22,7 @@ class ListOperationTests {
 //        val listTitle = "New List"
         val application = ApplicationProvider.getApplicationContext<Application>()
         AppUser.loadUser(application)
-        AppUser.ID = 12
+        AppUser.UserId = 12
         AppUser.Username = "Franz"
 
 //        val factory = CreateShoppinglistViewModelFactory(application)
@@ -134,7 +134,7 @@ class ListOperationTests {
     private suspend fun loadList() : Boolean {
         val application = ApplicationProvider.getApplicationContext<Application>()
         AppUser.loadUser(application)
-        AppUser.ID = 12
+        AppUser.UserId = 12
         AppUser.Username = "Franz"
         val database = ShoppingListDatabase.getInstance(application)
         Networking.registerApplicationDir(application.filesDir.absolutePath, database)

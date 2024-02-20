@@ -3,6 +3,7 @@ package com.cloudsheeptech.shoppinglist.network
 import android.util.Log
 import com.auth0.android.jwt.JWT
 import com.cloudsheeptech.shoppinglist.user.AppUser
+import com.cloudsheeptech.shoppinglist.data.DatabaseUser
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.database.UserDao
@@ -166,7 +167,7 @@ object Networking {
                 return@withContext
             }
             val body = response.bodyAsText(Charsets.UTF_8)
-            val decoded = Json.decodeFromString<User>(body)
+            val decoded = Json.decodeFromString<DatabaseUser>(body)
             user.ID = decoded.ID
         }
         return user
@@ -186,10 +187,10 @@ object Networking {
                         // Failed to push again. No need to login, as this won't work with an ID = 0
                         return@withContext null
                     }
-                    AppUser.ID = user.ID
+                    AppUser.UserId = user.ID
                     AppUser.Username = user.Username
                     AppUser.Password = user.Password
-                    AppUser.storeUser()
+//                    AppUser.storeUser()
                     // The following operation still might fail because of an incorrect userId
                     // Therefore, update all the items in the list and try again
                 }

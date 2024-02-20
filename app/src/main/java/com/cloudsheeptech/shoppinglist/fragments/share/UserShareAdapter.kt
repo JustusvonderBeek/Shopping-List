@@ -30,6 +30,8 @@ class UserShareAdapter(val clickListener: UserShareClickListener, val unshareLis
                 binding.previewUnshareButton.visibility = View.VISIBLE
                 binding.previewShareButton.visibility = View.GONE
             } else {
+                // This is necessary because recyclerview reuses items and would show the wrong button
+                // if we unshared and search again
                 binding.previewShareButton.visibility = View.VISIBLE
                 binding.previewUnshareButton.visibility = View.GONE
             }

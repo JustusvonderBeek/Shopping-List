@@ -272,14 +272,14 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
 
     private suspend fun updatedCreatedByForAllLists() {
         withContext(Dispatchers.IO) {
-            if (AppUser.ID == 0L)
+            if (AppUser.UserId == 0L)
                 return@withContext
             val allShoppingLists = listDao.getShoppingLists()
             if (allShoppingLists.isEmpty())
                 return@withContext
             val uninitializedLists = allShoppingLists.filter { list -> list.CreatedBy.ID == 0L }
             for (list in uninitializedLists) {
-                list.CreatedBy.ID = AppUser.ID
+                list.CreatedBy.ID = AppUser.UserId
                 updateListInDatabase(list)
             }
         }
@@ -389,7 +389,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             if (uninitializedItems.isEmpty())
                 return@withContext
             uninitializedItems.forEach {
-                it.ID = AppUser.ID
+                it.ID = AppUser.UserId
                 updateItemInDatabase(it)
             }
         }
@@ -403,7 +403,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             val uninitializedLists = lists.filter { it.CreatedBy.ID == 0L }
             if (uninitializedLists.isEmpty())
                 return@withContext
-            val updatedCreator = ListCreator(AppUser.ID, AppUser.Username)
+            val updatedCreator = ListCreator(AppUser.UserId, AppUser.Username)
             uninitializedLists.forEach {
                 it.CreatedBy = updatedCreator
                 updateListInDatabase(it)
@@ -475,7 +475,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     }
 
     private fun itemToMapping(item: Item, list : Long) : ListMapping {
-        return ListMapping(ID = 0L, item.ID, list, Quantity = 1L, Checked = false, AddedBy = AppUser.ID)
+        return ListMapping(ID = 0L, item.ID, list, Quantity = 1L, Checked = false, AddedBy = AppUser.UserId)
     }
 
     private suspend fun itemWireToItemAndCreateIfNotExists(itemWire: ItemWire) : Item {
@@ -552,11 +552,11 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                 success = true
             }, {
                 // This is triggered in case we freshly updated the user
-                if (AppUser.ID == 0L)
+                if (AppUser.UserId == 0L)
                     return@POST it
                 updatedCreatedByForAllLists()
                 val decoded = Json.decodeFromString<ShoppingListWire>(it)
-                decoded.CreatedBy = ListCreator(AppUser.ID, AppUser.Username)
+                decoded.CreatedBy = ListCreator(AppUser.UserId, AppUser.Username)
                 return@POST Json.encodeToString(decoded)
             })
         }
@@ -650,7 +650,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private suspend fun getOwnAndSharedShoppingListsFromOnline() : List<ShoppingListWire> {
         val onlineLists = mutableListOf<ShoppingListWire>()
         withContext(Dispatchers.IO) {
-            Networking.GET("v1/lists/${AppUser.ID}") { resp ->
+            Networking.GET("v1/lists/${AppUser.UserId}") { resp ->
                 if (resp.status != HttpStatusCode.OK) {
                     Log.w("ShoppingListHandler", "Failed to GET all list from online")
                     return@GET

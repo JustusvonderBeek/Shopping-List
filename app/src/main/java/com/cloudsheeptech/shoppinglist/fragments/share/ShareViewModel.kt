@@ -125,7 +125,7 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
 
     fun shareList(sharedWithId : Long) {
         listHandler.ShareShoppingListOnline(listId, sharedWithId)
-        navigateUp()
+//        navigateUp()
     }
 
     fun unshareList() {

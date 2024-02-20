@@ -4,6 +4,7 @@ import android.content.res.Resources
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -42,6 +43,11 @@ class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, val 
             binding.item = item
             binding.clickListener = clickListener
             binding.checkClickListener = checkClickListener
+            // When pressing the checkbox itself also update
+            binding.itemCheckbox.setOnCheckedChangeListener { _, _ ->
+//                Log.d("ShoppingListItemAdapter", "Checkbox itself pressed")
+                checkClickListener.onClick(item)
+            }
 //            Glide.with(binding.root).load(R.drawable.ic_item).into(binding.itemIcon)
             binding.executePendingBindings()
         }

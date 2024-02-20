@@ -2,20 +2,20 @@ package com.cloudsheeptech.shoppinglist.data.database
 
 import androidx.room.TypeConverter
 import com.cloudsheeptech.shoppinglist.data.ListCreator
-import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.data.DatabaseUser
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class DatabaseTypeConverter {
 
     @TypeConverter
-    fun userToString(user : User) : String {
+    fun userToString(user : DatabaseUser) : String {
         return Json.encodeToString(user)
     }
 
     @TypeConverter
-    fun stringToUser(string : String) : User {
-        return Json.decodeFromString<User>(string)
+    fun stringToUser(string : String) : DatabaseUser {
+        return Json.decodeFromString<DatabaseUser>(string)
     }
 
     @TypeConverter

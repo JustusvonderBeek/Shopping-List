@@ -7,29 +7,33 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.data.DatabaseUser
 
 @Dao
 interface UserDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertUser(user : User)
+    // To ensure that we only ever keep a single user
+    // Ensure that the primary key of the class is fixed
+    // and cannot be changed in the application
 
-    @Update
-    fun updateUser(user : User)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertUser(user : DatabaseUser)
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    fun updateUser(user : DatabaseUser)
 
     @Delete
-    fun deleteUser(user : User)
+    fun deleteUser(user : DatabaseUser)
 
-    @Query("DELETE FROM user_table")
+    @Query("DELETE FROM user")
     fun resetUser()
 
     // -----------------------------------------------
     // Expecting only one user in total for the methods below to work!
     // -----------------------------------------------
-    @Query("SELECT * FROM user_table LIMIT 1")
-    fun getUser() : User?
+    @Query("SELECT * FROM user LIMIT 1")
+    fun getUser() : DatabaseUser?
 
-    @Query("SELECT * FROM user_table LIMIT 1")
-    fun getUserLive() : LiveData<User>
+    @Query("SELECT * FROM user LIMIT 1")
+    fun getUserLive() : LiveData<DatabaseUser>
 }

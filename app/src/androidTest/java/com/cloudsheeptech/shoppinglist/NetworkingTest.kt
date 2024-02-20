@@ -4,13 +4,13 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.DatabaseUser
 import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -50,7 +50,7 @@ class NetworkingTest {
             if (body.isEmpty())
                 return@POST
             // Decode user to replace password
-            val decodedUser = Json.decodeFromString<User>(body)
+            val decodedUser = Json.decodeFromString<DatabaseUser>(body)
             decodedUser.Password = user.Password
             val encodedUser = Json.encodeToString(decodedUser)
             // Store user to disk to allow the test making use of it

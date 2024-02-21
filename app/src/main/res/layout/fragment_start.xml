@@ -16,7 +16,27 @@
         tools:context=".fragments.create.user.StartFragment"
         android:orientation="vertical">
 
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/shopping_list_banner"
+            android:scaleType="centerCrop"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:textSize="32dp"
+            android:textStyle="bold"
+            android:text="Shopping List"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -27,15 +47,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+
             <EditText
                 android:id="@+id/usernameInputText"
                 style="@style/RecapTextViewStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/recap_input_hint"
-                android:text="@={viewModel.inputText}"
                 android:background="@null"
-                />
+                android:hint="@string/recap_input_hint"
+                android:text="@={viewModel.inputText}" />
 
             <Button
                 android:id="@+id/startButton"

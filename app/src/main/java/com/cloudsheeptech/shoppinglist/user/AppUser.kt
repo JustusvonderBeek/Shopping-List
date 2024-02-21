@@ -124,6 +124,7 @@ object AppUser {
     }
 
     private suspend fun pushUserOnline(context: Context) {
+        var userId = 0L
         withContext(Dispatchers.IO) {
             val user = getUser()
             val serialized = Json.encodeToString(user)
@@ -133,9 +134,10 @@ object AppUser {
                     Toast.makeText(context, "Storing user online failed", Toast.LENGTH_LONG).show()
                 }
                 Log.d("AppUser", "User online created")
-                Toast.makeText(context, "Created user online", Toast.LENGTH_LONG).show()
+//                Toast.makeText(context, "Created user online", Toast.LENGTH_LONG).show()
                 val body = resp.bodyAsText(Charsets.UTF_8)
                 val parsedUser = Json.decodeFromString<DatabaseUser>(body)
+//                Log.d("AppUser", "Received user: $parsedUser")
                 UserId = parsedUser.ID
             }
         }
@@ -146,6 +148,7 @@ object AppUser {
             return
         localCoroutine.launch {
             pushUserOnline(context)
+            storeUserDatabase(DatabaseUser(getUser()))
         }
     }
 

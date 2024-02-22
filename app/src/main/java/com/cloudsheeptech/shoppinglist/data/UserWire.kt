@@ -1,13 +1,16 @@
 package com.cloudsheeptech.shoppinglist.data
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import java.time.OffsetDateTime
 
 @Serializable
-@Entity(tableName = "online_user")
 data class UserWire(
-    @PrimaryKey(autoGenerate = false)
     var ID : Long,
     var Username : String,
+    var Password : String,
+    @Contextual
+    var Created : OffsetDateTime,
+    @Contextual
+    var LastLogin : OffsetDateTime,
 )

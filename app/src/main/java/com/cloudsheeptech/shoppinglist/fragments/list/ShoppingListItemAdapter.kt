@@ -14,7 +14,7 @@ import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, val checkboxClickListener: ShoppingItemCheckboxClickListener, private val resource : Resources, private val mappingDao: ItemListMappingDao) : ListAdapter<ItemWithQuantity, ShoppingListItemAdapter.WordListItemViewHolder>(
+class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, val checkboxClickListener: ShoppingItemCheckboxClickListener, private val resource : Resources, private val mappingDao: ItemListMappingDao, private val listId : Long) : ListAdapter<ItemWithQuantity, ShoppingListItemAdapter.WordListItemViewHolder>(
     WordDiffCallback()
 ) {
 
@@ -22,12 +22,9 @@ class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, val 
         Log.i("WordListItemAdapter", "Remove item at $position")
         withContext(Dispatchers.IO) {
             val item = currentList[position]
-            mappingDao.deleteMappingItemListId(item.ID, 0)
+            mappingDao.deleteMappingItemListId(item.ID, listId)
         }
-    }
-
-    fun toggleCheckbox(item : Int) {
-
+        notifyItemChanged(position)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordListItemViewHolder {
@@ -44,9 +41,10 @@ class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, val 
             binding.clickListener = clickListener
             binding.checkClickListener = checkClickListener
             // When pressing the checkbox itself also update
-            binding.itemCheckbox.setOnCheckedChangeListener { _, _ ->
+            binding.itemCheckbox.setOnCheckedChangeListener { _, checked ->
 //                Log.d("ShoppingListItemAdapter", "Checkbox itself pressed")
-                checkClickListener.onClick(item)
+                if (item.Checked != checked)
+                    checkClickListener.onClick(item)
             }
 //            Glide.with(binding.root).load(R.drawable.ic_item).into(binding.itemIcon)
             binding.executePendingBindings()

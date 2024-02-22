@@ -34,10 +34,10 @@ interface ShoppingListDao {
     @Query("SELECT * FROM list_table ORDER BY ID ASC")
     fun getShoppingLists() : List<ShoppingList>
 
-    @Query("SELECT * FROM list_table WHERE ID = :key")
-    fun getShoppingListLive(key : Long) : LiveData<ShoppingList>
+    @Query("SELECT * FROM list_table WHERE ID = :key AND CreatedBy = :keyCreatedBy")
+    fun getShoppingListLive(key : Long, keyCreatedBy : Long) : LiveData<ShoppingList>
 
-    @Query("SELECT * FROM list_table WHERE ID = :key")
-    fun getShoppingList(key : Long) : ShoppingList?
+    @Query("SELECT * FROM list_table WHERE ID = :key AND CreatedBy = :keyCreatedBy")
+    fun getShoppingList(key : Long, keyCreatedBy: Long) : ShoppingList?
 
 }

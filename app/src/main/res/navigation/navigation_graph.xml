@@ -57,6 +57,10 @@
         <action
             android:id="@+id/action_shoppinglist_to_shareFragment"
             app:destination="@id/shareFragment" />
+        <argument
+            android:name="CreatedBy"
+            app:argType="long"
+            android:defaultValue="-1L" />
     </fragment>
     <fragment
         android:id="@+id/editItem"

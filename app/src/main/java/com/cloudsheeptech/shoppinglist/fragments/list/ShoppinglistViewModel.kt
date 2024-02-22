@@ -11,6 +11,7 @@ import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
+import com.cloudsheeptech.shoppinglist.user.AppUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,7 +19,7 @@ import kotlinx.coroutines.flow.DEFAULT_CONCURRENCY_PROPERTY_NAME
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shoppingListId : Long) : ViewModel() {
+class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shoppingListId : Long, private val createdBy : Long) : ViewModel() {
 
     private val listDao = database.shoppingListDao()
     private val itemDao = database.itemDao()
@@ -54,14 +55,14 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
     // ---
 
-    private val itemsMappedToList = mappingDao.getMappingsForListLive(shoppingListId)
+    private val itemsMappedToList = mappingDao.getMappingsForListLive(shoppingListId, createdBy)
     // The items in this list
     val itemsInList = MediatorLiveData<List<ItemWithQuantity>>()
 
     private val _previewItems = MutableLiveData<List<Item>>()
     val previewItems : LiveData<List<Item>> get() = _previewItems
 
-    private val _listInformation = listDao.getShoppingListLive(shoppingListId)
+    private val _listInformation = listDao.getShoppingListLive(shoppingListId, createdBy)
     val listInformation : LiveData<ShoppingList> get() = _listInformation
 
     init {
@@ -103,28 +104,28 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
             return
         }
         val item = Item(ID = 0, Name=itemName.value!!, Icon = "ic_item")
-        listHandler.AddItemAndAddToShoppingList(item, shoppingListId)
+        listHandler.AddItemAndAddToShoppingList(item, shoppingListId, createdBy)
         hideKeyboard()
         clearItemNameInput()
     }
 
     fun toggleItem(itemId : Long) {
         Log.d("ShoppinListViewModel", "Toggle item $itemId")
-        listHandler.ToggleItemInShoppingList(itemId, shoppingListId)
+        listHandler.ToggleItemInShoppingList(itemId, shoppingListId, createdBy)
     }
 
 
     fun increaseItemCount(itemId : Int, quantity : Long = 1L) {
-        listHandler.IncreaseItemCountInShoppingList(itemId.toLong(), shoppingListId, quantity)
+        listHandler.IncreaseItemCountInShoppingList(itemId.toLong(), shoppingListId, createdBy, quantity)
     }
 
     fun decreaseItemCount(itemId : Int) {
-        listHandler.DecreaseItemCountInShoppingList(itemId.toLong(), shoppingListId)
+        listHandler.DecreaseItemCountInShoppingList(itemId.toLong(), shoppingListId, createdBy)
     }
 
     private fun pushListToServer() {
         Log.d("ShoppinglistViewModel", "Pushing list with ${itemsInList.value?.size} to server")
-        listHandler.PostShoppingListOnline(shoppingListId)
+        listHandler.PostShoppingListOnline(shoppingListId, createdBy)
     }
 
     fun updateShoppinglist() {
@@ -163,7 +164,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         withContext(Dispatchers.IO) {
             val item = itemDao.getItem(itemId) ?: return@withContext
 //            Log.d("ShoppinglistViewModel", "Found item to add")
-            listHandler.AddItemToShoppingList(item, shoppingListId)
+            listHandler.AddItemToShoppingList(item, shoppingListId, createdBy)
         }
     }
 
@@ -187,7 +188,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
     fun onDeleteConfirmed() {
         _confirmDelete.value = false
-        listHandler.DeleteShoppingList(shoppingListId)
+        listHandler.DeleteShoppingList(shoppingListId, createdBy)
         navigateUp()
     }
 

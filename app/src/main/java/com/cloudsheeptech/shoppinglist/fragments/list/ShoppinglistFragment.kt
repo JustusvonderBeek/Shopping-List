@@ -2,6 +2,7 @@ package com.cloudsheeptech.shoppinglist.fragments.list
 
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -26,6 +27,7 @@ import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListBinding
 import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
+import jp.wasabeef.blurry.Blurry
 
 class ShoppinglistFragment : Fragment(), MenuProvider {
 
@@ -72,20 +74,23 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         // Adding the dropdown menu in the toolbar
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        var shoppingListId = args.ListID
-        Log.d("ShoppinglistFragment", "Navigated to list with ID $shoppingListId")
+        val shoppingListId = args.ListID
+        val createdBy = args.CreatedBy
+        Log.d("ShoppinglistFragment", "Navigated to list with ID $shoppingListId from $createdBy")
         if (shoppingListId < 0)
+            findNavController().navigateUp()
+        if (createdBy < 0)
             findNavController().navigateUp()
 
         val database = ShoppingListDatabase.getInstance(requireContext())
-        val viewModelFactory = ShoppingListViewModelFactory(database, shoppingListId)
+        val viewModelFactory = ShoppingListViewModelFactory(database, shoppingListId, createdBy)
 
         viewModel = ViewModelProvider(this, viewModelFactory)[ShoppinglistViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = requireActivity()
 
         val adapter = ShoppingListItemAdapter(ShoppingListItemAdapter.ShoppingItemClickListener { itemId, count ->
-            Log.i("EditFragment", "Tapped on item $itemId to increase count")
+            Log.i("ShoppinglistFragment", "Tapped on item $itemId to increase count")
             if (count > 0)
                 viewModel.increaseItemCount(itemId)
             else if (count < 0)
@@ -93,7 +98,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         }, ShoppingListItemAdapter.ShoppingItemCheckboxClickListener { itemId ->
             Log.d("ShoppinglistFragment", "Tapped on item $itemId to toggle checkbox")
             viewModel.toggleItem(itemId.toLong())
-        }, resources, database.mappingDao())
+        }, resources, database.mappingDao(), shoppingListId)
         // The adapter for the preview items
         val previewAdapter = ItemPreviewAdapter(ItemPreviewAdapter.ItemPreviewClickListener { itemId ->
             Log.d("ShoppinglistFragment", "Got preview ID $itemId")
@@ -143,6 +148,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             Log.i("EditFragment", "On refresh called")
             viewModel.updateShoppinglist()
         }
+
 
         viewModel.refreshing.observe(viewLifecycleOwner, Observer {
             if (!it) {
@@ -213,6 +219,9 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
                 confirmDeleteDialog.show()
             }
         })
+
+        // Adding blur effect to the overlay view
+//        Blurry.with(requireContext()).radius(1200).sampling(10).color(Color.argb(255, 238, 237, 0)).onto(binding.rootLayout)
 
         return binding.root
     }

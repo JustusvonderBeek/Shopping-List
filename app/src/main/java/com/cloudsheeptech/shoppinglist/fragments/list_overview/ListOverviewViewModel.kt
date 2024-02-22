@@ -46,8 +46,8 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private  val _createList = MutableLiveData<Boolean>(false)
     val createList : LiveData<Boolean> get() = _createList
 
-    private val _navigateList = MutableLiveData<Long>(-1)
-    val navigateList : LiveData<Long> get() = _navigateList
+    private val _navigateList = MutableLiveData<Pair<Long, Long>>(Pair(-1, -1))
+    val navigateList : LiveData<Pair<Long, Long>> get() = _navigateList
 
     private val _navigateUser = MutableLiveData<Boolean>(false)
     val navigateUser : LiveData<Boolean> get() = _navigateUser
@@ -121,61 +121,6 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
         }
     }
 
-    private suspend fun mergeUpdatedAndExistingLists(onlineList : List<ShoppingListWire>) {
-        withContext(Dispatchers.IO) {
-            val finalList = mutableListOf<ShoppingList>()
-            for (list in onlineList) {
-                // Compare online and local list and take what is more recent
-                val localList = shoppingList.value!!.find { x -> x.ID == list.ListId }
-                if (localList == null) {
-                    // TODO: Create new list
-                    Log.d("ListOverviewViewModel", "Creating new list")
-                    val newList = ShoppingList(list.ListId, list.Name, list.CreatedBy, list.LastEdited)
-                    shoppingListDao.insertList(newList)
-                    continue
-                }
-                if (list.LastEdited != localList.LastEdited) {
-                    // Convert string into date and compare which one is newer
-                    try {
-//                        Log.d("ListOverviewViewModel", "Format: ${formatter.parse(list.LastEdited)}")
-                        val convertedOnline = Instant.parse(list.LastEdited)
-//                        Log.d("ListOverviewViewModel", "Converted online parsed")
-                        val convertedLocal = Instant.parse(localList.LastEdited)
-//                        Log.d("ListOverviewViewModel", "Local parsed")
-                        if (convertedOnline.isAfter(convertedLocal)) {
-                            Log.d("ListOverviewViewModel", "Online list ${list.ListId} is newer than local list! Updating")
-                            val convertedOnlineToLocal = ShoppingList(list.ListId, list.Name, list.CreatedBy, list.LastEdited)
-                            shoppingListDao.updateList(convertedOnlineToLocal)
-                            // Fill the list with items
-                            for (item in list.Items) {
-                                var dbItem = itemDao.getItemFromName(item.Name)
-                                if (dbItem == null) {
-                                    dbItem = Item(0, item.Name, item.Icon)
-                                    itemDao.insertItem(dbItem)
-                                    dbItem = itemDao.getItemFromName(item.Name)
-                                }
-                                var dbMapping = itemMappingDao.getMappingForItemAndList(dbItem!!.ID, list.ListId)
-                                if (dbMapping.isEmpty()) {
-                                    val mapping = ListMapping(0, dbItem.ID, list.ListId, item.Quantity, item.Checked, list.CreatedBy.ID)
-                                    itemMappingDao.insertMapping(mapping)
-                                } else {
-                                    val mapping = dbMapping[0]
-                                    mapping.Quantity = item.Quantity
-                                    mapping.Checked = item.Checked
-                                    itemMappingDao.updateMapping(mapping)
-                                }
-                            }
-                        }
-                    } catch (ex : Exception) {
-                        Log.w("ListOverviewViewModel", "Failed to merge lists: $ex")
-                    }
-                } else {
-                    Log.d("ListOverviewViewModel", "Both lists are the same")
-                }
-            }
-        }
-    }
-
     private suspend fun updateListOverview() {
         withContext(Dispatchers.IO) {
             listHandler.GetAllShoppingLists()
@@ -187,12 +132,12 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     // -----------------------------------------------
 
-    fun navigateToShoppingList(id : Long) {
-        _navigateList.value = id
+    fun navigateToShoppingList(id : Long, from : Long) {
+        _navigateList.value = Pair(id, from)
     }
 
     fun onShoppingListNavigated() {
-        _navigateList.value = -1
+        _navigateList.value = Pair(-1, -1)
     }
 
     private fun navigateToCreateList() {

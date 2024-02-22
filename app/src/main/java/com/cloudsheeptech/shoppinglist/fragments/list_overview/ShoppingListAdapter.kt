@@ -28,8 +28,8 @@ class ShoppingListAdapter(val clickListener: ListClickListener, private val reso
     }
 
     class ShoppingListViewHolder private constructor(val binding : ShoppingListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(clickListener: ListClickListener, item : ShoppingList, resource: Resources) {
-            binding.item = item
+        fun bind(clickListener: ListClickListener, list : ShoppingList, resource: Resources) {
+            binding.list = list
             binding.clickListener = clickListener
             binding.executePendingBindings()
         }
@@ -43,8 +43,8 @@ class ShoppingListAdapter(val clickListener: ListClickListener, private val reso
         }
     }
 
-    class ListClickListener(val clickListener: (id: Long) -> Unit) {
-        fun onClick(item: ShoppingList) = clickListener(item.ID)
+    class ListClickListener(val clickListener: (id: Long, from : Long) -> Unit) {
+        fun onClick(list: ShoppingList) = clickListener(list.ID, list.CreatedBy)
     }
 
     class ItemDiffCallback : DiffUtil.ItemCallback<ShoppingList>() {

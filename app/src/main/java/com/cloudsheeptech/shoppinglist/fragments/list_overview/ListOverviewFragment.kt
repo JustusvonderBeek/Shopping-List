@@ -61,16 +61,16 @@ class ListOverviewFragment : Fragment(), MenuProvider {
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
-        val adapter = ShoppingListAdapter(ShoppingListAdapter.ListClickListener { id ->
-            Log.d("ListOverviewFragment", "Got ID $id")
-            viewModel.navigateToShoppingList(id)
+        val adapter = ShoppingListAdapter(ShoppingListAdapter.ListClickListener { id, from ->
+            Log.d("ListOverviewFragment", "Got ID $id from $from")
+            viewModel.navigateToShoppingList(id, from)
         }, requireActivity().resources, listOf())
         binding.listOverviewList.adapter = adapter
 
         viewModel.shoppingList.observe(viewLifecycleOwner, Observer {
             it?.let {
                 adapter.submitList(it)
-                adapter.notifyDataSetChanged()
+//                adapter.notifyDataSetChanged()
             }
         })
 
@@ -81,9 +81,11 @@ class ListOverviewFragment : Fragment(), MenuProvider {
             }
         })
 
-        viewModel.navigateList.observe(viewLifecycleOwner, Observer { id ->
+        viewModel.navigateList.observe(viewLifecycleOwner, Observer { idAndFrom ->
+            val id = idAndFrom.first
+            val from = idAndFrom.second
             if (id > 0L) {
-                findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToShoppinglist(id))
+                findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToShoppinglist(id, from))
                 viewModel.onShoppingListNavigated()
             }
         })

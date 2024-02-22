@@ -11,9 +11,10 @@ import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.DatabaseUser
+import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.UserWire
 
-@Database(entities = [ShoppingList::class, Item::class, ListMapping::class, DatabaseUser::class, UserWire::class, ListShareDatabase::class], version=14, exportSchema = false)
+@Database(entities = [ShoppingList::class, Item::class, ListMapping::class, DatabaseUser::class, ListCreator::class, ListShareDatabase::class], version=18, exportSchema = false)
 @TypeConverters(value = [DatabaseTypeConverter::class])
 abstract class ShoppingListDatabase : RoomDatabase() {
 

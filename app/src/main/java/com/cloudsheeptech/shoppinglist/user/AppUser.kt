@@ -11,7 +11,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import com.cloudsheeptech.shoppinglist.data.DatabaseUser
+import com.cloudsheeptech.shoppinglist.data.Serializer.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.data.UserWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.database.UserDao
 import com.cloudsheeptech.shoppinglist.network.Networking
@@ -25,6 +27,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import java.time.OffsetDateTime
 import kotlin.random.Random
 
 // TODO: Fix storing the user in the database and retrieving values, updating the values
@@ -46,6 +50,12 @@ object AppUser {
     var UserId : Long = 0L
     var Username : String = ""
     var Password : String = ""
+
+    val json = Json {
+        serializersModule = SerializersModule {
+            contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
+        }
+    }
 
     private fun setDatabase(appContext: Context) {
         if (database == null)
@@ -96,7 +106,7 @@ object AppUser {
         setDatabase(appContext)
         localCoroutine.launch {
             loadUserFromDataStore()
-            if (UserId == 0L) {
+            if (UserId == 0L && Username.isNotEmpty() && Password.isNotEmpty()) {
                 Log.d("AppUser", "User ID not yet available")
                 pushUserOnline(appContext)
                 storeUserDatabase(DatabaseUser(getUser()))
@@ -136,7 +146,7 @@ object AppUser {
                 Log.d("AppUser", "User online created")
 //                Toast.makeText(context, "Created user online", Toast.LENGTH_LONG).show()
                 val body = resp.bodyAsText(Charsets.UTF_8)
-                val parsedUser = Json.decodeFromString<DatabaseUser>(body)
+                val parsedUser = json.decodeFromString<UserWire>(body)
 //                Log.d("AppUser", "Received user: $parsedUser")
                 UserId = parsedUser.ID
             }

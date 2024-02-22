@@ -52,7 +52,6 @@ class StartViewModel(application: Application) : AndroidViewModel(application) {
             return
         AppUser.new(inputText.value!!)
         AppUser.PostUserOnline(getApplication<Application>().applicationContext)
-        AppUser.storeUser(getApplication<Application>().applicationContext)
     }
 
     // -----------------------------------------------

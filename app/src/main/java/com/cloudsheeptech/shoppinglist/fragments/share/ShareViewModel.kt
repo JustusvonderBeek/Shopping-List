@@ -64,7 +64,7 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
             share.forEach { s ->
                 val user = onlineUserDao.getUser(s.SharedWith)
                 if (user != null) {
-                    previewUsers.add(ShareUserPreview(user.ID, user.Username, true))
+                    previewUsers.add(ShareUserPreview(user.ID, user.Name, true))
                 }
             }
         }

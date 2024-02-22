@@ -8,4 +8,5 @@ data class ItemWire(
     var Icon: String,
     var Quantity : Long,
     var Checked : Boolean,
+    var AddedBy : Long,
 )

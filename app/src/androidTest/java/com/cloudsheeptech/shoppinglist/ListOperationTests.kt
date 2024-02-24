@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
@@ -14,6 +15,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.OffsetDateTime
 
 @RunWith(AndroidJUnit4::class)
 class ListOperationTests {
@@ -67,7 +69,7 @@ class ListOperationTests {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
         val sl = database.shoppingListDao()
-        val list = ShoppingList(ID=0, Name = "1", CreatedBy = ListCreator(12, ""), LastEdited = "")
+        val list = ShoppingList(ID=0, Name = "1", CreatedBy = 12, CreatedByName = "", LastEdited = OffsetDateTime.now())
         sl.updateList(list)
         val lists = sl.getShoppingLists()
         for (list in lists) {
@@ -79,8 +81,8 @@ class ListOperationTests {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
         val sl = database.shoppingListDao()
-        val list = ShoppingList(ID=0, Name = "1", CreatedBy = ListCreator(12, ""), LastEdited = "")
-        val list2 = ShoppingList(ID=0, Name = "2", CreatedBy = ListCreator(12, ""), LastEdited = "")
+        val list = ShoppingList(ID=0, Name = "1", CreatedBy = 12, CreatedByName = "", LastEdited = OffsetDateTime.now())
+        val list2 = ShoppingList(ID=0, Name = "2", CreatedBy = 12, CreatedByName = "", LastEdited = OffsetDateTime.now())
         sl.insertList(list)
         sl.insertList(list)
         val testId = sl.insertList(list2)
@@ -95,7 +97,7 @@ class ListOperationTests {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
         val sl = database.shoppingListDao()
-        val list = ShoppingList(ID=0, Name = "1", CreatedBy = ListCreator(12, ""), LastEdited = "")
+        val list = ShoppingList(ID=0, Name = "1", CreatedBy = 12, CreatedByName = "", LastEdited = OffsetDateTime.now())
         sl.insertList(list)
         var lists = sl.getShoppingLists()
         for (list in lists) {
@@ -148,11 +150,95 @@ class ListOperationTests {
         val success = loadList()
         assert(success)
     }
-
-    fun testAddItemToList() {
+ 
+    suspend fun testAddItemToList() : Boolean {
         // Dont require to push the item to the server first
         // Simply add the item via the list (self-explanatory)
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        AppUser.loadUser(application)
+        AppUser.UserId = 12
+        AppUser.Username = "Franz"
+        val database = ShoppingListDatabase.getInstance(application)
+        val listHandler = ShoppingListHandler(database = database)
+        listHandler.CreateNewShoppingList("Testlist")
+        val item = Item(0, "Item", "ic_icon")
+        listHandler.AddItemToShoppingList(item, 1, AppUser.UserId)
 
+        Thread.sleep(100)
+
+        val list = database.shoppingListDao().getShoppingList(1, AppUser.UserId)
+        val itemsInList = database.mappingDao().getMappingsForList(1, AppUser.UserId)
+        Assert.assertNotNull(list)
+        Assert.assertNotNull(itemsInList)
+
+        Assert.assertEquals("Testlist", list!!.Name)
+        Assert.assertEquals(1, list!!.ID)
+        Assert.assertEquals(1, itemsInList.size)
+
+        return true
     }
 
+    @Test
+    fun testAddItem() = runTest {
+        val success = testAddItemToList()
+        Assert.assertTrue(success)
+    }
+
+    @Test
+    fun testAddItemsOnline() = runTest {
+//        val success = test
+        Assert.fail()
+    }
+
+    suspend fun createListOffline() : Pair<Boolean, Application> {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+//        AppUser.loadUser(application)
+        AppUser.new("Franz")
+        val database = ShoppingListDatabase.getInstance(application)
+        val listHandler = ShoppingListHandler(database = database)
+        val listName = "Offline List 1"
+        val listName2 = "Offline List 2"
+        listHandler.CreateNewShoppingList(listName)
+        // Give time for the opeartion to complete
+        Thread.sleep(1000)
+        listHandler.CreateNewShoppingList(listName2)
+        // Give time for the opeartion to complete
+        Thread.sleep(1000)
+
+        val listDao = database.shoppingListDao()
+        val lists = listDao.getShoppingLists()
+        Assert.assertEquals(2, lists.size)
+        for (list in lists) {
+            Assert.assertEquals(0L, list.CreatedBy)
+        }
+        return Pair(true, application)
+    }
+
+    suspend fun createUser(application: Application) : Boolean {
+        Assert.assertEquals(0, AppUser.UserId)
+        AppUser.PostUserOnline(application.applicationContext)
+        AppUser.UserId = 12345L
+        // Give time for the user creation
+        Thread.sleep(1000)
+        // Now push the first list online to check if the updating takes place
+        val db = ShoppingListDatabase.getInstance(application.applicationContext)
+        val listHander = ShoppingListHandler(db)
+        listHander.updatedCreatedByForAllLists()
+
+        val listDao = db.shoppingListDao()
+        val lists = listDao.getShoppingLists()
+        Assert.assertEquals(2, lists.size)
+        for (list in lists) {
+            Assert.assertNotEquals(0L, list.CreatedBy)
+        }
+        return true
+    }
+
+    @Test
+    fun testCreatingListOfflineAndPushOnline() = runTest {
+        var (success, app) = createListOffline()
+        Assert.assertTrue(success)
+        success = createUser(app)
+        Assert.assertTrue(success)
+    }
 }

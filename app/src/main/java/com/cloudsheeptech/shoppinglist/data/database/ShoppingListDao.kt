@@ -16,8 +16,8 @@ interface ShoppingListDao {
     @Update
     fun updateList(list : ShoppingList)
 
-    @Query("DELETE FROM list_table WHERE ID = :key")
-    fun deleteList(key : Long)
+    @Query("DELETE FROM list_table WHERE ID = :key AND CreatedBy = :createdBy")
+    fun deleteList(key : Long, createdBy : Long)
 
     @Query("DELETE FROM list_table")
     fun reset()

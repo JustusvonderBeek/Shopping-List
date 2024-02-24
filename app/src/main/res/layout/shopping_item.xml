@@ -88,7 +88,7 @@
                     android:onClick="@{() -> clickListener.onClick(item, -1)}"
                     android:padding="0dp"
                     android:src="@drawable/ic_minus"
-                    app:backgroundTint="#FF5722" />
+                    app:backgroundTint="@color/decrease_orange" />
 
 <!--                <TextView-->
 <!--                    android:layout_width="wrap_content"-->
@@ -107,7 +107,7 @@
                     android:onClick="@{() -> clickListener.onClick(item, 1)}"
                     android:padding="0dp"
                     android:src="@drawable/ic_plus"
-                    app:backgroundTint="#8BC34A" />
+                    app:backgroundTint="@color/add_green" />
 
             </LinearLayout>
         </LinearLayout>

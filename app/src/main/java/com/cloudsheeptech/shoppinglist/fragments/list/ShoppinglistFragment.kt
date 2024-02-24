@@ -2,7 +2,6 @@ package com.cloudsheeptech.shoppinglist.fragments.list
 
 import android.app.AlertDialog
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -27,7 +26,6 @@ import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListBinding
 import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
-import jp.wasabeef.blurry.Blurry
 
 class ShoppinglistFragment : Fragment(), MenuProvider {
 
@@ -126,7 +124,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
 
         viewModel.previewItems.observe(viewLifecycleOwner, Observer { list ->
             list?.let {
-                Log.d("ShoppinglistFragment", "New list (${list.size}) observed")
+//                Log.d("ShoppinglistFragment", "New list (${list.size}) observed")
                 if (list.isNotEmpty()) {
                     binding.shoppingItemSelectView.visibility = View.VISIBLE
                 }

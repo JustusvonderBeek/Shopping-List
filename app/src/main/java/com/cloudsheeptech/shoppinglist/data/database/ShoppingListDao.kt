@@ -22,11 +22,14 @@ interface ShoppingListDao {
     @Query("DELETE FROM list_table")
     fun reset()
 
-    @Query("SELECT ID FROM list_table ORDER BY ID ASC LIMIT 1")
+    @Query("SELECT COUNT(*) FROM list_table ORDER BY ID ASC LIMIT 1")
     fun getLatestListIdLive() : LiveData<Long?>
 
-    @Query("SELECT ID FROM list_table ORDER BY ID ASC LIMIT 1")
+    @Query("SELECT COUNT(*) FROM list_table ORDER BY ID ASC LIMIT 1")
     fun getLatestListId() : Long?
+
+    @Query("SELECT COUNT(*) FROM list_table WHERE ID = 0 OR ID = :key")
+    fun getLatestOwnListId(key : Long) : Long
 
     @Query("SELECT * FROM list_table ORDER BY ID ASC")
     fun getShoppingListsLive() : LiveData<List<ShoppingList>>

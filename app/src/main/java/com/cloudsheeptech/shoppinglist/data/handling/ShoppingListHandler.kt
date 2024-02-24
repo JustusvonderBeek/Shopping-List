@@ -720,12 +720,16 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-    private suspend fun getShoppingListFromOnline(listId : Long) : ShoppingListWire? {
+    private suspend fun getShoppingListFromOnline(listId : Long, createdBy: Long?) : ShoppingListWire? {
         var onlineList : ShoppingListWire? = null
         withContext(Dispatchers.IO) {
-            Networking.GET("v1/list/$listId") { resp ->
+            var requestUrl = "v1/list?listId=$listId"
+            if (createdBy != null) {
+                requestUrl = "$requestUrl&createdBy=$createdBy"
+            }
+            Networking.GET(requestUrl) { resp ->
                 if (resp.status != HttpStatusCode.OK) {
-                    Log.w("ShoppingListHandler", "Failed to GET list $listId from online")
+                    Log.w("ShoppingListHandler", "Failed to GET list $listId ($createdBy) from online")
                     return@GET
                 }
                 val body = resp.bodyAsText(Charsets.UTF_8)
@@ -736,11 +740,11 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         return onlineList
     }
 
-    private suspend fun getShoppingListsFromOnline(lists : List<Long>) : List<ShoppingListWire> {
+    private suspend fun getShoppingListsFromOnline(lists : List<Pair<Long, Long>>) : List<ShoppingListWire> {
         val onlineLists = mutableListOf<ShoppingListWire>()
         withContext(Dispatchers.IO) {
-            for(listId in lists) {
-                val onlineList = getShoppingListFromOnline(listId)
+            for((listId, createdBy) in lists) {
+                val onlineList = getShoppingListFromOnline(listId, createdBy)
                 if (onlineList != null)
                     onlineLists.add(onlineList)
             }
@@ -873,18 +877,18 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-    fun GetShoppingList(listId : Long) {
+    fun GetShoppingList(listId : Long, createdBy: Long) {
         // Automatically updating the list in the database
         // No need to return the list
         localCoroutine.launch {
-            val onlineList = getShoppingListFromOnline(listId) ?: return@launch
+            val onlineList = getShoppingListFromOnline(listId, createdBy) ?: return@launch
             // Automatically creates the items if not existing
             val (list, mappings, _) = shoppingListWireToLocal(onlineList)
 //            insertItemsInDatabase(items)
             val updated = updateListInDatabase(list)
             if (updated) {
                 // Only update the mappings in case we received a newer list
-                insertOrRemoveMappingsInDatabase(mappings)
+                insertOrRemoveMappingsInDatabase(mappings, true)
             }
         }
     }

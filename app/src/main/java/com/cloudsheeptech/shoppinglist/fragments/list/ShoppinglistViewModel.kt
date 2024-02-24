@@ -130,7 +130,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
     fun updateShoppinglist() {
         _refreshing.value = true
-        listHandler.GetShoppingList(shoppingListId)
+        listHandler.GetShoppingList(shoppingListId, createdBy)
         _refreshing.value = false
     }
 

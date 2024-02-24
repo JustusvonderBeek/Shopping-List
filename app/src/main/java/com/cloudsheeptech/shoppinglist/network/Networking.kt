@@ -31,8 +31,8 @@ import java.util.Date
 
 object Networking {
 
-    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
-//    private val baseUrl = "https://10.0.2.2:46152/"
+//    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
+    private val baseUrl = "https://10.0.2.2:46152/"
     private lateinit var applicationDir : String
     private lateinit var database : ShoppingListDatabase
     private lateinit var userDao : UserDao
@@ -156,22 +156,22 @@ object Networking {
     }
 
     // Keep the functionality here for now (not clean, but works)
-    private suspend fun pushUserToServer(user : User) : User {
-        withContext(Dispatchers.IO) {
-            val response : HttpResponse = client.post(baseUrl + "auth/create") {
-                contentType(ContentType.Application.Json)
-                setBody(user)
-            }
-            if (response.status != HttpStatusCode.Created) {
-                Log.e("Networking", "Failed to push user to server!")
-                return@withContext
-            }
-            val body = response.bodyAsText(Charsets.UTF_8)
-            val decoded = Json.decodeFromString<DatabaseUser>(body)
-            user.ID = decoded.ID
-        }
-        return user
-    }
+//    private suspend fun pushUserToServer(user : User) : User {
+//        withContext(Dispatchers.IO) {
+//            val response : HttpResponse = client.post(baseUrl + "auth/create") {
+//                contentType(ContentType.Application.Json)
+//                setBody(user)
+//            }
+//            if (response.status != HttpStatusCode.Created) {
+//                Log.e("Networking", "Failed to push user to server!")
+//                return@withContext
+//            }
+//            val body = response.bodyAsText(Charsets.UTF_8)
+//            val decoded = Json.decodeFromString<DatabaseUser>(body)
+//            user.ID = decoded.ID
+//        }
+//        return user
+//    }
 
     // One of these functions does have side-effects because the username and ID get reset
     private suspend fun login() {
@@ -179,18 +179,22 @@ object Networking {
         val decodedToken = withContext(Dispatchers.IO) {
             try {
                 // Should only happen when opened for the first time
+                if (AppUser.isPushingUser())
+                    return@withContext null
                 var user = AppUser.getUser()
-                if (user.ID == 0L) {
+                if (user.ID == 0L && !AppUser.isPushingUser()) {
                     Log.i("Networking", "User was not pushed to server yet")
-                    user = pushUserToServer(user)
-                    if (user.ID == 0L) {
-                        // Failed to push again. No need to login, as this won't work with an ID = 0
-                        return@withContext null
-                    }
-                    AppUser.UserId = user.ID
-                    AppUser.Username = user.Username
-                    AppUser.Password = user.Password
+                    AppUser.PostUserOnlineAsync(null)
+//                    user = pushUserToServer(user)
+//                    if (user.ID == 0L) {
+//                        // Failed to push again. No need to login, as this won't work with an ID = 0
+//                        return@withContext null
+//                    }
+//                    AppUser.UserId = user.ID
+//                    AppUser.Username = user.Username
+//                    AppUser.Password = user.Password
 //                    AppUser.storeUser()
+                    user = AppUser.getUser()
                     // The following operation still might fail because of an incorrect userId
                     // Therefore, update all the items in the list and try again
                 }

@@ -11,6 +11,7 @@ import com.cloudsheeptech.shoppinglist.data.User
 import com.cloudsheeptech.shoppinglist.data.UserWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.database.UserDao
+import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -32,6 +33,7 @@ object AppUser {
 
     private var database : ShoppingListDatabase? = null
     private var userDao : UserDao? = null
+    private var listHandler : ShoppingListHandler? = null
 
 //    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "userdata")
 
@@ -58,6 +60,8 @@ object AppUser {
             database = ShoppingListDatabase.getInstance(appContext)
         if (userDao == null)
             userDao = database!!.userDao()
+        if (listHandler == null)
+            listHandler = ShoppingListHandler(database!!)
     }
 
     fun Initialized() : Boolean {
@@ -122,7 +126,7 @@ object AppUser {
         setDatabase(appContext)
         if (!Initialized())
             return
-        Log.d("AppUser", "Storing user")
+        Log.d("AppUser", "Storing user ${getUser()}")
         localCoroutine.launch {
             val user = DatabaseUser(getUser())
             storeUserDatabase(user)
@@ -162,8 +166,7 @@ object AppUser {
 
     private suspend fun deleteUserOnline(context: Context?) {
         withContext(Dispatchers.IO) {
-            // TODO: Implement
-            Networking.DELETE("v1/user", "") {
+            Networking.DELETE("v1/users/${AppUser.UserId}", "") {
                 if (it.status != HttpStatusCode.OK) {
                     makeToast(context, "Failed to delete user online")
                     return@DELETE
@@ -189,12 +192,20 @@ object AppUser {
         storeUserDatabase(DatabaseUser(getUser()))
     }
 
+    private suspend fun deleteUserFromDatabase() {
+        withContext(Dispatchers.IO) {
+            userDao?.resetUser()
+        }
+    }
+
     fun DeleteUser(context: Context?) {
         if (UserId == 0L || Username == "")
             return
         localCoroutine.launch {
             deleteUserOnline(context)
-            userDao?.resetUser()
+            Networking.resetToken()
+            listHandler?.resetCreatedByForOwnLists(UserId)
+            deleteUserFromDatabase()
         }
     }
 

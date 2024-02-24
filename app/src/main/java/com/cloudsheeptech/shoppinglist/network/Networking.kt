@@ -31,8 +31,8 @@ import java.util.Date
 
 object Networking {
 
-//    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
-    private val baseUrl = "https://10.0.2.2:46152/"
+    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
+//    private val baseUrl = "https://10.0.2.2:46152/"
     private lateinit var applicationDir : String
     private lateinit var database : ShoppingListDatabase
     private lateinit var userDao : UserDao
@@ -43,7 +43,6 @@ object Networking {
     private lateinit var client : HttpClient
     private var tokenInterceptor = JwtTokenInterceptor()
     private var init = false
-    private var login = false
 
     @Serializable
     data class Token(
@@ -57,10 +56,9 @@ object Networking {
     }
 
     private fun loginRequired() : Boolean {
-        return token == "" || tokenValid == null || tokenValid!!.before(Calendar.getInstance().time)
+        return token == "" || tokenValid == null || tokenValid!!.before(calendar.time)
     }
 
-    // TODO: Automatically login / authorize and repeat the request
     suspend fun GET(requestUrlPath : String, responseHandler : suspend (response : HttpResponse) -> Unit) {
         withContext(Dispatchers.IO) {
             if (!init) {
@@ -87,7 +85,7 @@ object Networking {
 
     // The content updater is meant for the case where the user was newly created online
     // and the createdBy ID must be updated now
-    suspend fun POST(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit, contentUpdater: (suspend (String) -> String)?) : String {
+    suspend fun POST(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit, contentUpdater: (suspend (String) -> String)?) {
         withContext(Dispatchers.IO) {
             if (!init) {
                 init()
@@ -112,7 +110,6 @@ object Networking {
                 Log.w("Networking", "Failed to send POST request to $baseUrl$requestUrlPath: $ex")
             }
         }
-        return "Error"
     }
 
     suspend fun DELETE(requestUrlPath: String, data: String, responseHandler: suspend (HttpResponse) -> Unit) {
@@ -155,23 +152,11 @@ object Networking {
         }
     }
 
-    // Keep the functionality here for now (not clean, but works)
-//    private suspend fun pushUserToServer(user : User) : User {
-//        withContext(Dispatchers.IO) {
-//            val response : HttpResponse = client.post(baseUrl + "auth/create") {
-//                contentType(ContentType.Application.Json)
-//                setBody(user)
-//            }
-//            if (response.status != HttpStatusCode.Created) {
-//                Log.e("Networking", "Failed to push user to server!")
-//                return@withContext
-//            }
-//            val body = response.bodyAsText(Charsets.UTF_8)
-//            val decoded = Json.decodeFromString<DatabaseUser>(body)
-//            user.ID = decoded.ID
-//        }
-//        return user
-//    }
+    fun resetToken() {
+        // This is required if we delete the user but want to make a request without restarting the app
+        this.token = ""
+        this.tokenValid = null
+    }
 
     // One of these functions does have side-effects because the username and ID get reset
     private suspend fun login() {
@@ -185,15 +170,6 @@ object Networking {
                 if (user.ID == 0L && !AppUser.isPushingUser()) {
                     Log.i("Networking", "User was not pushed to server yet")
                     AppUser.PostUserOnlineAsync(null)
-//                    user = pushUserToServer(user)
-//                    if (user.ID == 0L) {
-//                        // Failed to push again. No need to login, as this won't work with an ID = 0
-//                        return@withContext null
-//                    }
-//                    AppUser.UserId = user.ID
-//                    AppUser.Username = user.Username
-//                    AppUser.Password = user.Password
-//                    AppUser.storeUser()
                     user = AppUser.getUser()
                     // The following operation still might fail because of an incorrect userId
                     // Therefore, update all the items in the list and try again

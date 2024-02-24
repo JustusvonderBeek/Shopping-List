@@ -149,7 +149,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private suspend fun deleteShoppingListFromDatabase(list : ShoppingList) {
         withContext(Dispatchers.IO) {
             deleteAllMappingsForListId(list.ID, list.CreatedBy)
-            listDao.deleteList(list.ID)
+            listDao.deleteList(list.ID, list.CreatedBy)
             Log.i("ShoppingListHandler", "Deleted list ${list.Name}")
         }
     }
@@ -219,6 +219,20 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
+    private suspend fun updateCreatedByForMappings(listId : Long, createdBy: Long) {
+        withContext(Dispatchers.IO) {
+            val mappings = mappingDao.getMappingsForList(listId, 0L)
+            if (mappings.isEmpty())
+                return@withContext
+            for (mapping in mappings) {
+                mapping.CreatedBy = createdBy
+                mapping.AddedBy = createdBy
+                deleteMappingInDatabase(mapping.ItemID, mapping.ListID, 0L)
+                insertMappingInDatabase(mapping)
+            }
+        }
+    }
+
     private suspend fun deleteMappingInDatabase(item : Long, list : Long, createdBy: Long) {
         withContext(Dispatchers.IO) {
             val existingMappings = mappingDao.getMappingForItemAndList(item, list, createdBy)
@@ -279,6 +293,24 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
+    private suspend fun updateCreatedByForList(listId: Long, createdBy: Long) {
+        if (createdBy == 0L || listId < 0L)
+            return
+        withContext(Dispatchers.IO) {
+            val existingList = listDao.getShoppingList(listId, 0L) ?: return@withContext
+            // Update the item mappings, then the list itself
+            Log.d("ShoppingListHandler", "Got existing list: $existingList")
+            Log.d("ShoppingListHandler", "Updating mappings for list ${existingList.ID}")
+            updateCreatedByForMappings(listId, createdBy)
+            Log.d("ShoppingListHandler", "Deleting list ${existingList.ID} from database")
+            deleteShoppingListFromDatabase(existingList)
+            existingList.CreatedBy = createdBy
+            existingList.LastEdited = OffsetDateTime.now()
+            Log.d("ShoppingListHandler", "Inserting list $existingList")
+            insertShoppingListIntoDatabase(existingList)
+        }
+    }
+
     private suspend fun updatedCreatedByForAllLists() {
         withContext(Dispatchers.IO) {
             if (AppUser.UserId == 0L)
@@ -287,10 +319,9 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             if (allShoppingLists.isEmpty())
                 return@withContext
             val uninitializedLists = allShoppingLists.filter { list -> list.CreatedBy == 0L }
+            Log.d("ShoppingListHandler", "Found ${uninitializedLists.size} lists to update")
             for (list in uninitializedLists) {
-                list.CreatedBy = AppUser.UserId
-                list.CreatedByName = AppUser.Username
-                updateListInDatabase(list)
+                updateCreatedByForList(list.ID, AppUser.UserId)
             }
         }
     }
@@ -530,21 +561,21 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     // Posting and Getting Lists from Online
     // ------------------------------------------------------------------------------
 
-    private suspend fun postShoppingListOnline(listId : Long, from : Long) : Boolean {
-        var success = false
+    private suspend fun postShoppingListOnline(listId : Long, from : Long) : ShoppingList? {
+        var updatedList : ShoppingList? = null
         withContext(Dispatchers.IO) {
             val list = listDao.getShoppingList(listId, from)
             if (list == null) {
                 Log.i("ShoppingListHandler", "List $listId does not exist. Cannot push online")
                 return@withContext
             }
-            success = postShoppingListOnline(list)
+            updatedList = postShoppingListOnline(list)
         }
-        return success
+        return updatedList
     }
 
-    private suspend fun postShoppingListOnline(list : ShoppingList) : Boolean {
-        var success = false
+    private suspend fun postShoppingListOnline(list : ShoppingList) : ShoppingList {
+        var updatedList = list
         withContext(Dispatchers.IO) {
             // Pushing the user to the server is done by the networking stack
             val listInWireFormat = shoppingListToWire(list)
@@ -555,19 +586,20 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                     return@POST
                 }
                 // We don't expect anything from online
-                // The list ID is handled locally by us
-                success = true
             }, {
                 // This is triggered in case we freshly updated the user
+                if (it.isEmpty())
+                    return@POST it
+                val decoded = json.decodeFromString<ShoppingListWire>(it)
                 if (AppUser.UserId == 0L)
                     return@POST it
                 updatedCreatedByForAllLists()
-                val decoded = json.decodeFromString<ShoppingListWire>(it)
                 decoded.CreatedBy = ListCreator(AppUser.UserId, AppUser.Username)
+                updatedList.CreatedBy = AppUser.UserId
                 return@POST json.encodeToString(decoded)
             })
         }
-        return success
+        return updatedList
     }
 
     private suspend fun deleteShoppingListOnline(listId : Long) {
@@ -709,8 +741,8 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     fun CreateNewShoppingList(name : String) {
         localCoroutine.launch {
             val list = newShoppingList(name)
-            list.ID = insertShoppingListIntoDatabase(list)
-            val success = postShoppingListOnline(list)
+            val updatedList = postShoppingListOnline(list)
+            insertShoppingListIntoDatabase(updatedList)
         }
         // Cannot return the list here because we have the asynchronous operations before
     }

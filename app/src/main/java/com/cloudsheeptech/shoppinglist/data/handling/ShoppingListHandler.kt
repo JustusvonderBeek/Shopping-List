@@ -170,7 +170,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
                 mappingDao.deleteMappingsForListId(mappings.first().ListID, mappings.first().CreatedBy)
             for (mapping in mappings) {
                 val existingMappings = mappingDao.getMappingForItemAndList(mapping.ItemID, mapping.ListID, mapping.CreatedBy)
-                if (mapping.ID == 0L && existingMappings.isEmpty()) {
+                if (mapping.ID == 0L || existingMappings.isEmpty()) {
                     mappingDao.insertMapping(mapping)
                     continue
                 }
@@ -195,7 +195,6 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         Log.d("ShoppingListHandler", "Executing increase count")
         withContext(Dispatchers.IO) {
             val mapping = mappingDao.getMappingForItemAndList(itemId, listId, createdBy)
-            Log.d("ShoppingListHandler", "Found? mapping $mapping for $itemId, $listId, $createdBy")
             if (mapping.isEmpty())
                 return@withContext
             val incMapping = mapping.first()
@@ -219,15 +218,30 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-    private suspend fun updateCreatedByForMappings(listId : Long, createdBy: Long) {
+    private suspend fun updateCreatedByForMappings(listId : Long, moveToId : Long, createdBy: Long) {
         withContext(Dispatchers.IO) {
             val mappings = mappingDao.getMappingsForList(listId, 0L)
             if (mappings.isEmpty())
                 return@withContext
             for (mapping in mappings) {
+                deleteMappingInDatabase(mapping.ItemID, mapping.ListID, 0L)
                 mapping.CreatedBy = createdBy
                 mapping.AddedBy = createdBy
-                deleteMappingInDatabase(mapping.ItemID, mapping.ListID, 0L)
+                mapping.ListID = moveToId
+                insertMappingInDatabase(mapping)
+            }
+        }
+    }
+
+    private suspend fun resetCreatedByForMappings(list: ShoppingList) {
+        withContext(Dispatchers.IO) {
+            val mappings = mappingDao.getMappingsForList(list.ID, list.CreatedBy)
+            if (mappings.isEmpty())
+                return@withContext
+            for (mapping in mappings) {
+                mapping.CreatedBy = 0L
+                mapping.AddedBy = 0L
+                deleteMappingInDatabase(mapping.ItemID, mapping.ListID, list.CreatedBy)
                 insertMappingInDatabase(mapping)
             }
         }
@@ -293,25 +307,59 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-    private suspend fun updateCreatedByForList(listId: Long, createdBy: Long) {
-        if (createdBy == 0L || listId < 0L)
+    private suspend fun findNextFreeListId(list: ShoppingList, newUserId : Long) : Long {
+        var nextId = list.ID
+        withContext(Dispatchers.IO) {
+            val updateListWithIdExists = listDao.getShoppingList(list.ID, newUserId)
+            if (updateListWithIdExists != null) {
+                // The list exists, so create a new ID for this list
+                val existingLists = listDao.getLatestListId() ?: return@withContext
+                nextId = existingLists + 1
+                return@withContext
+            }
+            // The list with update userId does not exist, therefore its fine to simply update the
+            // list here
+            return@withContext
+        }
+        return nextId
+    }
+
+    private suspend fun updateCreatedByForList(list : ShoppingList, createdBy: Long) {
+        if (createdBy == 0L || list.CreatedBy != 0L)
             return
         withContext(Dispatchers.IO) {
-            val existingList = listDao.getShoppingList(listId, 0L) ?: return@withContext
+            // In case the user create new lists before updating the old ones,
+            // find the next secure listID to "move" the list to
+            val newListId = findNextFreeListId(list, createdBy)
+            Log.d("ShoppingListHandler", "Found $newListId as next free list id")
             // Update the item mappings, then the list itself
-            Log.d("ShoppingListHandler", "Got existing list: $existingList")
-            Log.d("ShoppingListHandler", "Updating mappings for list ${existingList.ID}")
-            updateCreatedByForMappings(listId, createdBy)
-            Log.d("ShoppingListHandler", "Deleting list ${existingList.ID} from database")
-            deleteShoppingListFromDatabase(existingList)
-            existingList.CreatedBy = createdBy
-            existingList.LastEdited = OffsetDateTime.now()
-            Log.d("ShoppingListHandler", "Inserting list $existingList")
-            insertShoppingListIntoDatabase(existingList)
+            Log.d("ShoppingListHandler", "Updating mappings for list ${list.ID}")
+            updateCreatedByForMappings(list.ID, newListId, createdBy)
+            Log.d("ShoppingListHandler", "Deleting list ${list.ID} from database")
+            deleteShoppingListFromDatabase(list)
+            list.CreatedBy = createdBy
+            list.CreatedByName = AppUser.Username
+            list.ID = newListId
+            // This is not really an edit from the user
+//            existingList.LastEdited = OffsetDateTime.now()
+            Log.d("ShoppingListHandler", "Inserting list $list")
+            insertShoppingListIntoDatabase(list)
         }
     }
 
-    private suspend fun updatedCreatedByForAllLists() {
+    private suspend fun resetCreatedByForList(list: ShoppingList) {
+        if (list.CreatedBy == 0L)
+            return
+        withContext(Dispatchers.IO) {
+            resetCreatedByForMappings(list)
+            deleteShoppingListFromDatabase(list)
+            list.CreatedBy = 0L
+            insertShoppingListIntoDatabase(list)
+        }
+    }
+
+    suspend fun updatedCreatedByForAllLists() {
+        Log.d("ShoppingListHandler", "Updating all lists in database that were created offline")
         withContext(Dispatchers.IO) {
             if (AppUser.UserId == 0L)
                 return@withContext
@@ -321,7 +369,22 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             val uninitializedLists = allShoppingLists.filter { list -> list.CreatedBy == 0L }
             Log.d("ShoppingListHandler", "Found ${uninitializedLists.size} lists to update")
             for (list in uninitializedLists) {
-                updateCreatedByForList(list.ID, AppUser.UserId)
+                updateCreatedByForList(list, AppUser.UserId)
+            }
+        }
+    }
+
+    suspend fun resetCreatedByForOwnLists(createdBy: Long) {
+        if (createdBy == 0L)
+            return
+        withContext(Dispatchers.IO) {
+            val allLists = listDao.getShoppingLists()
+            if (allLists.isEmpty())
+                return@withContext
+            val ownLists = allLists.filter { l -> l.CreatedBy == createdBy }
+            Log.d("ShoppingListHandler", "Found ${ownLists.size} own lists to reset")
+            for (list in ownLists) {
+                resetCreatedByForList(list)
             }
         }
     }
@@ -577,27 +640,27 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private suspend fun postShoppingListOnline(list : ShoppingList) : ShoppingList {
         var updatedList = list
         withContext(Dispatchers.IO) {
-            // Pushing the user to the server is done by the networking stack
+            if (list.CreatedBy == 0L) {
+                Log.d("ShoppingListHandler", "List was created offline and needs to be converted")
+                if (AppUser.UserId == 0L) {
+                    AppUser.PostUserOnlineAsync(null)
+                    if (AppUser.UserId == 0L) {
+                        Log.i("ShoppingListHandler", "Failed to create user online: Cannot complete request")
+                        return@withContext
+                    }
+                }
+                list.CreatedBy = AppUser.UserId
+                updatedCreatedByForAllLists()
+            }
             val listInWireFormat = shoppingListToWire(list)
             val serializedList = json.encodeToString(listInWireFormat)
-            Networking.POST("v1/list", serializedList, { resp ->
+            Networking.POST("v1/list", serializedList) { resp ->
                 if (resp.status != HttpStatusCode.Created) {
                     Log.w("ShoppingListHandler", "Posting Shopping List online failed")
                     return@POST
                 }
                 // We don't expect anything from online
-            }, {
-                // This is triggered in case we freshly updated the user
-                if (it.isEmpty())
-                    return@POST it
-                val decoded = json.decodeFromString<ShoppingListWire>(it)
-                if (AppUser.UserId == 0L)
-                    return@POST it
-                updatedCreatedByForAllLists()
-                decoded.CreatedBy = ListCreator(AppUser.UserId, AppUser.Username)
-                updatedList.CreatedBy = AppUser.UserId
-                return@POST json.encodeToString(decoded)
-            })
+            }
         }
         return updatedList
     }

@@ -136,7 +136,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
 
     fun showItemPreview(enteredName : String) {
-        Log.d("ShoppinglistViewModel", "User entered: $enteredName")
+//        Log.d("ShoppinglistViewModel", "User entered: $enteredName")
         if (enteredName.isEmpty()) {
             _previewItems.value = emptyList()
             return

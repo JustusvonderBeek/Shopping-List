@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
         <variable
@@ -10,17 +11,22 @@
             type="com.cloudsheeptech.shoppinglist.fragments.list.ItemPreviewAdapter.ItemPreviewClickListener" />
     </data>
 
-    <TextView
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="25sp"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="3"
-        android:elevation="2dp"
         android:layout_margin="3dp"
-        android:text="@{item.name}"
+        android:elevation="2dp"
+        app:cardCornerRadius="5dp"
         android:onClick="@{() -> clickListener.onClick(item)}"
-        />
+        >
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"
+            android:layout_margin="5dp"
+            android:text="@{item.name}"
+            />
+
+    </androidx.cardview.widget.CardView>
 </layout>

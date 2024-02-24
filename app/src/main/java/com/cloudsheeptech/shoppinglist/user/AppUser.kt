@@ -3,12 +3,7 @@ package com.cloudsheeptech.shoppinglist.user
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import com.cloudsheeptech.shoppinglist.data.DatabaseUser
 import com.cloudsheeptech.shoppinglist.data.Serializer.OffsetDateTimeSerializer
@@ -22,7 +17,6 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -39,13 +33,15 @@ object AppUser {
     private var database : ShoppingListDatabase? = null
     private var userDao : UserDao? = null
 
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "userdata")
+//    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "userdata")
 
     private val job = Job()
     private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
 
     private const val letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?$%&(){}[]"
     private const val defaultPasswordLength = 32
+
+    private var pushing : Boolean = false
 
     var UserId : Long = 0L
     var Username : String = ""
@@ -133,32 +129,72 @@ object AppUser {
         }
     }
 
-    private suspend fun pushUserOnline(context: Context) {
+    private suspend fun makeToast(context: Context?, message : String) {
+        if (context == null)
+            return
+        withContext(Dispatchers.Main) {
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private suspend fun pushUserOnline(context: Context?) {
         var userId = 0L
+        pushing = true
         withContext(Dispatchers.IO) {
             val user = getUser()
             val serialized = Json.encodeToString(user)
             Networking.POST("auth/create", serialized) { resp ->
                 if (resp.status != HttpStatusCode.Created) {
                     Log.w("AppUser", "Failed to create user online")
-                    Toast.makeText(context, "Storing user online failed", Toast.LENGTH_LONG).show()
+                    makeToast(context, "Creating user online failed!")
+                    return@POST
                 }
                 Log.d("AppUser", "User online created")
-//                Toast.makeText(context, "Created user online", Toast.LENGTH_LONG).show()
+                makeToast(context, "Created user online")
                 val body = resp.bodyAsText(Charsets.UTF_8)
                 val parsedUser = json.decodeFromString<UserWire>(body)
 //                Log.d("AppUser", "Received user: $parsedUser")
                 UserId = parsedUser.ID
             }
         }
+        pushing = false
     }
 
-    fun PostUserOnline(context: Context) {
+    private suspend fun deleteUserOnline(context: Context?) {
+        withContext(Dispatchers.IO) {
+            // TODO: Implement
+            Networking.DELETE("v1/user", "") {
+                if (it.status != HttpStatusCode.OK) {
+                    makeToast(context, "Failed to delete user online")
+                    return@DELETE
+                }
+                makeToast(context, "Deleted user online")
+            }
+        }
+    }
+
+    fun PostUserOnline(context: Context?) {
         if (UserId != 0L || Username == "")
             return
         localCoroutine.launch {
             pushUserOnline(context)
             storeUserDatabase(DatabaseUser(getUser()))
+        }
+    }
+
+    suspend fun PostUserOnlineAsync(context: Context?) {
+        if (UserId != 0L || Username == "")
+            return
+        pushUserOnline(context)
+        storeUserDatabase(DatabaseUser(getUser()))
+    }
+
+    fun DeleteUser(context: Context?) {
+        if (UserId == 0L || Username == "")
+            return
+        localCoroutine.launch {
+            deleteUserOnline(context)
+            userDao?.resetUser()
         }
     }
 
@@ -168,5 +204,9 @@ object AppUser {
 
     fun getUserLive() : LiveData<User>? {
         return userDao?.getUserLive()?.map { x -> User(x.UserId, x.Username, x.Password) }
+    }
+
+    fun isPushingUser() : Boolean {
+        return pushing
     }
 }

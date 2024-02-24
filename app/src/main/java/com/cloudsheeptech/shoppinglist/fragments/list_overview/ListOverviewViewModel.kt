@@ -12,6 +12,7 @@ import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
+import com.cloudsheeptech.shoppinglist.user.AppUser
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
@@ -88,13 +89,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     fun removeUser() {
         vmCoroutine.launch {
-            deleteUserFromDatabase()
-        }
-    }
-
-    private suspend fun deleteUserFromDatabase() {
-        withContext(Dispatchers.IO) {
-            userDao.resetUser()
+            AppUser.DeleteUser(null)
         }
     }
 

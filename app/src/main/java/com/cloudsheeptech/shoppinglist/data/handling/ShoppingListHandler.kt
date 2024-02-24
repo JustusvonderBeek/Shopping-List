@@ -848,16 +848,16 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     fun DeleteItemFromShoppingList(item : Item, list : Long, createdBy: Long) {
         localCoroutine.launch {
             deleteMappingInDatabase(item.ID, list, createdBy)
-            updateLastEditedInDatabase(list, AppUser.UserId)
-            postShoppingListOnline(list, AppUser.UserId)
+            updateLastEditedInDatabase(list, createdBy)
+            postShoppingListOnline(list, createdBy)
         }
     }
 
     fun ToggleItemInShoppingList(itemId : Long, listId : Long, createdBy: Long) {
         localCoroutine.launch {
-            updateLastEditedInDatabase(listId, AppUser.UserId)
+            updateLastEditedInDatabase(listId, createdBy)
             toggleMappingInDatabase(itemId, listId, createdBy)
-            postShoppingListOnline(listId, AppUser.UserId)
+            postShoppingListOnline(listId, createdBy)
         }
     }
 

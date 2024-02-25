@@ -141,7 +141,7 @@ class ListOperationTests {
         val database = ShoppingListDatabase.getInstance(application)
         Networking.registerApplicationDir(application.filesDir.absolutePath, database)
         val listHandler = ShoppingListHandler(database = database)
-        listHandler.GetShoppingList(12L)
+        listHandler.GetShoppingList(1L, AppUser.UserId)
         return true
     }
 

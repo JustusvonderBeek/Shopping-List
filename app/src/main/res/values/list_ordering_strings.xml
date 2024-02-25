@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="list_ordering_array">
+        <item>Default</item>
+        <item>Alphabetical</item>
+        <item>Reversed Alphabetical</item>
+        <item>Checked Last</item>
+        <item>Supermarket Order</item>
+    </string-array>
+</resources>

@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 import com.cloudsheeptech.shoppinglist.data.Item
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
@@ -34,6 +36,18 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
     // UI State
 
+    // TODO: Allow user to select the ordering
+    enum class ORDERING {
+        DEFAULT,
+        CHECKED_LAST,
+        ALPHABETICAL,
+        ALPHABETICAL_REVERSE,
+        SUPERMARKET_ODER,
+    }
+
+    private val _ordering = MutableLiveData<ORDERING>(ORDERING.CHECKED_LAST)
+    val ordering : LiveData<ORDERING> get() = _ordering
+
     private val _refreshing = MutableLiveData<Boolean>(false)
     val refreshing : LiveData<Boolean> get() = _refreshing
 
@@ -53,11 +67,16 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     private val _confirmClear = MutableLiveData<Boolean>(false)
     val confirmClear : LiveData<Boolean> get() = _confirmClear
 
+    private val _allItemsChecked = mappingDao.getIsListFinishedLive(shoppingListId, createdBy)
+    val allItemsChecked : LiveData<Int> get() = _allItemsChecked
+
+    private val _finished = MutableLiveData<Boolean>(false)
+    val finished : LiveData<Boolean> get() = _finished
+
     // ---
 
-    private val itemsMappedToList = mappingDao.getMappingsForListLive(shoppingListId, createdBy)
     // The items in this list
-    val itemsInList = MediatorLiveData<List<ItemWithQuantity>>()
+    private val itemsInList = MediatorLiveData<List<ItemWithQuantity>>()
 
     private val _previewItems = MutableLiveData<List<Item>>()
     val previewItems : LiveData<List<Item>> get() = _previewItems
@@ -65,10 +84,45 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     private val _listInformation = listDao.getShoppingListLive(shoppingListId, createdBy)
     val listInformation : LiveData<ShoppingList> get() = _listInformation
 
+    val orderedItemsInList = itemsInList.switchMap {
+        Log.d("ShoppingListViewModel", "Ordering called")
+        liveData {
+            when (ordering.value!!) {
+                ORDERING.DEFAULT -> {
+                    emit(it)
+                }
+                ORDERING.CHECKED_LAST -> {
+                    val sorted = it.sortedWith(
+                        compareBy({it.Checked}, {it.Name})
+                    )
+                    emit(sorted)
+                }
+                ORDERING.ALPHABETICAL -> {
+                    val sorted = it.sortedBy {
+                        it.Name
+                    }
+                    emit(sorted)
+                }
+                ORDERING.ALPHABETICAL_REVERSE-> {
+                    val sorted = it.sortedByDescending {
+                        it.Name
+                    }
+                    emit(sorted)
+                }
+                ORDERING.SUPERMARKET_ODER -> {
+                    // TODO: Make later
+                    emit(it)
+                }
+            }
+        }
+    }
+
     init {
-        itemsInList.addSource(itemsMappedToList) { mappings ->
-            // When the mappings change, re-fetch the items
-            fetchItemsForList(mappings)
+        itemsInList.addSource(ordering) {
+            val mappings = mappingDao.getMappingsForListLive(shoppingListId, createdBy)
+            itemsInList.addSource(mappings) { m ->
+                fetchItemsForList(m)
+            }
         }
     }
 
@@ -112,6 +166,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     fun toggleItem(itemId : Long) {
         Log.d("ShoppinListViewModel", "Toggle item $itemId")
         listHandler.ToggleItemInShoppingList(itemId, shoppingListId, createdBy)
+        _finished.value = false
     }
 
 
@@ -173,6 +228,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         localCoroutine.launch {
             addItemFromPreviewToList(itemId)
         }
+        _finished.value = false
     }
 
     fun shareThisList() {
@@ -182,12 +238,46 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         navigateToShare()
     }
 
+    fun resetOrdering() {
+        _ordering.value = ORDERING.DEFAULT
+    }
+
+    private fun convertStringToOrder(orderString: String) : ORDERING {
+        return when (orderString) {
+            "Default" -> ORDERING.DEFAULT
+            "Alphabetical" -> ORDERING.ALPHABETICAL
+            "Reversed Alphabetical" -> ORDERING.ALPHABETICAL_REVERSE
+            "Checked Last" -> ORDERING.CHECKED_LAST
+            "Supermarket Order" -> ORDERING.SUPERMARKET_ODER
+            else -> ORDERING.DEFAULT
+        }
+    }
+
+    fun setOrdering(order : String) {
+        val orderEnum = convertStringToOrder(order)
+        Log.d("ShoppingListViewModel", "Setting order to $orderEnum")
+        _ordering.value = orderEnum
+    }
+
+    fun listFinished() {
+        Log.d("ShoppingListViewModel", "Clicked on list finished okay")
+        _finished.value = true
+    }
+
+    private fun resetFinished() {
+        Log.d("ShoppingListViewModel", "Resetting finished")
+        _finished.value = false
+    }
+
     fun deleteThisList() {
         _confirmDelete.value = true
     }
 
     fun onDeleteConfirmed() {
         _confirmDelete.value = false
+        // TODO: Difference between own and shared list:
+        // Shared list -> delete offline and sharing
+        // Own list -> delete list offline and online + sharing
         listHandler.DeleteShoppingList(shoppingListId, createdBy)
         navigateUp()
     }
@@ -198,6 +288,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
     fun clearAllCheckedItems() {
         _confirmClear.value = true
+        resetFinished()
     }
 
     fun onClearAllItemsPositiv() {
@@ -213,11 +304,11 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         _navigateUp.value = false
     }
 
-    fun navigateUp() {
+    private fun navigateUp() {
         _navigateUp.value = true
     }
 
-    fun navigateToShare() {
+    private fun navigateToShare() {
         _navigateShare.value = shoppingListId
     }
 

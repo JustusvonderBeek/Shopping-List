@@ -12,6 +12,9 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
@@ -27,7 +30,7 @@ import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListBinding
 import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
 
-class ShoppinglistFragment : Fragment(), MenuProvider {
+class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelectedListener {
 
     private lateinit var binding : FragmentListBinding
     private lateinit var viewModel : ShoppinglistViewModel
@@ -55,6 +58,18 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             }
         }
         return false
+    }
+
+    // Below is for the spinner selection
+    override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
+        val selected = parent.getItemAtPosition(pos)
+        Log.d("ShoppingListFragment", "Got: $selected")
+        viewModel.setOrdering(selected as String)
+    }
+
+    override fun onNothingSelected(parent: AdapterView<*>?) {
+        // Reset the order to default
+        viewModel.resetOrdering()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,7 +125,16 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
         val deleteHelper = ItemTouchHelper(SwipeToDeleteHandler(adapter))
         deleteHelper.attachToRecyclerView(binding.itemList)
 
-        viewModel.itemsInList.observe(viewLifecycleOwner, Observer {
+        // Populate the ordering spinner with the pre-defined orderings
+        val spinner = binding.orderSelectionSpinner
+        ArrayAdapter.createFromResource(requireContext(), R.array.list_ordering_array, android.R.layout.simple_spinner_item).also {
+            it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = it
+        }
+        spinner.onItemSelectedListener = this
+
+        viewModel.orderedItemsInList.observe(viewLifecycleOwner, Observer {
+            Log.d("ShoppingListFragment", "List changed")
             it?.let {
                 adapter.submitList(it)
             }
@@ -181,6 +205,23 @@ class ShoppinglistFragment : Fragment(), MenuProvider {
             if (listId > 0) {
                 findNavController().navigate(ShoppinglistFragmentDirections.actionShoppinglistToShareFragment(listId))
                 viewModel.onShareNavigated()
+            }
+        })
+
+        viewModel.allItemsChecked.observe(viewLifecycleOwner, Observer { checked ->
+            Log.d("ShoppingListFragment", "Checked: $checked")
+            // Expecting 1 if all are the same "COUNT" otherwise 0 or 2 because of boolean
+            if (checked == 1 && !viewModel.finished.value!!) {
+//                Toast.makeText(context, "All Items are checked", Toast.LENGTH_LONG).show()
+                binding.blurLayout.visibility = View.VISIBLE
+            } else {
+                binding.blurLayout.visibility = View.GONE
+            }
+        })
+
+        viewModel.finished.observe(viewLifecycleOwner, Observer { clicked ->
+            if (clicked) {
+                binding.blurLayout.visibility = View.GONE
             }
         })
 

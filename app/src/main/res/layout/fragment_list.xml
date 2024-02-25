@@ -25,11 +25,33 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
-                <Spinner
-                    android:id="@+id/orderSelectionSpinner"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    />
+                    android:orientation="horizontal"
+                    >
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ordering: "
+                        android:paddingStart="10dp"
+                        android:layout_gravity="center"
+                        />
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        android:background="@drawable/spinner_border"
+                        >
+                        <Spinner
+                            android:id="@+id/orderSelectionSpinner"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:spinnerMode="dropdown"
+                            />
+                    </RelativeLayout>
+                </LinearLayout>
+
                 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                     android:id="@+id/refresh_layout"
                     android:layout_width="match_parent"

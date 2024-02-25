@@ -2,16 +2,31 @@
 <resources>
     <string name="app_name">Einkaufsliste</string>
     <string name="nav_btn_overview">Einkaufslisten</string>
-    <string name="nav_btn_list">Einkaufsliste</string>
+    <string name="nav_list_title">Einkaufsliste</string>
     <string name="recipe_name_hint">Rezeptname</string>
     <string name="trans_ipt_hint">Beschreibung</string>
     <string name="btn_recipe_add">Rezept abschließen</string>
     <string name="nav_btn_add">Rezept hinzufügen</string>
     <string name="btn_edit_add">Item hinzufügen</string>
-    <string name="recap_input_hint">Benutzername eingeben</string>
-    <string name="btn_start_app">Start</string>
+    <string name="username_input_hint">Benutzername eingeben</string>
+    <string name="btn_start_app">Loslegen</string>
     <string name="btn_add_to_list">Alles zur Liste hinzufügen</string>
-    <string name="nav_start_recap_title">Einkaufstlisten</string>
+    <string name="nav_start_overview_title">Einkaufstlisten</string>
     <string name="notification_description">Benachrichtigung</string>
-    <string name="nav_btn_create_new_list">Neue Liste erstellen</string>
+    <string name="nav_create_list_title">Einkaufsliste erstellen</string>
+    <string name="app_author_name">Justus</string>
+    <string name="ordering_name">Sortieren:</string>
+    <string name="item_name_input_hint">Item zum einkaufen</string>
+    <string name="list_finished_header">Alles eingekauft</string>
+    <string name="btn_list_finished">Okay</string>
+    <string name="ordering_default_key">Normal</string>
+    <string name="ordering_alphabet_key">Alphabetisch</string>
+    <string name="ordering_alphabet_rev_key">Umgekehrt Alphabetisch</string>
+    <string name="ordering_checked_key">Erledigte zuletzt</string>
+    <string name="ordering_supermarket_key">Einkaufreihenfolge</string>
+    <string name="list_title_input_hint">Name der Einkaufsliste</string>
+    <string name="btn_create_list">Liste erstellen</string>
+    <string name="search_users_input_hint">Nach Benutzer suchen...</string>
+    <string name="btn_share_list_user">Teilen</string>
+    <string name="btn_unshare_list_user">Teilen beenden</string>
 </resources>

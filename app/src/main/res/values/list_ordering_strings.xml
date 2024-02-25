@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="list_ordering_array">
-        <item>Default</item>
-        <item>Alphabetical</item>
-        <item>Reversed Alphabetical</item>
-        <item>Checked Last</item>
-<!--        <item>Supermarket Order</item>-->
+        <item>@string/ordering_default_key</item>
+        <item>@string/ordering_alphabet_key</item>
+        <item>@string/ordering_alphabet_rev_key</item>
+        <item>@string/ordering_checked_key</item>
+<!--        <item>@string/ordering_supermarket_key</item>-->
     </string-array>
 </resources>

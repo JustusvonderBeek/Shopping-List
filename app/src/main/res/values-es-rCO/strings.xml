@@ -2,16 +2,31 @@
 <resources>
     <string name="app_name">Shopping List</string>
     <string name="nav_btn_overview">Listas de compras</string>
-    <string name="nav_btn_list">Lista de compras</string>
+    <string name="nav_list_title">Lista de compras</string>
     <string name="recipe_name_hint">Receta</string>
     <string name="trans_ipt_hint">Descripcion</string>
     <string name="btn_recipe_add">Receta</string>
     <string name="nav_btn_add">Añadir vocabulario</string>
     <string name="btn_edit_add">Inserto item</string>
-    <string name="recap_input_hint">Introducir traducción</string>
+    <string name="username_input_hint">Introducir traducción</string>
     <string name="btn_start_app">Empezar</string>
     <string name="btn_add_to_list">Palabra anterior</string>
-    <string name="nav_start_recap_title">Listas de compras</string>
+    <string name="nav_start_overview_title">Listas de compras</string>
     <string name="notification_description">Notification</string>
-    <string name="nav_btn_create_new_list">Creer una lista nueva</string>
+    <string name="nav_create_list_title">Creer una lista nueva</string>
+    <string name="app_author_name">Justus</string>
+    <string name="ordering_name">Sort by:</string>
+    <string name="item_name_input_hint">Item Name</string>
+    <string name="list_finished_header">Finished</string>
+    <string name="btn_list_finished">Okay</string>
+    <string name="ordering_default_key">Default</string>
+    <string name="ordering_alphabet_key">Alpha</string>
+    <string name="ordering_alphabet_rev_key">Rev. Alpha</string>
+    <string name="ordering_checked_key">Checked last</string>
+    <string name="ordering_supermarket_key">Supermarkt Order</string>
+    <string name="list_title_input_hint">Nombre</string>
+    <string name="btn_create_list">Creer</string>
+    <string name="search_users_input_hint">Search users...</string>
+    <string name="btn_share_list_user">Share</string>
+    <string name="btn_unshare_list_user">Unshare</string>
 </resources>

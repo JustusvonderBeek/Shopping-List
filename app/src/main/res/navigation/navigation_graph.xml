@@ -13,7 +13,7 @@
     <fragment
         android:id="@+id/overview"
         android:name="com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewFragment"
-        android:label="@string/nav_start_recap_title"
+        android:label="@string/nav_start_overview_title"
         tools:layout="@layout/fragment_list_overview">
         <action
             android:id="@+id/action_overview_to_createShoppinglistFragment"
@@ -46,7 +46,7 @@
     <fragment
         android:id="@+id/shoppinglist"
         android:name="com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistFragment"
-        android:label="@string/nav_btn_list" >
+        android:label="@string/nav_list_title" >
         <action
             android:id="@+id/action_edit_to_editFragment"
             app:destination="@id/editItem" />
@@ -77,7 +77,7 @@
     <fragment
         android:id="@+id/createShoppinglistFragment"
         android:name="com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistFragment"
-        android:label="@string/nav_btn_create_new_list"
+        android:label="@string/nav_create_list_title"
         tools:layout="@layout/fragment_create_shoppinglist">
         <action
             android:id="@+id/action_createShoppinglistFragment_to_shoppinglist"

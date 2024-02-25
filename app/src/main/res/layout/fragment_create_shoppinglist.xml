@@ -20,7 +20,7 @@
             android:id="@+id/titleInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Title"
+            android:hint="@string/list_title_input_hint"
             android:text="@={viewModel.title}"
             android:layout_marginTop="16dp"
             />
@@ -29,7 +29,7 @@
         <com.google.android.material.button.MaterialButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Create List"
+            android:text="@string/btn_create_list"
             android:onClick="@{() -> viewModel.create()}"
             android:layout_marginTop="16dp"
             />

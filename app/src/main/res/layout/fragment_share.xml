@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:hint="Search users"
+            android:hint="@string/search_users_input_hint"
             android:text="@={viewModel.searchName}"
             />
 

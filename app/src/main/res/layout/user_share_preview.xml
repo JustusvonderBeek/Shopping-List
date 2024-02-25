@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:onClick="@{() -> clickListener.onClick(creator)}"
-            android:text="Share"
+            android:text="@string/btn_share_list_user"
             app:icon="@drawable/ic_share"
             />
 
@@ -48,7 +48,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:onClick="@{() -> unshareClickListener.onClick(creator)}"
-            android:text="Unshare"
+            android:text="@string/btn_unshare_list_user"
             android:visibility="gone"
             app:backgroundTint="#FF5722"
             app:icon="@drawable/ic_unshare" />

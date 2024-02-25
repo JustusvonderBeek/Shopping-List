@@ -33,10 +33,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ordering: "
+                        android:text="@string/ordering_name"
                         android:paddingStart="10dp"
                         android:layout_gravity="center"
-                        />
+                        tools:ignore="RtlSymmetry" />
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -86,14 +86,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="List Finished"
+                    android:text="@string/list_finished_header"
                     android:textSize="24sp"
                     android:layout_marginBottom="10dp"
                     />
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Finished"
+                    android:text="@string/btn_list_finished"
                     android:gravity="center"
                     android:textSize="20sp"
                     android:onClick="@{() -> viewModel.listFinished()}"
@@ -138,8 +138,8 @@
                 <EditText
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="5dp"
-                    android:hint="Item Name"
+                    android:layout_marginEnd="5dp"
+                    android:hint="@string/item_name_input_hint"
                     android:layout_weight="6"
                     android:text="@={viewModel.itemName}"
                     />

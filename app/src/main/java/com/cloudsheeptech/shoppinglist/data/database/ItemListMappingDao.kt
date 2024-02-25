@@ -50,6 +50,10 @@ interface ItemListMappingDao {
     @Query("SELECT * FROM item_to_list_mapping WHERE ItemID = :itemId AND ListID = :listId AND CreatedBy = :createdBy")
     fun getMappingForItemAndList(itemId : Long, listId : Long, createdBy: Long) : List<ListMapping>
 
-    @Query("SELECT COUNT(distinct Checked) FROM item_to_list_mapping WHERE ListID = :listId AND CreatedBy = :createdBy")
+    @Query("SELECT CASE " +
+            "WHEN (SELECT COUNT(*) FROM item_to_list_mapping WHERE ListID = :listId AND CreatedBy = :createdBy AND Checked = 1) > 0 " +
+            "THEN (SELECT COUNT(distinct Checked) FROM item_to_list_mapping WHERE ListID = :listId AND CreatedBy = :createdBy) " +
+            "ELSE 0 " +
+            "END AS count_distinct_values")
     fun getIsListFinishedLive(listId : Long, createdBy: Long) : LiveData<Int>
 }

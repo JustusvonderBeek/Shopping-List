@@ -104,9 +104,9 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
                     emit(sorted)
                 }
                 ORDERING.ALPHABETICAL_REVERSE-> {
-                    val sorted = it.sortedByDescending {
+                    val sorted = it.sortedBy {
                         it.Name
-                    }
+                    }.reversed()
                     emit(sorted)
                 }
                 ORDERING.SUPERMARKET_ODER -> {

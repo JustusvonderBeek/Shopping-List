@@ -5,6 +5,6 @@
         <item>Alphabetical</item>
         <item>Reversed Alphabetical</item>
         <item>Checked Last</item>
-        <item>Supermarket Order</item>
+<!--        <item>Supermarket Order</item>-->
     </string-array>
 </resources>

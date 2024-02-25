@@ -352,6 +352,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             return
         withContext(Dispatchers.IO) {
             resetCreatedByForMappings(list)
+            // TODO: Include the sharing as well. This is relevant when pushing the new lists
             deleteShoppingListFromDatabase(list)
             list.CreatedBy = 0L
             insertShoppingListIntoDatabase(list)
@@ -720,6 +721,20 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
+    private suspend fun requestUnshareList(listId: Long, createdBy: Long) {
+        withContext(Dispatchers.IO) {
+            val unshareObject = ListShare(listId, createdBy, AppUser.UserId, OffsetDateTime.now())
+            val serialized = json.encodeToString(unshareObject)
+            Networking.DELETE("v1/share/$listId", serialized) { resp ->
+                if (resp.status != HttpStatusCode.OK) {
+                    Log.w("ShoppingListHandler", "Failed to request unshare list $listId")
+                    return@DELETE
+                }
+                Log.d("ShoppingListHandler", "Unshared list $listId")
+            }
+        }
+    }
+
     private suspend fun getShoppingListFromOnline(listId : Long, createdBy: Long?) : ShoppingListWire? {
         var onlineList : ShoppingListWire? = null
         withContext(Dispatchers.IO) {
@@ -824,7 +839,13 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     fun DeleteShoppingList(list : ShoppingList) {
         localCoroutine.launch {
             deleteShoppingListFromDatabase(list)
-            deleteShoppingListOnline(list.ID)
+            if (list.CreatedBy != AppUser.UserId) {
+                // Delete sharing online
+                requestUnshareList(list.ID, list.CreatedBy)
+            } else {
+                // Should include the unsharing of the list
+                deleteShoppingListOnline(list.ID)
+            }
         }
     }
 

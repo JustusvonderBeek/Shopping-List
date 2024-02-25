@@ -127,8 +127,8 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
 
         // Populate the ordering spinner with the pre-defined orderings
         val spinner = binding.orderSelectionSpinner
-        ArrayAdapter.createFromResource(requireContext(), R.array.list_ordering_array, android.R.layout.simple_spinner_item).also {
-            it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        ArrayAdapter.createFromResource(requireContext(), R.array.list_ordering_array, R.layout.ordering_spinner_item).also {
+            it.setDropDownViewResource(R.layout.ordering_spinner_dropdown_item)
             spinner.adapter = it
         }
         spinner.onItemSelectedListener = this

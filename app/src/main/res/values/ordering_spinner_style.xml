@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="orderingSpinnerStyle" parent="Widget.AppCompat.TextView.SpinnerItem">
+        <item name="android:layout_height">30dp</item>
+    </style>
+    <style name="orderingSpinnerDropdownStyle" parent="TextAppearance.AppCompat.Widget.TextView.SpinnerItem">
+        <item name="android:layout_height">40dp</item>
+    </style>
+</resources>

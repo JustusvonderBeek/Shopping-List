@@ -56,7 +56,7 @@ object Networking {
     }
 
     private fun loginRequired() : Boolean {
-        return token == "" || tokenValid == null || tokenValid!!.before(calendar.time)
+        return token == "" || tokenValid == null || tokenValid!!.before(Calendar.getInstance().time)
     }
 
     suspend fun GET(requestUrlPath : String, responseHandler : suspend (response : HttpResponse) -> Unit) {

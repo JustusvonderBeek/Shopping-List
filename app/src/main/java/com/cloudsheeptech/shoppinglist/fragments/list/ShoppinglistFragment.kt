@@ -64,7 +64,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
     override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
         val selected = parent.getItemAtPosition(pos)
         Log.d("ShoppingListFragment", "Got: $selected")
-        viewModel.setOrdering(selected as String)
+        viewModel.setOrdering(selected as String, requireContext())
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {

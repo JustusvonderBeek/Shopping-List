@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.fragments.list
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -7,7 +8,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
+import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.ItemClassifier
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
@@ -110,8 +113,10 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
                     emit(sorted)
                 }
                 ORDERING.SUPERMARKET_ODER -> {
-                    // TODO: Make later
-                    emit(it)
+                    val sorted = it.sortedWith(
+                        compareBy({ItemClassifier.convertStringToItemClass(it.Name)}, {it.Name})
+                    )
+                    emit(sorted)
                 }
             }
         }
@@ -242,19 +247,20 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         _ordering.value = ORDERING.DEFAULT
     }
 
-    private fun convertStringToOrder(orderString: String) : ORDERING {
+    private fun convertStringToOrder(orderString: String, context: Context) : ORDERING {
+        val r = context.resources
         return when (orderString) {
-            "Default" -> ORDERING.DEFAULT
-            "Alphabetical" -> ORDERING.ALPHABETICAL
-            "Reversed Alphabetical" -> ORDERING.ALPHABETICAL_REVERSE
-            "Checked Last" -> ORDERING.CHECKED_LAST
-            "Supermarket Order" -> ORDERING.SUPERMARKET_ODER
+            r.getString(R.string.ordering_default_key) -> ORDERING.DEFAULT
+            r.getString(R.string.ordering_alphabet_key) -> ORDERING.ALPHABETICAL
+            r.getString(R.string.ordering_alphabet_rev_key) -> ORDERING.ALPHABETICAL_REVERSE
+            r.getString(R.string.ordering_checked_key) -> ORDERING.CHECKED_LAST
+            r.getString(R.string.ordering_supermarket_key) -> ORDERING.SUPERMARKET_ODER
             else -> ORDERING.DEFAULT
         }
     }
 
-    fun setOrdering(order : String) {
-        val orderEnum = convertStringToOrder(order)
+    fun setOrdering(order : String, context : Context) {
+        val orderEnum = convertStringToOrder(order, context)
         Log.d("ShoppingListViewModel", "Setting order to $orderEnum")
         _ordering.value = orderEnum
     }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="fruit_names">
+        <item>Holzapfel</item>
+        <item>Apfel</item>
+        <item>Apfelbeere</item>
+        <item>Aroniabeeren</item>
+        <item>Beere</item>
+        <item>Schwarze Eberesche</item>
+        <item>Birnen</item>
+        <item>Tatarka</item>
+        <item>Birne</item>
+        <item>Quitte</item>
+        <item>Elsbeere</item>
+        <item>Malus</item>
+        <item>Mispel</item>
+        <item>Speierling</item>
+        <item>Vogelbeere</item>
+        <item>Weißdorne</item>
+    </string-array>
+</resources>

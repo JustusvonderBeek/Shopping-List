@@ -2,6 +2,7 @@ package com.cloudsheeptech.shoppinglist.data.database
 
 import android.content.Context
 import android.util.Log
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -14,10 +15,16 @@ import com.cloudsheeptech.shoppinglist.data.DatabaseUser
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.UserWire
 
-@Database(entities = [ShoppingList::class, Item::class, ListMapping::class, DatabaseUser::class, ListCreator::class, ListShareDatabase::class], version=18, exportSchema = false)
+@Database(
+    version = 18,
+    entities = [ShoppingList::class, Item::class, ListMapping::class, DatabaseUser::class, ListCreator::class, ListShareDatabase::class],
+    exportSchema = true,
+//    autoMigrations = [
+//        AutoMigration(from = 18, to = 19)
+//    ]
+)
 @TypeConverters(value = [DatabaseTypeConverter::class])
 abstract class ShoppingListDatabase : RoomDatabase() {
-
     abstract fun shoppingListDao() : ShoppingListDao
     abstract fun itemDao() : ItemDao
     abstract fun mappingDao() : ItemListMappingDao
@@ -39,5 +46,4 @@ abstract class ShoppingListDatabase : RoomDatabase() {
             return instance
         }
     }
-
 }

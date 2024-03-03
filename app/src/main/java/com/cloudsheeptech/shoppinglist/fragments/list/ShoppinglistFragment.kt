@@ -166,6 +166,15 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
             }
         })
 
+        viewModel.preferences.observe(viewLifecycleOwner, Observer { p ->
+            p?.let {
+                Log.d("ShoppingListFragment", "Found ordering: ${it.Ordering}")
+                viewModel.setOrdering(it.Ordering, requireContext())
+                binding.orderSelectionSpinner.setSelection(it.Ordering.position)
+                Log.d("ShoppingListFragment", "${it.Ordering.position}")
+            }
+        })
+
         binding.refreshLayout.setOnRefreshListener {
             Log.i("EditFragment", "On refresh called")
             viewModel.updateShoppinglist()
@@ -264,4 +273,6 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
 
         return binding.root
     }
+
+
 }

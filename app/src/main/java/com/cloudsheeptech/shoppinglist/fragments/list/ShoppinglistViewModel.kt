@@ -14,13 +14,12 @@ import com.cloudsheeptech.shoppinglist.data.ItemClassifier
 import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.UIPreference
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
-import com.cloudsheeptech.shoppinglist.user.AppUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.DEFAULT_CONCURRENCY_PROPERTY_NAME
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -29,6 +28,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     private val listDao = database.shoppingListDao()
     private val itemDao = database.itemDao()
     private val mappingDao = database.mappingDao()
+    private val preferenceDao = database.preferenceDao()
     private val listHandler = ShoppingListHandler(database)
 
     val itemName = MutableLiveData<String>("")
@@ -40,16 +40,18 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     // UI State
 
     // TODO: Allow user to select the ordering
-    enum class ORDERING {
-        DEFAULT,
-        CHECKED_LAST,
-        ALPHABETICAL,
-        ALPHABETICAL_REVERSE,
-        SUPERMARKET_ODER,
+    enum class ORDERING(val position : Int) {
+        DEFAULT(0),
+        ALPHABETICAL(1),
+        ALPHABETICAL_REVERSE(2),
+        CHECKED_LAST(3),
+        SUPERMARKET_ODER(4),
     }
 
-    private val _ordering = MutableLiveData<ORDERING>(ORDERING.CHECKED_LAST)
+    private val _ordering = MutableLiveData<ORDERING>(ORDERING.DEFAULT)
     val ordering : LiveData<ORDERING> get() = _ordering
+
+    val preferences = preferenceDao.getPreferencesForListLive(shoppingListId)
 
     private val _refreshing = MutableLiveData<Boolean>(false)
     val refreshing : LiveData<Boolean> get() = _refreshing
@@ -243,8 +245,28 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         navigateToShare()
     }
 
+    private suspend fun updateOrCreatePreferenceInDatabase(ordering: ORDERING) {
+        withContext(Dispatchers.IO) {
+            var preference = preferenceDao.getPreferenceForList(shoppingListId)
+            if (preference == null) {
+                preference = UIPreference(0, shoppingListId, ordering)
+            } else {
+                preference.Ordering = ordering
+            }
+            preferenceDao.insertPreference(preference)
+        }
+    }
+
+    private fun updateListPreference() {
+        localCoroutine.launch {
+            updateOrCreatePreferenceInDatabase(_ordering.value!!)
+        }
+    }
+
     fun resetOrdering() {
+        Log.d("ShoppingListViewModel", "Reset ordering called")
         _ordering.value = ORDERING.DEFAULT
+        updateListPreference()
     }
 
     private fun convertStringToOrder(orderString: String, context: Context) : ORDERING {
@@ -261,8 +283,23 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
     fun setOrdering(order : String, context : Context) {
         val orderEnum = convertStringToOrder(order, context)
+        if (orderEnum == _ordering.value) {
+            Log.d("ShoppingListViewModel", "Ordering already applied")
+            return
+        }
         Log.d("ShoppingListViewModel", "Setting order to $orderEnum")
         _ordering.value = orderEnum
+        updateListPreference()
+    }
+
+    fun setOrdering(order : ORDERING, context: Context) {
+        if (order == _ordering.value) {
+            Log.d("ShoppingListViewModel", "Ordering already applied")
+            return
+        }
+        Log.d("ShoppingListViewMode", "Setting order to $order")
+        _ordering.value = order
+        updateListPreference()
     }
 
     fun listFinished() {

@@ -13,15 +13,16 @@ import com.cloudsheeptech.shoppinglist.data.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.DatabaseUser
 import com.cloudsheeptech.shoppinglist.data.ListCreator
+import com.cloudsheeptech.shoppinglist.data.UIPreference
 import com.cloudsheeptech.shoppinglist.data.UserWire
 
 @Database(
-    version = 18,
-    entities = [ShoppingList::class, Item::class, ListMapping::class, DatabaseUser::class, ListCreator::class, ListShareDatabase::class],
+    version = 19,
+    entities = [ShoppingList::class, Item::class, ListMapping::class, DatabaseUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class],
     exportSchema = true,
-//    autoMigrations = [
-//        AutoMigration(from = 18, to = 19)
-//    ]
+    autoMigrations = [
+        AutoMigration(from = 18, to = 19)
+    ]
 )
 @TypeConverters(value = [DatabaseTypeConverter::class])
 abstract class ShoppingListDatabase : RoomDatabase() {
@@ -31,6 +32,7 @@ abstract class ShoppingListDatabase : RoomDatabase() {
     abstract fun userDao() : UserDao
     abstract fun onlineUserDao() : OnlineUserDao
     abstract fun sharedDao() : SharedDao
+    abstract fun preferenceDao() : UIPreferencesDao
 
     companion object {
         @Volatile

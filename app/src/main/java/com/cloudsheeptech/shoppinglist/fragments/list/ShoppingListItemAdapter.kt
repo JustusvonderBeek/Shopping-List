@@ -22,9 +22,10 @@ class ShoppingListItemAdapter(val clickListener: ShoppingItemClickListener, val 
         Log.i("WordListItemAdapter", "Remove item at $position")
         withContext(Dispatchers.IO) {
             val item = currentList[position]
+            // TODO: Replace with list handler
             mappingDao.deleteMappingItemListId(item.ID, listId)
         }
-        notifyItemChanged(position)
+        notifyItemRemoved(position)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordListItemViewHolder {

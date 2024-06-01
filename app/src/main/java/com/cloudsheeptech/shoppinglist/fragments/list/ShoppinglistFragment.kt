@@ -137,6 +137,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
             Log.d("ShoppingListFragment", "List changed")
             it?.let {
                 adapter.submitList(it)
+//                adapter.notifyDataSetChanged()
             }
         })
 

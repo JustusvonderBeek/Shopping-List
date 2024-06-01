@@ -32,6 +32,7 @@ import java.util.Date
 object Networking {
 
     private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
+//    private val baseUrl = "https://ec2-3-120-40-62.eu-central-1.compute.amazonaws.com:46152/"
 //    private val baseUrl = "https://10.0.2.2:46152/"
     private lateinit var applicationDir : String
     private lateinit var database : ShoppingListDatabase

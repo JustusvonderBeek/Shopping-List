@@ -29,4 +29,5 @@
     <string name="search_users_input_hint">Search users...</string>
     <string name="btn_share_list_user">Share</string>
     <string name="btn_unshare_list_user">Unshare</string>
+    <string name="share_fragment_name">Share esta lista</string>
 </resources>

@@ -86,10 +86,10 @@
     <fragment
         android:id="@+id/shareFragment"
         android:name="com.cloudsheeptech.shoppinglist.fragments.share.ShareFragment"
-        android:label="ShareFragment" >
+        android:label="@string/share_fragment_name">
         <argument
             android:name="listId"
-            app:argType="long"
-            android:defaultValue="-1L" />
+            android:defaultValue="-1L"
+            app:argType="long" />
     </fragment>
 </navigation>

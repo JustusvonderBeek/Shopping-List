@@ -849,13 +849,14 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         }
     }
 
-    fun AddItemToShoppingList(item : Item, list : Long, createdBy: Long) {
+    fun AddItemToShoppingList(item : Item, list : Long, createdBy: Long) : Int {
         localCoroutine.launch {
             val mapping = itemToMapping(item, list, createdBy)
             insertMappingInDatabase(mapping)
             updateLastEditedInDatabase(list, AppUser.UserId)
             postShoppingListOnline(list, AppUser.UserId)
         }
+        return 0
     }
 
     fun AddItemAndAddToShoppingList(item : Item, list : Long, createdBy: Long) {

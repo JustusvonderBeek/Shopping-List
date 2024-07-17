@@ -3,6 +3,7 @@ package com.cloudsheeptech.shoppinglist.data.database
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
@@ -10,7 +11,7 @@ import com.cloudsheeptech.shoppinglist.data.ShoppingList
 @Dao
 interface ShoppingListDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertList(list : ShoppingList) : Long
 
     @Update

@@ -30,7 +30,7 @@ class OnlineListHandlerTest {
     fun testListInsert() = runTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
-        val onlineHandler = OnlineListHandler()
+        val onlineHandler = OnlineListHandler(database)
 
         val list = createDefaultList()
         val insertId = onlineHandler.storeShoppingList(list)

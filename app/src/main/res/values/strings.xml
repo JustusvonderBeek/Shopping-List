@@ -32,4 +32,7 @@
     <string name="btn_share_list_user">Share</string>
     <string name="btn_unshare_list_user">Unshare</string>
     <string name="share_fragment_name">Share this list</string>
+    <string name="share_btn_text">Share</string>
+    <string name="delete_list_button_text">Delete List</string>
+    <string name="clear_items_in_list_button_text">Clear Items In List</string>
 </resources>

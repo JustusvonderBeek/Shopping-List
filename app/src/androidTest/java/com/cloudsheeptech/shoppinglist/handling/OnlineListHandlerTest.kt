@@ -5,7 +5,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.handling.DatabaseListHandler
 import com.cloudsheeptech.shoppinglist.data.handling.OnlineListHandler
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -19,7 +18,7 @@ class OnlineListHandlerTest {
         val list = ShoppingList(
             ID = 0,
             Name = "Default List",
-            CreatedBy = 1234,
+            CreatedByID = 1234,
             CreatedByName = "Default User",
             LastEdited = OffsetDateTime.now(),
         )
@@ -32,10 +31,12 @@ class OnlineListHandlerTest {
         val database = ShoppingListDatabase.getInstance(application)
         val onlineHandler = OnlineListHandler(database)
 
+//        val user = AppUser.storeUser(application.applicationContext)
+
         val list = createDefaultList()
         val insertId = onlineHandler.storeShoppingList(list)
 //        Log.d("DatabaseListHandlerTest", "List: $list")
-
+        assert(insertId != 0L)
 
     }
 

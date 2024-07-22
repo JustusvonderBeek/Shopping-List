@@ -7,7 +7,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.cloudsheeptech.shoppinglist.data.ListCreator
-import com.cloudsheeptech.shoppinglist.data.UserWire
 
 @Dao
 interface OnlineUserDao {

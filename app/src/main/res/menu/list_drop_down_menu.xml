@@ -5,16 +5,16 @@
     <item
         android:id="@+id/share_list"
         android:icon="@drawable/ic_share"
-        android:title="Share"
-        app:showAsAction="always"/>
+        android:title="@string/share_btn_text"
+        app:showAsAction="never"/>
     <item
         android:id="@+id/delete_list"
         android:icon="@drawable/ic_trash"
-        android:title="Delete List"
+        android:title="@string/delete_list_button_text"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/clear_items_list"
         android:icon="@drawable/ic_clear"
-        android:title="Clear Items In List"
-        app:showAsAction="ifRoom" />
+        android:title="@string/clear_items_in_list_button_text"
+        app:showAsAction="never" />
 </menu>

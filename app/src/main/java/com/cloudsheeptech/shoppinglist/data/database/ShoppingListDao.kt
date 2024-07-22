@@ -17,7 +17,7 @@ interface ShoppingListDao {
     @Update
     fun updateList(list : ShoppingList)
 
-    @Query("DELETE FROM list_table WHERE ID = :key AND CreatedBy = :createdBy")
+    @Query("DELETE FROM list_table WHERE ID = :key AND CreatedByID = :createdBy")
     fun deleteList(key : Long, createdBy : Long)
 
     @Query("DELETE FROM list_table")
@@ -38,10 +38,10 @@ interface ShoppingListDao {
     @Query("SELECT * FROM list_table ORDER BY ID ASC")
     fun getShoppingLists() : List<ShoppingList>
 
-    @Query("SELECT * FROM list_table WHERE ID = :key AND CreatedBy = :keyCreatedBy")
+    @Query("SELECT * FROM list_table WHERE ID = :key AND CreatedByID = :keyCreatedBy")
     fun getShoppingListLive(key : Long, keyCreatedBy : Long) : LiveData<ShoppingList>
 
-    @Query("SELECT * FROM list_table WHERE ID = :key AND CreatedBy = :keyCreatedBy")
+    @Query("SELECT * FROM list_table WHERE ID = :key AND CreatedByID = :keyCreatedBy")
     fun getShoppingList(key : Long, keyCreatedBy: Long) : ShoppingList?
 
 }

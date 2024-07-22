@@ -2,11 +2,9 @@ package com.cloudsheeptech.shoppinglist.network
 
 import android.util.Log
 import com.auth0.android.jwt.JWT
-import com.cloudsheeptech.shoppinglist.user.AppUser
-import com.cloudsheeptech.shoppinglist.data.DatabaseUser
-import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.database.UserDao
+import com.cloudsheeptech.shoppinglist.data.user.AppUserDao
 //import com.cloudsheeptech.shoppinglist.network.AuthenticationInterceptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -31,12 +29,12 @@ import java.util.Date
 
 object Networking {
 
-    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
+//    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
 //    private val baseUrl = "https://ec2-3-120-40-62.eu-central-1.compute.amazonaws.com:46152/"
-//    private val baseUrl = "https://10.0.2.2:46152/"
+    private val baseUrl = "https://10.0.2.2:46152/"
     private lateinit var applicationDir : String
     private lateinit var database : ShoppingListDatabase
-    private lateinit var userDao : UserDao
+    private lateinit var appUserDao : AppUserDao
     private var token = ""
     private val calendar = Calendar.getInstance()
     private var tokenValid : Date? = null
@@ -53,7 +51,7 @@ object Networking {
     fun registerApplicationDir(dir : String, db: ShoppingListDatabase) {
         applicationDir = dir
         database = db
-        userDao = db.userDao()
+        appUserDao = db.userDao()
     }
 
     private fun loginRequired() : Boolean {
@@ -165,13 +163,13 @@ object Networking {
         val decodedToken = withContext(Dispatchers.IO) {
             try {
                 // Should only happen when opened for the first time
-                if (AppUser.isPushingUser())
+                if (AppUserHandler.isPushingUser())
                     return@withContext null
-                var user = AppUser.getUser()
-                if (user.ID == 0L && !AppUser.isPushingUser()) {
+                var user = AppUserHandler.getUser()
+                if (user?.OnlineID == 0L && !AppUserHandler.isPushingUser()) {
                     Log.i("Networking", "User was not pushed to server yet")
-                    AppUser.PostUserOnlineAsync(null)
-                    user = AppUser.getUser()
+                    AppUserHandler.PostUserOnlineAsync(null)
+                    user = AppUserHandler.getUser()
                     // The following operation still might fail because of an incorrect userId
                     // Therefore, update all the items in the list and try again
                 }

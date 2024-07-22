@@ -2,26 +2,11 @@ package com.cloudsheeptech.shoppinglist.fragments.create.user
 
 import android.app.Application
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.cloudsheeptech.shoppinglist.user.AppUser
-import com.cloudsheeptech.shoppinglist.data.DatabaseUser
-import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.network.Networking
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlin.Exception
-import kotlin.random.Random
 
 class StartViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -50,8 +35,8 @@ class StartViewModel(application: Application) : AndroidViewModel(application) {
             return
         if (inputText.value!!.isEmpty())
             return
-        AppUser.new(inputText.value!!)
-        AppUser.PostUserOnline(getApplication<Application>().applicationContext)
+        AppUserHandler.new(inputText.value!!)
+        AppUserHandler.PostUserOnline(getApplication<Application>().applicationContext)
     }
 
     // -----------------------------------------------

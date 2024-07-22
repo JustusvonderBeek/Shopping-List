@@ -44,7 +44,7 @@ class ShoppingListAdapter(val clickListener: ListClickListener, private val reso
     }
 
     class ListClickListener(val clickListener: (id: Long, from : Long) -> Unit) {
-        fun onClick(list: ShoppingList) = clickListener(list.ID, list.CreatedBy)
+        fun onClick(list: ShoppingList) = clickListener(list.ID, list.CreatedByID)
     }
 
     class ItemDiffCallback : DiffUtil.ItemCallback<ShoppingList>() {

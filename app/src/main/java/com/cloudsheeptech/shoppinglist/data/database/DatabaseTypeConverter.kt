@@ -2,13 +2,11 @@ package com.cloudsheeptech.shoppinglist.data.database
 
 import androidx.room.TypeConverter
 import com.cloudsheeptech.shoppinglist.data.ListCreator
-import com.cloudsheeptech.shoppinglist.data.DatabaseUser
-import com.cloudsheeptech.shoppinglist.data.Serializer.OffsetDateTimeSerializer
+import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Base64.Encoder
 
 class DatabaseTypeConverter {
 
@@ -25,13 +23,13 @@ class DatabaseTypeConverter {
     }
 
     @TypeConverter
-    fun userToString(user : DatabaseUser) : String {
+    fun userToString(user : AppUser) : String {
         return Json.encodeToString(user)
     }
 
     @TypeConverter
-    fun stringToUser(string : String) : DatabaseUser {
-        return Json.decodeFromString<DatabaseUser>(string)
+    fun stringToUser(string : String) : AppUser {
+        return Json.decodeFromString<AppUser>(string)
     }
 
     @TypeConverter

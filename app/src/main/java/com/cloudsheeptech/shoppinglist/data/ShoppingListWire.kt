@@ -14,4 +14,6 @@ data class ShoppingListWire(
     @Contextual
     var LastEdited : OffsetDateTime,
     var Items : MutableList<ItemWire>
-)
+) {
+
+}

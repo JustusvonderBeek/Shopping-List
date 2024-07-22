@@ -18,7 +18,7 @@ import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewM
 import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModelFactory
 import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel
 import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModelFactory
-import com.cloudsheeptech.shoppinglist.user.AppUser
+import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Setup user (this is necessary so that we can use the value throughout the app)
-        AppUser.loadUser(application.applicationContext)
+        AppUserHandler.loadUser(application.applicationContext)
 //        AppUser.PostUserOnline(applicationContext)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)

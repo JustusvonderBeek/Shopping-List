@@ -1,22 +1,19 @@
 package com.cloudsheeptech.shoppinglist.data
 
 import android.util.Log
-import androidx.core.graphics.createBitmap
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.user.AppUser
+import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
 
-@Entity(tableName = "list_table", primaryKeys = ["ID", "CreatedBy"])
+@Entity(tableName = "list_table", primaryKeys = ["ID", "CreatedByID"])
 data class ShoppingList(
     var ID : Long,
     var Name : String,
     // Flatten list creator to allow direct ID access
-    var CreatedBy : Long,
+    var CreatedByID : Long,
     var CreatedByName : String,
     var LastEdited : OffsetDateTime
 ) {
@@ -24,17 +21,18 @@ data class ShoppingList(
     suspend fun toShoppingListWire(database: ShoppingListDatabase): ShoppingListWire {
         var userId = 0L
         val listId = this.ID
-        val createdBy = this.CreatedBy
+        val createdBy = this.CreatedByID
         val items = mutableListOf<ItemWire>()
         withContext(Dispatchers.IO) {
-            if (AppUser.UserId == 0L) {
-                AppUser.PostUserOnlineAsync(null)
-                if (AppUser.UserId == 0L) {
+            if (AppUserHandler.isAuthenticatedOnline()) {
+                AppUserHandler.PostUserOnlineAsync(null)
+                if (AppUserHandler.isAuthenticatedOnline()) {
                     Log.i("ShoppingListHandler", "Failed to create user online: Cannot complete request")
                     return@withContext
                 }
             }
-            userId = AppUser.UserId
+            val appUser = AppUserHandler.getUser()!!
+            userId = appUser.OnlineID
             val itemsMapped = database.mappingDao().getMappingsForList(listId, createdBy)
             for (item in itemsMapped) {
                 val convertedItem = ItemWire(Name="", Icon="", Quantity = 1L, Checked = false, AddedBy = item.AddedBy)
@@ -47,10 +45,11 @@ data class ShoppingList(
                 items.add(convertedItem)
             }
         }
+        val appUser = AppUserHandler.getUser()
         val wireList = ShoppingListWire(
             ListId = this.ID,
             Name = this.Name,
-            CreatedBy = ListCreator(userId, AppUser.Username),
+            CreatedBy = ListCreator(userId, appUser?.Username ?: "Unknown"),
             Created = this.LastEdited,
             LastEdited = this.LastEdited,
             Items = items,

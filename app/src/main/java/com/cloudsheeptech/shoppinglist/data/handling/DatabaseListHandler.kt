@@ -29,7 +29,7 @@ class DatabaseListHandler(database: ShoppingListDatabase) : ListHandler(database
         var insertedListId = list.ID
         withContext(Dispatchers.IO) {
             // Differentiate between new and existing list
-            val existingList = listDao.getShoppingList(list.ID, list.CreatedBy)
+            val existingList = listDao.getShoppingList(list.ID, list.CreatedByID)
             if (insertedListId == 0L || existingList == null) {
                 // Update the id to the latest available ID
                 val copiedList = list.copy()

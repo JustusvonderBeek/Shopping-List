@@ -5,24 +5,15 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.cloudsheeptech.shoppinglist.data.Item
-import com.cloudsheeptech.shoppinglist.data.ListMapping
-import com.cloudsheeptech.shoppinglist.data.ShoppingList
-import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
-import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.user.AppUser
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
+import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import java.time.Instant
-import kotlin.Exception
 
 /*
 * This class is the main HUB of the application, taking care of user initialization etc.
@@ -89,7 +80,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     fun removeUser() {
         vmCoroutine.launch {
-            AppUser.DeleteUser(null)
+            AppUserHandler.DeleteUser(null)
         }
     }
 

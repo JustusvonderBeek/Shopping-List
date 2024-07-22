@@ -12,10 +12,9 @@ import com.cloudsheeptech.shoppinglist.data.Serializer.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.ShoppingListWire
-import com.cloudsheeptech.shoppinglist.data.UserWire
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.user.AppUser
+import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
@@ -26,9 +25,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
-import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
 /*
@@ -62,14 +59,14 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     // ------------------------------------------------------------------------------
 
     private suspend fun newShoppingList(name : String) : ShoppingList {
-        val createdBy = AppUser.getUser()
+        val createdBy = AppUserHandler.getUser()
         var listId = 1L
         withContext(Dispatchers.IO) {
             val lists = listDao.getLatestListId() ?: return@withContext
             listId = lists + 1
         }
         // Let the database assign the unique ID (0 = DB assign)
-        val list = ShoppingList(ID=listId, Name=name, CreatedBy = createdBy.ID, CreatedByName = createdBy.Username, LastEdited = OffsetDateTime.now())
+        val list = ShoppingList(ID=listId, Name=name, CreatedByID = createdBy!!.OnlineID, CreatedByName = createdBy.Username, LastEdited = OffsetDateTime.now())
         Log.d("ShoppingListHandler", "Created List: $list")
         return list
     }
@@ -111,7 +108,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private suspend fun updateListInDatabase(list : ShoppingList) : Boolean {
         var updated = false
         withContext(Dispatchers.IO) {
-            val existingList = listDao.getShoppingList(list.ID, list.CreatedBy)
+            val existingList = listDao.getShoppingList(list.ID, list.CreatedByID)
             if (existingList == null) {
                 Log.i("ShoppingListHandler", "List ${list.ID} cannot be found but should exist")
                 listDao.insertList(list)
@@ -148,8 +145,8 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
 
     private suspend fun deleteShoppingListFromDatabase(list : ShoppingList) {
         withContext(Dispatchers.IO) {
-            deleteAllMappingsForListId(list.ID, list.CreatedBy)
-            listDao.deleteList(list.ID, list.CreatedBy)
+            deleteAllMappingsForListId(list.ID, list.CreatedByID)
+            listDao.deleteList(list.ID, list.CreatedByID)
             Log.i("ShoppingListHandler", "Deleted list ${list.Name}")
         }
     }
@@ -235,13 +232,13 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
 
     private suspend fun resetCreatedByForMappings(list: ShoppingList) {
         withContext(Dispatchers.IO) {
-            val mappings = mappingDao.getMappingsForList(list.ID, list.CreatedBy)
+            val mappings = mappingDao.getMappingsForList(list.ID, list.CreatedByID)
             if (mappings.isEmpty())
                 return@withContext
             for (mapping in mappings) {
                 mapping.CreatedBy = 0L
                 mapping.AddedBy = 0L
-                deleteMappingInDatabase(mapping.ItemID, mapping.ListID, list.CreatedBy)
+                deleteMappingInDatabase(mapping.ItemID, mapping.ListID, list.CreatedByID)
                 insertMappingInDatabase(mapping)
             }
         }
@@ -325,7 +322,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     }
 
     private suspend fun updateCreatedByForList(list : ShoppingList, createdBy: Long) {
-        if (createdBy == 0L || list.CreatedBy != 0L)
+        if (createdBy == 0L || list.CreatedByID != 0L)
             return
         withContext(Dispatchers.IO) {
             // In case the user create new lists before updating the old ones,
@@ -337,8 +334,8 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             updateCreatedByForMappings(list.ID, newListId, createdBy)
             Log.d("ShoppingListHandler", "Deleting list ${list.ID} from database")
             deleteShoppingListFromDatabase(list)
-            list.CreatedBy = createdBy
-            list.CreatedByName = AppUser.Username
+            list.CreatedByID = createdBy
+            list.CreatedByName = AppUserHandler.getUser()!!.Username
             list.ID = newListId
             // This is not really an edit from the user
 //            existingList.LastEdited = OffsetDateTime.now()
@@ -348,13 +345,13 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     }
 
     private suspend fun resetCreatedByForList(list: ShoppingList) {
-        if (list.CreatedBy == 0L)
+        if (list.CreatedByID == 0L)
             return
         withContext(Dispatchers.IO) {
             resetCreatedByForMappings(list)
             // TODO: Include the sharing as well. This is relevant when pushing the new lists
             deleteShoppingListFromDatabase(list)
-            list.CreatedBy = 0L
+            list.CreatedByID = 0L
             insertShoppingListIntoDatabase(list)
         }
     }
@@ -362,15 +359,15 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     suspend fun updatedCreatedByForAllLists() {
         Log.d("ShoppingListHandler", "Updating all lists in database that were created offline")
         withContext(Dispatchers.IO) {
-            if (AppUser.UserId == 0L)
+            if (AppUserHandler.getUser()!!.OnlineID == 0L)
                 return@withContext
             val allShoppingLists = listDao.getShoppingLists()
             if (allShoppingLists.isEmpty())
                 return@withContext
-            val uninitializedLists = allShoppingLists.filter { list -> list.CreatedBy == 0L }
+            val uninitializedLists = allShoppingLists.filter { list -> list.CreatedByID == 0L }
             Log.d("ShoppingListHandler", "Found ${uninitializedLists.size} lists to update")
             for (list in uninitializedLists) {
-                updateCreatedByForList(list, AppUser.UserId)
+                updateCreatedByForList(list, AppUserHandler.getUser()!!.OnlineID)
             }
         }
     }
@@ -382,7 +379,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             val allLists = listDao.getShoppingLists()
             if (allLists.isEmpty())
                 return@withContext
-            val ownLists = allLists.filter { l -> l.CreatedBy == createdBy }
+            val ownLists = allLists.filter { l -> l.CreatedByID == createdBy }
             Log.d("ShoppingListHandler", "Found ${ownLists.size} own lists to reset")
             for (list in ownLists) {
                 resetCreatedByForList(list)
@@ -489,7 +486,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             if (uninitializedItems.isEmpty())
                 return@withContext
             uninitializedItems.forEach {
-                it.ID = AppUser.UserId
+                it.ID = AppUserHandler.getUser()!!.OnlineID
                 updateItemInDatabase(it)
             }
         }
@@ -500,12 +497,12 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
             val lists = listDao.getShoppingLists()
             if (lists.isEmpty())
                 return@withContext
-            val uninitializedLists = lists.filter { it.CreatedBy == 0L }
+            val uninitializedLists = lists.filter { it.CreatedByID == 0L }
             if (uninitializedLists.isEmpty())
                 return@withContext
-            val updatedCreator = ListCreator(AppUser.UserId, AppUser.Username)
+            val updatedCreator = ListCreator(AppUserHandler.getUser()!!.OnlineID, AppUserHandler.getUser()!!.Username)
             uninitializedLists.forEach {
-                it.CreatedBy = updatedCreator.ID
+                it.CreatedByID = updatedCreator.ID
                 it.CreatedByName = updatedCreator.Name
                 updateListInDatabase(it)
             }
@@ -562,11 +559,11 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     }
 
     private suspend fun shoppingListToWire(list : ShoppingList) : ShoppingListWire {
-        val convertedList = ShoppingListWire(ListId = list.ID, Name = list.Name, CreatedBy = ListCreator(list.CreatedBy, list.CreatedByName), Created = OffsetDateTime.now(), LastEdited = list.LastEdited, Items = mutableListOf())
+        val convertedList = ShoppingListWire(ListId = list.ID, Name = list.Name, CreatedBy = ListCreator(list.CreatedByID, list.CreatedByName), Created = OffsetDateTime.now(), LastEdited = list.LastEdited, Items = mutableListOf())
         withContext(Dispatchers.IO) {
             // Retrieve the list
             val itemsInList = mutableListOf<ItemWire>()
-            val itemsMapped = mappingDao.getMappingsForList(list.ID, list.CreatedBy)
+            val itemsMapped = mappingDao.getMappingsForList(list.ID, list.CreatedByID)
             for (item in itemsMapped) {
                 val itemConvertedToWire = listMappingToItemWire(item) ?: continue
                 itemsInList.add(itemConvertedToWire)
@@ -577,7 +574,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     }
 
     private fun itemToMapping(item: Item, list : Long, createdBy : Long) : ListMapping {
-        return ListMapping(ID = 0L, item.ID, list, Quantity = 1L, Checked = false, CreatedBy = createdBy, AddedBy = AppUser.UserId)
+        return ListMapping(ID = 0L, item.ID, list, Quantity = 1L, Checked = false, CreatedBy = createdBy, AddedBy = AppUserHandler.getUser()!!.OnlineID)
     }
 
     private suspend fun itemWireToItemAndCreateIfNotExists(itemWire: ItemWire) : Item {
@@ -641,16 +638,16 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private suspend fun postShoppingListOnline(list : ShoppingList) : ShoppingList {
         var updatedList = list
         withContext(Dispatchers.IO) {
-            if (list.CreatedBy == 0L) {
+            if (list.CreatedByID == 0L) {
                 Log.d("ShoppingListHandler", "List was created offline and needs to be converted")
-                if (AppUser.UserId == 0L) {
-                    AppUser.PostUserOnlineAsync(null)
-                    if (AppUser.UserId == 0L) {
+                if (AppUserHandler.getUser()!!.OnlineID == 0L) {
+                    AppUserHandler.PostUserOnlineAsync(null)
+                    if (AppUserHandler.getUser()!!.OnlineID == 0L) {
                         Log.i("ShoppingListHandler", "Failed to create user online: Cannot complete request")
                         return@withContext
                     }
                 }
-                list.CreatedBy = AppUser.UserId
+                list.CreatedByID = AppUserHandler.getUser()!!.OnlineID
                 updatedCreatedByForAllLists()
             }
             val listInWireFormat = shoppingListToWire(list)
@@ -681,7 +678,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private suspend fun shareListOnline(listId : Long, sharedWithId: Long) : Boolean {
         var success = false
         withContext(Dispatchers.IO) {
-            val sharedListObject = ListShare(listId, AppUser.UserId, sharedWithId, OffsetDateTime.now())
+            val sharedListObject = ListShare(listId, AppUserHandler.getUser()!!.OnlineID, sharedWithId, OffsetDateTime.now())
             val serialized = json.encodeToString(sharedListObject)
             Networking.POST("v1/share/$listId", serialized) { resp ->
                 if (resp.status != HttpStatusCode.Created) {
@@ -697,7 +694,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
 
     private suspend fun unshareListOnline(listId: Long) {
         withContext(Dispatchers.IO) {
-            val unshareObject = ListShare(listId, AppUser.UserId, -1, OffsetDateTime.now())
+            val unshareObject = ListShare(listId, AppUserHandler.getUser()!!.OnlineID, -1, OffsetDateTime.now())
             val serialized = json.encodeToString(unshareObject)
             Networking.DELETE("v1/share/$listId", serialized) { resp ->
                 if (resp.status != HttpStatusCode.OK) {
@@ -710,7 +707,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
 
     private suspend fun unshareListForUserOnline(userId: Long, listId: Long) {
         withContext(Dispatchers.IO) {
-            val unshareObject = ListShare(listId, AppUser.UserId, userId, OffsetDateTime.now())
+            val unshareObject = ListShare(listId, AppUserHandler.getUser()!!.OnlineID, userId, OffsetDateTime.now())
             val serialized = json.encodeToString(unshareObject)
             Networking.DELETE("v1/share/$listId", serialized) { resp ->
                 if (resp.status != HttpStatusCode.OK) {
@@ -723,7 +720,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
 
     private suspend fun requestUnshareList(listId: Long, createdBy: Long) {
         withContext(Dispatchers.IO) {
-            val unshareObject = ListShare(listId, createdBy, AppUser.UserId, OffsetDateTime.now())
+            val unshareObject = ListShare(listId, createdBy, AppUserHandler.getUser()!!.OnlineID, OffsetDateTime.now())
             val serialized = json.encodeToString(unshareObject)
             Networking.DELETE("v1/share/$listId", serialized) { resp ->
                 if (resp.status != HttpStatusCode.OK) {
@@ -771,7 +768,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     private suspend fun getOwnAndSharedShoppingListsFromOnline() : List<ShoppingListWire> {
         val onlineLists = mutableListOf<ShoppingListWire>()
         withContext(Dispatchers.IO) {
-            Networking.GET("v1/lists/${AppUser.UserId}") { resp ->
+            Networking.GET("v1/lists/${AppUserHandler.getUser()!!.OnlineID}") { resp ->
                 if (resp.status != HttpStatusCode.OK) {
                     Log.w("ShoppingListHandler", "Failed to GET all list from online")
                     return@GET
@@ -839,9 +836,9 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     fun DeleteShoppingList(list : ShoppingList) {
         localCoroutine.launch {
             deleteShoppingListFromDatabase(list)
-            if (list.CreatedBy != AppUser.UserId) {
+            if (list.CreatedByID != AppUserHandler.getUser()!!.OnlineID) {
                 // Delete sharing online
-                requestUnshareList(list.ID, list.CreatedBy)
+                requestUnshareList(list.ID, list.CreatedByID)
             } else {
                 // Should include the unsharing of the list
                 deleteShoppingListOnline(list.ID)
@@ -853,8 +850,8 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         localCoroutine.launch {
             val mapping = itemToMapping(item, list, createdBy)
             insertMappingInDatabase(mapping)
-            updateLastEditedInDatabase(list, AppUser.UserId)
-            postShoppingListOnline(list, AppUser.UserId)
+            updateLastEditedInDatabase(list, AppUserHandler.getUser()!!.OnlineID)
+            postShoppingListOnline(list, AppUserHandler.getUser()!!.OnlineID)
         }
         return 0
     }
@@ -943,7 +940,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
     fun ShareShoppingListOnline(listId: Long, sharedWithId : Long) {
         Log.d("ShoppingListHandler", "Sharing list $listId with $sharedWithId")
         localCoroutine.launch {
-            postShoppingListOnline(listId, AppUser.UserId)
+            postShoppingListOnline(listId, AppUserHandler.getUser()!!.OnlineID)
             createSharingInDatabase(sharedWithId, listId)
             shareListOnline(listId, sharedWithId)
         }
@@ -969,7 +966,7 @@ class ShoppingListHandler(val database : ShoppingListDatabase) {
         Log.d("ShoppingListHandler", "Clearing all checked items for list $listId")
         localCoroutine.launch {
             deleteAllCheckedMappingsForListId(listId)
-            postShoppingListOnline(listId, AppUser.UserId)
+            postShoppingListOnline(listId, AppUserHandler.getUser()!!.OnlineID)
         }
     }
 

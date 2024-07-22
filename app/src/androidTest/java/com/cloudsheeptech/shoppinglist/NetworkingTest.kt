@@ -4,8 +4,7 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.data.Item
-import com.cloudsheeptech.shoppinglist.data.DatabaseUser
-import com.cloudsheeptech.shoppinglist.data.User
+import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
@@ -19,6 +18,7 @@ import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import java.io.File
+import java.time.OffsetDateTime
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -41,8 +41,8 @@ class NetworkingTest {
             success = true
             return success
         }
-        val user = User(0, "test user", "test password")
-        val encoded = Json.encodeToString(user)
+        val onlineAppUser = AppUser(0, 0L, "test user", "test password", OffsetDateTime.now())
+        val encoded = Json.encodeToString(onlineAppUser)
         Networking.POST("auth/create", encoded) { resp ->
             if (resp.status != HttpStatusCode.Created)
                 return@POST
@@ -50,8 +50,8 @@ class NetworkingTest {
             if (body.isEmpty())
                 return@POST
             // Decode user to replace password
-            val decodedUser = Json.decodeFromString<DatabaseUser>(body)
-            decodedUser.Password = user.Password
+            val decodedUser = Json.decodeFromString<AppUser>(body)
+            decodedUser.Password = onlineAppUser.Password
             val encodedUser = Json.encodeToString(decodedUser)
             // Store user to disk to allow the test making use of it
             val file = File(fileDirPath, "user.json")

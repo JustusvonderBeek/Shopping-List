@@ -20,7 +20,7 @@ class DatabaseListHandlerTest {
         val list = ShoppingList(
             ID = 0,
             Name = "Default List",
-            CreatedBy = 1234,
+            CreatedByID = 1234,
             CreatedByName = "Default User",
             LastEdited = OffsetDateTime.now(),
         )
@@ -109,12 +109,12 @@ class DatabaseListHandlerTest {
         assert(insertedId2 == 2L)
         assert(checkDbContains(containedLists))
 
-        val retrievedList = dbHandler.retrieveShoppingList(insertId, list.CreatedBy)
+        val retrievedList = dbHandler.retrieveShoppingList(insertId, list.CreatedByID)
         Assert.assertNotNull(retrievedList)
         // Fix the insertion ID
 //        Log.e("DatabaseListHandlerTest", "List: $list, Inserted: $retrievedList")
         assert(list == retrievedList)
-        val retrievedList2 = dbHandler.retrieveShoppingList(insertedId2, list2.CreatedBy)
+        val retrievedList2 = dbHandler.retrieveShoppingList(insertedId2, list2.CreatedByID)
 //        Log.e("DatabaseListHandlerTest", "List: $list2, Inserted: $retrievedList2")
         Assert.assertNotNull(retrievedList2)
         assert(list2 == retrievedList2)
@@ -157,7 +157,7 @@ class DatabaseListHandlerTest {
         assert(insertId == 1L)
         assert(checkDbContains(containedLists))
 
-        val updatedList = dbHandler.updateLastEditedNow(insertId, list.CreatedBy)
+        val updatedList = dbHandler.updateLastEditedNow(insertId, list.CreatedByID)
         Assert.assertNotNull(updatedList)
         assert(updatedList!!.ID == insertId)
         containedLists.clear()
@@ -165,7 +165,7 @@ class DatabaseListHandlerTest {
         assert(checkDbContains(containedLists))
 
         // Test if list cannot be found
-        val updatedList2 = dbHandler.updateLastEditedNow(insertId, list.CreatedBy + 10)
+        val updatedList2 = dbHandler.updateLastEditedNow(insertId, list.CreatedByID + 10)
         Assert.assertNull(updatedList2)
     }
 
@@ -183,7 +183,7 @@ class DatabaseListHandlerTest {
         assert(insertId == 1L)
         assert(checkDbContains(containedLists))
 
-        val updatedList = dbHandler.deleteShoppingList(insertId, list.CreatedBy)
+        val updatedList = dbHandler.deleteShoppingList(insertId, list.CreatedByID)
 
         assert(checkDbContains(emptyList()))
     }

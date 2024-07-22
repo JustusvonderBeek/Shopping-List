@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.user
+package com.cloudsheeptech.shoppinglist.data.user
 
 import android.content.Context
 import androidx.datastore.core.CorruptionException

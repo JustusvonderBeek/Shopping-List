@@ -5,7 +5,6 @@ import com.cloudsheeptech.shoppinglist.data.Serializer.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
@@ -42,14 +41,14 @@ class OnlineListHandler(database: ShoppingListDatabase) : ListHandler(database) 
 //            }
             val listInWireFormat = list.toShoppingListWire(database)
             val serializedList = json.encodeToString(listInWireFormat)
-            Networking.POST("v1/list", serializedList) { resp ->
-                if (resp.status != HttpStatusCode.Created) {
-                    Log.w("ShoppingListHandler", "Posting Shopping List online failed")
-                    return@POST
-                }
-                // We don't expect anything from online
-                listId = list.ID
-            }
+//            Networking.POST("v1/list", serializedList) { resp ->
+//                if (resp.status != HttpStatusCode.Created) {
+//                    Log.w("ShoppingListHandler", "Posting Shopping List online failed")
+//                    return@POST
+//                }
+//                // We don't expect anything from online
+//                listId = list.ID
+//            }
         }
         // Because we store the List ID  + User Online, the user can decide what ID the list has
         // Therefore, we are not interested in whatever ID the server assigned to the
@@ -60,20 +59,20 @@ class OnlineListHandler(database: ShoppingListDatabase) : ListHandler(database) 
     override suspend fun retrieveShoppingList(listId: Long, createdBy: Long): ShoppingList? {
         var shoppingList : ShoppingList? = null
         withContext(Dispatchers.IO) {
-            Networking.GET("v1/list/$listId") { resp ->
-                if (resp.status != HttpStatusCode.OK) {
-                    Log.d("OnlineListHandler", "Failed to retrieve list $listId")
-                    return@GET
-                }
-                try {
-                    val body = resp.bodyAsText(Charsets.UTF_8)
-                    val decoded = json.decodeFromString<ShoppingList>(body)
-                    shoppingList = decoded
-                } catch (ex: SerializationException) {
-                    Log.e("OnlineListHandler", "Failed to deserialize the received content!")
-                    return@GET
-                }
-            }
+//            Networking.GET("v1/list/$listId") { resp ->
+//                if (resp.status != HttpStatusCode.OK) {
+//                    Log.d("OnlineListHandler", "Failed to retrieve list $listId")
+//                    return@GET
+//                }
+//                try {
+//                    val body = resp.bodyAsText(Charsets.UTF_8)
+//                    val decoded = json.decodeFromString<ShoppingList>(body)
+//                    shoppingList = decoded
+//                } catch (ex: SerializationException) {
+//                    Log.e("OnlineListHandler", "Failed to deserialize the received content!")
+//                    return@GET
+//                }
+//            }
         }
         return shoppingList
     }

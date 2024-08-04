@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.cloudsheeptech.shoppinglist.MainActivity
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
@@ -207,7 +208,8 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
 
         viewModel.title.observe(viewLifecycleOwner, Observer { title ->
             title?.let {
-                requireActivity().actionBar?.title = "Bla"
+                Log.d("ShoppingListFragment", "Setting the title name on ${requireActivity().actionBar}")
+                // TOOD: This must probably be set in the main activity
             }
         })
 
@@ -236,23 +238,23 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
         })
 
         val confirmClearDialog = AlertDialog.Builder(context)
-            .setMessage("Do you really want to clear all checked items?")
-            .setTitle("Confirm Clear All!")
-            .setPositiveButton("Yes, clear") { dialog, which ->
+            .setMessage(getString(R.string.clear_check_item_dialog))
+            .setTitle(getString(R.string.clear_item_dialog_title))
+            .setPositiveButton(getString(R.string.clear_item_dialog_yes)) { dialog, which ->
                 viewModel.onClearAllItemsPositiv()
             }
-            .setNegativeButton("Cancel") { dialog, which ->
+            .setNegativeButton(getString(R.string.clear_item_dialog_no)) { dialog, which ->
                 viewModel.onClearAllItemsNegative()
             }
             .create()
 
         val confirmDeleteDialog = AlertDialog.Builder(context)
-            .setMessage("Do you really want to delete this list?")
-            .setTitle("Delete List!")
-            .setPositiveButton("Yes, delete") { dialog, which ->
+            .setMessage(getString(R.string.delete_list_dialog))
+            .setTitle(getString(R.string.delete_list_dialog_title))
+            .setPositiveButton(getString(R.string.delete_list_dialog_yes)) { dialog, which ->
                 viewModel.onDeleteConfirmed()
             }
-            .setNegativeButton("Cancel") { dialog, which ->
+            .setNegativeButton(getString(R.string.delete_list_dialog_no)) { dialog, which ->
                 viewModel.onDeleteCanceled()
             }
             .create()

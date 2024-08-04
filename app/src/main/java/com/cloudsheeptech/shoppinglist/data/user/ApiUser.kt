@@ -12,7 +12,7 @@ import java.time.OffsetDateTime
 */
 
 @Serializable
-data class OnlineUser(
+data class ApiUser(
     /* MUST BE CONTAINED. The identifier against the server. */
     var OnlineID : Long = 0L,
     /* MUST BE CONTAINED. The human read-able identifier. */

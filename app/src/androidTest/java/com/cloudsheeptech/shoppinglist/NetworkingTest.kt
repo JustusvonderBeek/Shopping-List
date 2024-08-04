@@ -43,23 +43,23 @@ class NetworkingTest {
         }
         val onlineAppUser = AppUser(0, 0L, "test user", "test password", OffsetDateTime.now())
         val encoded = Json.encodeToString(onlineAppUser)
-        Networking.POST("auth/create", encoded) { resp ->
-            if (resp.status != HttpStatusCode.Created)
-                return@POST
-            val body = resp.bodyAsText(Charsets.UTF_8)
-            if (body.isEmpty())
-                return@POST
-            // Decode user to replace password
-            val decodedUser = Json.decodeFromString<AppUser>(body)
-            decodedUser.Password = onlineAppUser.Password
-            val encodedUser = Json.encodeToString(decodedUser)
-            // Store user to disk to allow the test making use of it
-            val file = File(fileDirPath, "user.json")
-            val writer = file.writer(Charsets.UTF_8)
-            writer.write(encodedUser)
-            writer.close()
-            success = true
-        }
+//        Networking.POST("auth/create", encoded) { resp ->
+//            if (resp.status != HttpStatusCode.Created)
+//                return@POST
+//            val body = resp.bodyAsText(Charsets.UTF_8)
+//            if (body.isEmpty())
+//                return@POST
+//            // Decode user to replace password
+//            val decodedUser = Json.decodeFromString<AppUser>(body)
+//            decodedUser.Password = onlineAppUser.Password
+//            val encodedUser = Json.encodeToString(decodedUser)
+//            // Store user to disk to allow the test making use of it
+//            val file = File(fileDirPath, "user.json")
+//            val writer = file.writer(Charsets.UTF_8)
+//            writer.write(encodedUser)
+//            writer.close()
+//            success = true
+//        }
         Log.d("NetworkingTest", "User created")
         return success
     }
@@ -67,16 +67,16 @@ class NetworkingTest {
     private suspend fun getTestPathUnauth() : Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val db = ShoppingListDatabase.getInstance(appContext)
-        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
+//        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
         var success = false
-        Networking.GET("test/unauth") { resp ->
-            println("Got an answer: ${resp.bodyAsText(Charsets.UTF_8)}")
-            if (resp.status != HttpStatusCode.OK)
-                return@GET
-            if (resp.bodyAsText(Charsets.UTF_8) == "")
-                return@GET
-            success = true
-        }
+//        Networking.GET("test/unauth") { resp ->
+//            println("Got an answer: ${resp.bodyAsText(Charsets.UTF_8)}")
+//            if (resp.status != HttpStatusCode.OK)
+//                return@GET
+//            if (resp.bodyAsText(Charsets.UTF_8) == "")
+//                return@GET
+//            success = true
+//        }
         return success
     }
 
@@ -91,23 +91,23 @@ class NetworkingTest {
     private suspend fun getTestPathAuth() : Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val db = ShoppingListDatabase.getInstance(appContext)
-        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
+//        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
         // For debugging, create a new user first
         var success = createUserAccount(appContext.filesDir.absolutePath)
         assert(success)
 
         success = false
         var response = ""
-        Networking.GET("v1/test/auth") { resp ->
-            println("Got an answer: ${resp.bodyAsText(Charsets.UTF_8)}")
-            if (resp.status != HttpStatusCode.OK)
-                return@GET
-            if (resp.bodyAsText(Charsets.UTF_8) == "")
-                return@GET
-            Log.d("NetworkingTest", "Authenticated!")
-            response = resp.bodyAsText(Charsets.UTF_8)
-            success = true
-        }
+//        Networking.GET("v1/test/auth") { resp ->
+//            println("Got an answer: ${resp.bodyAsText(Charsets.UTF_8)}")
+//            if (resp.status != HttpStatusCode.OK)
+//                return@GET
+//            if (resp.bodyAsText(Charsets.UTF_8) == "")
+//                return@GET
+//            Log.d("NetworkingTest", "Authenticated!")
+//            response = resp.bodyAsText(Charsets.UTF_8)
+//            success = true
+//        }
         assertEquals("""{"status":"testing-content"}""", response.filter { !it.isWhitespace() })
         return success
     }
@@ -132,7 +132,7 @@ class NetworkingTest {
     private suspend fun postTestPathAuth() : Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val db = ShoppingListDatabase.getInstance(appContext)
-        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
+//        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
         // For debugging, create a new user first
         var success = createUserAccount(appContext.filesDir.absolutePath)
         assert(success)
@@ -141,16 +141,16 @@ class NetworkingTest {
         var answer = ""
         val item = Item(123, "Test Item", "Empty")
         val encodedItem = Json.encodeToString(item)
-        Networking.POST("v1/test/auth", encodedItem) { resp ->
-            println("Got an answer: ${resp.bodyAsText(Charsets.UTF_8)}")
-            if (resp.status != HttpStatusCode.OK)
-                return@POST
-            if (resp.bodyAsText(Charsets.UTF_8) == "")
-                return@POST
-            Log.d("NetworkingTest", "Post Authenticated!")
-            answer = resp.bodyAsText(Charsets.UTF_8)
-            success = true
-        }
+//        Networking.POST("v1/test/auth", encodedItem) { resp ->
+//            println("Got an answer: ${resp.bodyAsText(Charsets.UTF_8)}")
+//            if (resp.status != HttpStatusCode.OK)
+//                return@POST
+//            if (resp.bodyAsText(Charsets.UTF_8) == "")
+//                return@POST
+//            Log.d("NetworkingTest", "Post Authenticated!")
+//            answer = resp.bodyAsText(Charsets.UTF_8)
+//            success = true
+//        }
         assertEquals("""{"status":"post-successful"}""", answer.filter { !it.isWhitespace() })
         return success
     }

@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
+import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 
 class StartViewModel(application: Application) : AndroidViewModel(application) {
@@ -35,8 +35,8 @@ class StartViewModel(application: Application) : AndroidViewModel(application) {
             return
         if (inputText.value!!.isEmpty())
             return
-        AppUserHandler.new(inputText.value!!)
-        AppUserHandler.PostUserOnline(getApplication<Application>().applicationContext)
+//        AppUserLocalDataSource.new(inputText.value!!)
+//        AppUserLocalDataSource.PostUserOnline(getApplication<Application>().applicationContext)
     }
 
     // -----------------------------------------------

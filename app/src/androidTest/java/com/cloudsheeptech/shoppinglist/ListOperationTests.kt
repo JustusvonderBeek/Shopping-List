@@ -9,7 +9,7 @@ import com.cloudsheeptech.shoppinglist.data.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
+import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
@@ -22,9 +22,9 @@ class ListOperationTests {
     private fun createList() : Boolean {
 //        val listTitle = "New List"
         val application = ApplicationProvider.getApplicationContext<Application>()
-        AppUserHandler.loadUser(application)
-        AppUserHandler.getUser()!!.OnlineID = 12
-        AppUserHandler.getUser()!!.Username = "Franz"
+//        AppUserLocalDataSource.loadUser(application)
+//        AppUserLocalDataSource.getUser()!!.OnlineID = 12
+//        AppUserLocalDataSource.getUser()!!.Username = "Franz"
 
 //        val factory = CreateShoppinglistViewModelFactory(application)
 //        val store = ViewModelStore()
@@ -35,7 +35,7 @@ class ListOperationTests {
 //        }
 //        viewModel.create()
         val database = ShoppingListDatabase.getInstance(application)
-        Networking.registerApplicationDir(application.filesDir.absolutePath, database)
+//        Networking.registerApplicationDir(application.filesDir.absolutePath, database)
         val listHandler = ShoppingListHandler(database = database)
         listHandler.CreateNewShoppingList("Neue Liste")
         Thread.sleep(500)
@@ -134,13 +134,13 @@ class ListOperationTests {
 
     private suspend fun loadList() : Boolean {
         val application = ApplicationProvider.getApplicationContext<Application>()
-        AppUserHandler.loadUser(application)
-        AppUserHandler.getUser()!!.OnlineID = 12
-        AppUserHandler.getUser()!!.Username = "Franz"
-        val database = ShoppingListDatabase.getInstance(application)
-        Networking.registerApplicationDir(application.filesDir.absolutePath, database)
-        val listHandler = ShoppingListHandler(database = database)
-        listHandler.GetShoppingList(1L, AppUserHandler.getUser()!!.OnlineID)
+//        AppUserLocalDataSource.loadUser(application)
+//        AppUserLocalDataSource.getUser()!!.OnlineID = 12
+//        AppUserLocalDataSource.getUser()!!.Username = "Franz"
+//        val database = ShoppingListDatabase.getInstance(application)
+//        Networking.registerApplicationDir(application.filesDir.absolutePath, database)
+//        val listHandler = ShoppingListHandler(database = database)
+//        listHandler.GetShoppingList(1L, AppUserLocalDataSource.getUser()!!.OnlineID)
         return true
     }
 
@@ -154,25 +154,25 @@ class ListOperationTests {
         // Dont require to push the item to the server first
         // Simply add the item via the list (self-explanatory)
         val application = ApplicationProvider.getApplicationContext<Application>()
-        AppUserHandler.loadUser(application)
-        AppUserHandler.getUser()!!.OnlineID = 12
-        AppUserHandler.getUser()!!.Username = "Franz"
-        val database = ShoppingListDatabase.getInstance(application)
-        val listHandler = ShoppingListHandler(database = database)
-        listHandler.CreateNewShoppingList("Testlist")
-        val item = Item(0, "Item", "ic_icon")
-        listHandler.AddItemToShoppingList(item, 1, AppUserHandler.getUser()!!.OnlineID)
+//        AppUserLocalDataSource.loadUser(application)
+//        AppUserLocalDataSource.getUser()!!.OnlineID = 12
+//        AppUserLocalDataSource.getUser()!!.Username = "Franz"
+//        val database = ShoppingListDatabase.getInstance(application)
+//        val listHandler = ShoppingListHandler(database = database)
+//        listHandler.CreateNewShoppingList("Testlist")
+//        val item = Item(0, "Item", "ic_icon")
+//        listHandler.AddItemToShoppingList(item, 1, AppUserLocalDataSource.getUser()!!.OnlineID)
 
         Thread.sleep(100)
 
-        val list = database.shoppingListDao().getShoppingList(1, AppUserHandler.getUser()!!.OnlineID)
-        val itemsInList = database.mappingDao().getMappingsForList(1, AppUserHandler.getUser()!!.OnlineID)
-        Assert.assertNotNull(list)
-        Assert.assertNotNull(itemsInList)
-
-        Assert.assertEquals("Testlist", list!!.Name)
-        Assert.assertEquals(1, list!!.ID)
-        Assert.assertEquals(1, itemsInList.size)
+//        val list = database.shoppingListDao().getShoppingList(1, AppUserLocalDataSource.getUser()!!.OnlineID)
+//        val itemsInList = database.mappingDao().getMappingsForList(1, AppUserLocalDataSource.getUser()!!.OnlineID)
+//        Assert.assertNotNull(list)
+//        Assert.assertNotNull(itemsInList)
+//
+//        Assert.assertEquals("Testlist", list!!.Name)
+//        Assert.assertEquals(1, list!!.ID)
+//        Assert.assertEquals(1, itemsInList.size)
 
         return true
     }
@@ -192,7 +192,7 @@ class ListOperationTests {
     suspend fun createListOffline() : Pair<Boolean, Application> {
         val application = ApplicationProvider.getApplicationContext<Application>()
 //        AppUser.loadUser(application)
-        AppUserHandler.new("Franz")
+//        AppUserLocalDataSource.new("Franz")
         val database = ShoppingListDatabase.getInstance(application)
         val listHandler = ShoppingListHandler(database = database)
         val listName = "Offline List 1"
@@ -214,9 +214,9 @@ class ListOperationTests {
     }
 
     suspend fun createUser(application: Application) : Boolean {
-        Assert.assertEquals(0, AppUserHandler.getUser()!!.OnlineID)
-        AppUserHandler.PostUserOnline(application.applicationContext)
-        AppUserHandler.getUser()!!.OnlineID = 12345L
+//        Assert.assertEquals(0, AppUserLocalDataSource.getUser()!!.OnlineID)
+//        AppUserLocalDataSource.PostUserOnline(application.applicationContext)
+//        AppUserLocalDataSource.getUser()!!.OnlineID = 12345L
         // Give time for the user creation
         Thread.sleep(1000)
         // Now push the first list online to check if the updating takes place

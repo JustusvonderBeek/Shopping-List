@@ -7,7 +7,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
-import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
+import com.cloudsheeptech.shoppinglist.data.user.AppUser
+import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
+import java.time.OffsetDateTime
 
 class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(application) {
     val title = MutableLiveData<String>("")
@@ -19,7 +21,8 @@ class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(a
     val navigateToCreatedList : LiveData<Long> get() = _navigateToCreatedList
 
     private val listHandler = ShoppingListHandler(ShoppingListDatabase.getInstance(application))
-    private val user = AppUserHandler.getUser()
+//    private val user = AppUserLocalDataSource.getUser()
+    private val user = AppUser(0, 0, "", "", OffsetDateTime.now())
 
     fun create() {
         Log.d("CreateShoppinglistViewModel", "Creating list pressed")

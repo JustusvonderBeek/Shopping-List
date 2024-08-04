@@ -35,4 +35,9 @@ interface AppUserDao {
 
     @Query("SELECT * FROM user LIMIT 1")
     fun getUserLive() : LiveData<AppUser>
+
+    // IMPORTANT: This function is only meant for debugging purposes, not for
+    // production
+    @Query("SELECT * FROM user")
+    fun debugGetAllUserEntries() : List<AppUser>
 }

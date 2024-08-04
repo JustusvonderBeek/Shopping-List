@@ -3,7 +3,7 @@ package com.cloudsheeptech.shoppinglist.data
 import android.util.Log
 import androidx.room.Entity
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
+import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
@@ -24,15 +24,15 @@ data class ShoppingList(
         val createdBy = this.CreatedByID
         val items = mutableListOf<ItemWire>()
         withContext(Dispatchers.IO) {
-            if (AppUserHandler.isAuthenticatedOnline()) {
-                AppUserHandler.PostUserOnlineAsync(null)
-                if (AppUserHandler.isAuthenticatedOnline()) {
-                    Log.i("ShoppingListHandler", "Failed to create user online: Cannot complete request")
-                    return@withContext
-                }
-            }
-            val appUser = AppUserHandler.getUser()!!
-            userId = appUser.OnlineID
+//            if (AppUserLocalDataSource.isAuthenticatedOnline()) {
+//                AppUserLocalDataSource.PostUserOnlineAsync(null)
+//                if (AppUserLocalDataSource.isAuthenticatedOnline()) {
+//                    Log.i("ShoppingListHandler", "Failed to create user online: Cannot complete request")
+//                    return@withContext
+//                }
+//            }
+//            val appUser = AppUserLocalDataSource.getUser()!!
+//            userId = appUser.OnlineID
             val itemsMapped = database.mappingDao().getMappingsForList(listId, createdBy)
             for (item in itemsMapped) {
                 val convertedItem = ItemWire(Name="", Icon="", Quantity = 1L, Checked = false, AddedBy = item.AddedBy)
@@ -45,11 +45,11 @@ data class ShoppingList(
                 items.add(convertedItem)
             }
         }
-        val appUser = AppUserHandler.getUser()
+//        val appUser = AppUserLocalDataSource.getUser()
         val wireList = ShoppingListWire(
             ListId = this.ID,
             Name = this.Name,
-            CreatedBy = ListCreator(userId, appUser?.Username ?: "Unknown"),
+            CreatedBy = ListCreator(userId, "Unknown"),
             Created = this.LastEdited,
             LastEdited = this.LastEdited,
             Items = items,

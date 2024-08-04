@@ -29,6 +29,15 @@
     <string name="search_users_input_hint">Nach Benutzer suchen...</string>
     <string name="btn_share_list_user">Teilen</string>
     <string name="btn_unshare_list_user">Teilen beenden</string>
+    <string name="nav_share_overview_title">Liste teilen</string>
+    <string name="clear_check_item_dialog">Sollen alle bestätigten Einkäufe aus der Liste entfernt werden?</string>
+    <string name="clear_item_dialog_title">Bestätigte Einkäufe entfernen</string>
+    <string name="clear_item_dialog_yes">Ja, entfernen</string>
+    <string name="clear_item_dialog_no">Nein</string>
+    <string name="delete_list_dialog">Soll diese Liste wirklich gelöscht werden?</string>
+    <string name="delete_list_dialog_title">Liste löschen</string>
+    <string name="delete_list_dialog_yes">Ja, löschen</string>
+    <string name="delete_list_dialog_no">Nein</string>
     <string name="share_fragment_name">Diese Liste teilen</string>
     <string name="share_btn_text">Teilen</string>
     <string name="delete_list_button_text">Liste Löschen</string>

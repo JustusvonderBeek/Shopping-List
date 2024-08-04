@@ -35,4 +35,13 @@
     <string name="share_btn_text">Share</string>
     <string name="delete_list_button_text">Delete List</string>
     <string name="clear_items_in_list_button_text">Clear Items In List</string>
+    <string name="nav_share_overview_title">Share Overview</string>
+    <string name="clear_check_item_dialog">Do you really want to clear all checked items?</string>
+    <string name="clear_item_dialog_title">Confirm Clear All!</string>
+    <string name="clear_item_dialog_yes">Yes, clear</string>
+    <string name="clear_item_dialog_no">Cancel</string>
+    <string name="delete_list_dialog">Do you really want to delete this list?</string>
+    <string name="delete_list_dialog_title">Delete List!</string>
+    <string name="delete_list_dialog_yes">Yes, delete</string>
+    <string name="delete_list_dialog_no">Cancel</string>
 </resources>

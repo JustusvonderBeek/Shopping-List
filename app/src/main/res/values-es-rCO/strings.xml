@@ -29,6 +29,15 @@
     <string name="search_users_input_hint">Search users...</string>
     <string name="btn_share_list_user">Share</string>
     <string name="btn_unshare_list_user">Unshare</string>
+    <string name="nav_share_overview_title">Share Overview</string>
+    <string name="clear_check_item_dialog">Do you want to clear all checked items from this list?</string>
+    <string name="clear_item_dialog_title">Confirm Clear all</string>
+    <string name="clear_item_dialog_yes">Clear</string>
+    <string name="clear_item_dialog_no">Cancel</string>
+    <string name="delete_list_dialog">Do you want to delete this list?</string>
+    <string name="delete_list_dialog_title">Delete List</string>
+    <string name="delete_list_dialog_yes">Yes</string>
+    <string name="delete_list_dialog_no">Cancel</string>
     <string name="share_fragment_name">Share esta lista</string>
     <string name="share_btn_text">Share</string>
     <string name="delete_list_button_text">Deleta</string>

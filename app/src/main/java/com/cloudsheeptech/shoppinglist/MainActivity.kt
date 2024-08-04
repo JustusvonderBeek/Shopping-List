@@ -18,7 +18,7 @@ import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewM
 import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModelFactory
 import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel
 import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModelFactory
-import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
+import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Setup user (this is necessary so that we can use the value throughout the app)
-        AppUserHandler.loadUser(application.applicationContext)
+//        AppUserLocalDataSource.loadUser(application.applicationContext)
 //        AppUser.PostUserOnline(applicationContext)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Dirty hack to avoid storing application context in this object class
-        Networking.registerApplicationDir(application.filesDir.absolutePath, database)
+//        Networking.registerApplicationDir(application.filesDir.absolutePath, database)
 
         // Create notifications
         createNotificationChannel()
@@ -92,5 +92,4 @@ class MainActivity : AppCompatActivity() {
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(messageChannel)
     }
-
 }

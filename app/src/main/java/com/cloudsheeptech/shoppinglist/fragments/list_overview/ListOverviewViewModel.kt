@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
-import com.cloudsheeptech.shoppinglist.data.user.AppUserHandler
+import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -80,7 +80,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     fun removeUser() {
         vmCoroutine.launch {
-            AppUserHandler.DeleteUser(null)
+//            AppUserLocalDataSource.deleteUser(null)
         }
     }
 

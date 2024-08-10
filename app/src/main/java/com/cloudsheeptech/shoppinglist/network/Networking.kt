@@ -38,7 +38,7 @@ import java.util.Date
 * This class captures the authentication logic of the application,
 * allowing to reuse the same HTTP client for all networking requests
  */
-class Networking(tokenFile: String) {
+class Networking(val tokenFile: String) {
 
     @Serializable
     data class Token(
@@ -54,6 +54,8 @@ class Networking(tokenFile: String) {
     private lateinit var applicationDir : String
     private var token = ""
 
+    // Even though we might need this client only from time to time in order to
+    // update the tokens or start the connections, save the effort and store it
     private val authenticationClient = HttpClient(OkHttp) {
         engine {
             config {
@@ -70,9 +72,8 @@ class Networking(tokenFile: String) {
                 addInterceptor {
                     tokenInterceptor.intercept(it)
                 }
-                hostnameVerifier {
-                    // TODO: Include verification of the hostname
-                        _, _ -> true
+                hostnameVerifier { hostname, sslSession ->
+                    HostnameVerification.verifyHostname(hostname, sslSession)
                 }
             }
         }
@@ -92,31 +93,6 @@ class Networking(tokenFile: String) {
                 }
             }
         }
-    }
-
-
-    /* We only store the latest token on disk */
-    private fun readTokenFromDisk(tokenFile: String) : BearerTokens {
-        var token = BearerTokens("", "")
-        if (!File(tokenFile).exists()) {
-            Log.d("Networking", "Token File does not exist")
-            return token
-        }
-        val content = File(tokenFile).readText(Charsets.UTF_8)
-        try {
-            val decodedToken = Json.decodeFromString<Token>(content)
-            token = BearerTokens(decodedToken.token, "")
-        } catch (ex: SerializationException) {
-            Log.d("Networking", "The type of the token file is in incorrect format!")
-        }
-        return token
-    }
-
-    private fun storeTokenToDisk(tokenFile: String, token: BearerTokens) {
-        val tokenInFileformat = Token(token.accessToken)
-        val encodedToken = Json.encodeToString(tokenInFileformat)
-        // Overwriting the file in case it does exist
-        File(tokenFile).writeText(encodedToken)
     }
 
     fun resetSerializedUser(user: String) {
@@ -236,12 +212,37 @@ class Networking(tokenFile: String) {
         }
     }
 
+    /* We only store the latest token on disk */
+    private fun readTokenFromDisk(tokenFile: String) : BearerTokens {
+        var token = BearerTokens("", "")
+        if (!File(tokenFile).exists()) {
+            Log.d("Networking", "Token File does not exist")
+            return token
+        }
+        val content = File(tokenFile).readText(Charsets.UTF_8)
+        try {
+            val decodedToken = Json.decodeFromString<Token>(content)
+            token = BearerTokens(decodedToken.token, "")
+        } catch (ex: SerializationException) {
+            Log.d("Networking", "The type of the token file is in incorrect format!")
+        }
+        return token
+    }
+
+    private fun storeTokenToDisk(tokenFile: String, token: BearerTokens) {
+        val tokenInFileformat = Token(token.accessToken)
+        val encodedToken = Json.encodeToString(tokenInFileformat)
+        // Overwriting the file in case it does exist
+        File(tokenFile).writeText(encodedToken)
+    }
+
     private fun updateToken(token : String) {
         if (token.isEmpty())
             return
         try {
             this.token = token
-            val jwtToken = JWT(token)
+            storeTokenToDisk(tokenFile, BearerTokens(token, ""))
+//            val jwtToken = JWT(token)
 //            tokenValid = jwtToken.expiresAt
             tokenInterceptor.updateToken(token)
 //            Log.d("Networking", "Updated token to: $token")

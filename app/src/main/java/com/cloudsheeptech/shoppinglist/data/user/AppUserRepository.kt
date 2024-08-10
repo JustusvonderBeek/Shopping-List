@@ -9,8 +9,8 @@ import android.content.Context
  */
 class AppUserRepository(local: AppUserLocalDataSource, remote: AppUserRemoteDataSource) {
 
-    private lateinit var appUserLocalSource : AppUserLocalDataSource
-    private lateinit var appUserRemoteSource: AppUserRemoteDataSource
+    private val appUserLocalSource : AppUserLocalDataSource = local
+    private val appUserRemoteSource: AppUserRemoteDataSource = remote
 
     // Creating the user information both offline and online
     suspend fun create(username: String) {
@@ -25,7 +25,7 @@ class AppUserRepository(local: AppUserLocalDataSource, remote: AppUserRemoteData
     }
 
     // Should only provide the local user, since the online
-    // user doesn't provide anymore information than what is stored
+    // user doesn't provide any different information than what is stored
     // locally
     fun read() : AppUser? {
         return appUserLocalSource.getUser()

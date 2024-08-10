@@ -86,7 +86,7 @@ class AppUserRemoteDataSource(private val remoteApi: Networking) {
     suspend fun update(user: AppUser) {
         withContext(Dispatchers.IO) {
             val encodedUser = json.encodeToString(user.toApiUser())
-            remoteApi.PUT("v1/userinfo/${user.OnlineID}", encodedUser) { resp ->
+            remoteApi.PUT("v1/user/${user.OnlineID}", encodedUser) { resp ->
                 if (resp.status != HttpStatusCode.OK) {
                     Log.w("AppUserRemoteDataSource", "Failed to update user online!")
                     throw IllegalStateException("no internet connectivity")
@@ -99,7 +99,7 @@ class AppUserRemoteDataSource(private val remoteApi: Networking) {
     suspend fun delete(user: AppUser) {
         withContext(Dispatchers.IO) {
             val encodedUser = json.encodeToString(user.toApiUser())
-            remoteApi.DELETE("v1/users/${user.OnlineID}", encodedUser) { resp ->
+            remoteApi.DELETE("v1/user/${user.OnlineID}", encodedUser) { resp ->
                 if (resp.status != HttpStatusCode.OK) {
                     Log.w("AppUserRemoteDataSource", "Failed to delete user online!")
                     // In case the server cannot be reached, the call throws a

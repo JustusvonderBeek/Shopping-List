@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
@@ -24,7 +23,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
-import com.cloudsheeptech.shoppinglist.MainActivity
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
@@ -164,7 +162,7 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
 
         viewModel.listInformation.observe(viewLifecycleOwner, Observer { info ->
             if (info != null) {
-                requireActivity().title = info.Name
+                requireActivity().title = info.title
             }
         })
 

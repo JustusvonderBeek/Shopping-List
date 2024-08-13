@@ -3,24 +3,24 @@ package com.cloudsheeptech.shoppinglist.handling
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.handling.OnlineListHandler
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRemoteDataSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.OffsetDateTime
 
 @RunWith(AndroidJUnit4::class)
-class OnlineListHandlerTest {
+class DbShoppingListRemoteDataSourceTest {
 
-    private fun createDefaultList() : ShoppingList {
-        val list = ShoppingList(
-            ID = 0,
-            Name = "Default List",
-            CreatedByID = 1234,
-            CreatedByName = "Default User",
-            LastEdited = OffsetDateTime.now(),
+    private fun createDefaultList() : DbShoppingList {
+        val list = DbShoppingList(
+            listId = 0,
+            title = "Default List",
+            createdBy = 1234,
+            createdByName = "Default User",
+            lastUpdated = OffsetDateTime.now(),
         )
         return list
     }
@@ -29,7 +29,7 @@ class OnlineListHandlerTest {
     fun testListInsert() = runTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
-        val onlineHandler = OnlineListHandler(database)
+        val onlineHandler = ShoppingListRemoteDataSource(database)
 
 //        val user = AppUser.storeUser(application.applicationContext)
 

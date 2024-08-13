@@ -4,12 +4,9 @@ import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.cloudsheeptech.shoppinglist.data.Item
-import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
-import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListHandler
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
@@ -68,7 +65,7 @@ class ListOperationTests {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
         val sl = database.shoppingListDao()
-        val list = ShoppingList(ID=0, Name = "1", CreatedByID = 12, CreatedByName = "", LastEdited = OffsetDateTime.now())
+        val list = DbShoppingList(listId=0, title = "1", createdBy = 12, createdByName = "", lastUpdated = OffsetDateTime.now())
         sl.updateList(list)
         val lists = sl.getShoppingLists()
         for (list in lists) {
@@ -80,8 +77,8 @@ class ListOperationTests {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
         val sl = database.shoppingListDao()
-        val list = ShoppingList(ID=0, Name = "1", CreatedByID = 12, CreatedByName = "", LastEdited = OffsetDateTime.now())
-        val list2 = ShoppingList(ID=0, Name = "2", CreatedByID = 12, CreatedByName = "", LastEdited = OffsetDateTime.now())
+        val list = DbShoppingList(listId=0, title = "1", createdBy = 12, createdByName = "", lastUpdated = OffsetDateTime.now())
+        val list2 = DbShoppingList(listId=0, title = "2", createdBy = 12, createdByName = "", lastUpdated = OffsetDateTime.now())
         sl.insertList(list)
         sl.insertList(list)
         val testId = sl.insertList(list2)
@@ -96,13 +93,13 @@ class ListOperationTests {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
         val sl = database.shoppingListDao()
-        val list = ShoppingList(ID=0, Name = "1", CreatedByID = 12, CreatedByName = "", LastEdited = OffsetDateTime.now())
+        val list = DbShoppingList(listId=0, title = "1", createdBy = 12, createdByName = "", lastUpdated = OffsetDateTime.now())
         sl.insertList(list)
         var lists = sl.getShoppingLists()
         for (list in lists) {
             println(list)
         }
-        list.Name = "Updated list"
+        list.title = "Updated list"
         sl.insertList(list)
         lists = sl.getShoppingLists()
         for (list in lists) {
@@ -208,7 +205,7 @@ class ListOperationTests {
         val lists = listDao.getShoppingLists()
         Assert.assertEquals(2, lists.size)
         for (list in lists) {
-            Assert.assertEquals(0L, list.CreatedByID)
+            Assert.assertEquals(0L, list.createdBy)
         }
         return Pair(true, application)
     }
@@ -228,7 +225,7 @@ class ListOperationTests {
         val lists = listDao.getShoppingLists()
         Assert.assertEquals(2, lists.size)
         for (list in lists) {
-            Assert.assertNotEquals(0L, list.CreatedByID)
+            Assert.assertNotEquals(0L, list.createdBy)
         }
         return true
     }

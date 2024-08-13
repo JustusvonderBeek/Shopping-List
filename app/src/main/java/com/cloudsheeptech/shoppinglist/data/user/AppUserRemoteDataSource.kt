@@ -1,6 +1,5 @@
 package com.cloudsheeptech.shoppinglist.data.user
 
-import android.security.keystore.UserNotAuthenticatedException
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.Serializer.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.network.Networking
@@ -11,7 +10,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
-import java.io.IOException
 import java.time.OffsetDateTime
 
 /*
@@ -45,10 +43,10 @@ class AppUserRemoteDataSource(private val remoteApi: Networking) {
     private fun ApiUser.toAppUser(): AppUser {
         return AppUser(
             1,
-            this.OnlineID,
-            this.Username,
-            this.Password ?: "",
-            this.Created
+            this.onlineId,
+            this.username,
+            this.password ?: "",
+            this.created
         )
     }
 
@@ -57,7 +55,7 @@ class AppUserRemoteDataSource(private val remoteApi: Networking) {
         var appUser : AppUser? = null
         withContext(Dispatchers.IO) {
             val encodedUser = json.encodeToString(user.toApiUser())
-            remoteApi.POST("auth/create", encodedUser) { resp ->
+            remoteApi.POST("/v1/users", encodedUser) { resp ->
                 // Authentication already handled by the networking object
                 if (resp.status != HttpStatusCode.Created) {
                     Log.w("AppUserRemoteDataSource", "Failed to create the user online!")
@@ -67,12 +65,12 @@ class AppUserRemoteDataSource(private val remoteApi: Networking) {
                 val parsedApiUser = json.decodeFromString<ApiUser>(rawBody)
                 // Automatically update the network class with the correct
                 // new online id
-                parsedApiUser.Password = user.Password
+                parsedApiUser.password = user.Password
                 val updatedUser = json.encodeToString(parsedApiUser)
-                remoteApi.resetSerializedUser(updatedUser)
+                remoteApi.resetSerializedUser(updatedUser, parsedApiUser.onlineId)
                 // And return the update user
                 appUser = parsedApiUser.toAppUser()
-                Log.i("AppUserRemoteDataSource", "Created the user ${parsedApiUser.OnlineID} online")
+                Log.i("AppUserRemoteDataSource", "Created the user ${parsedApiUser.onlineId} online")
             }
         }
         return appUser
@@ -86,7 +84,7 @@ class AppUserRemoteDataSource(private val remoteApi: Networking) {
     suspend fun update(user: AppUser) {
         withContext(Dispatchers.IO) {
             val encodedUser = json.encodeToString(user.toApiUser())
-            remoteApi.PUT("v1/user/${user.OnlineID}", encodedUser) { resp ->
+            remoteApi.PUT("/v1/users/${user.OnlineID}", encodedUser) { resp ->
                 if (resp.status != HttpStatusCode.OK) {
                     Log.w("AppUserRemoteDataSource", "Failed to update user online!")
                     throw IllegalStateException("no internet connectivity")
@@ -99,7 +97,7 @@ class AppUserRemoteDataSource(private val remoteApi: Networking) {
     suspend fun delete(user: AppUser) {
         withContext(Dispatchers.IO) {
             val encodedUser = json.encodeToString(user.toApiUser())
-            remoteApi.DELETE("v1/user/${user.OnlineID}", encodedUser) { resp ->
+            remoteApi.DELETE("/v1/users/${user.OnlineID}", encodedUser) { resp ->
                 if (resp.status != HttpStatusCode.OK) {
                     Log.w("AppUserRemoteDataSource", "Failed to delete user online!")
                     // In case the server cannot be reached, the call throws a

@@ -1,10 +1,6 @@
 package com.cloudsheeptech.shoppinglist.network
 
 import android.util.Log
-import com.auth0.android.jwt.JWT
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.user.AppUserDao
-//import com.cloudsheeptech.shoppinglist.network.AuthenticationInterceptor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.auth.Auth
@@ -22,17 +18,15 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.cio.writeChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNames
 import java.io.File
 import java.time.Duration
-import java.util.Calendar
-import java.util.Date
 
 /*
 * This class captures the authentication logic of the application,
@@ -42,16 +36,17 @@ class Networking(val tokenFile: String) {
 
     @Serializable
     data class Token(
+        @JsonNames("token")
         var token : String
     )
 
 //    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
 //    private val baseUrl = "https://ec2-3-120-40-62.eu-central-1.compute.amazonaws.com:46152/"
-    private val baseUrl = "https://10.0.2.2:46152/"
+    private val baseUrl = "https://10.0.2.2:46152"
     private var tokenInterceptor = JwtTokenInterceptor()
 
     private var localUser = ""
-    private lateinit var applicationDir : String
+    private var userId = 0L
     private var token = ""
 
     // Even though we might need this client only from time to time in order to
@@ -95,8 +90,9 @@ class Networking(val tokenFile: String) {
         }
     }
 
-    fun resetSerializedUser(user: String) {
+    fun resetSerializedUser(user: String, userId: Long) {
         this.localUser = user
+        this.userId = userId
     }
 
 //    fun registerApplicationDir(dir : String, db: ShoppingListDatabase) {
@@ -222,7 +218,7 @@ class Networking(val tokenFile: String) {
         val content = File(tokenFile).readText(Charsets.UTF_8)
         try {
             val decodedToken = Json.decodeFromString<Token>(content)
-            token = BearerTokens(decodedToken.token, "")
+            token = BearerTokens(decodedToken.token, decodedToken.token)
         } catch (ex: SerializationException) {
             Log.d("Networking", "The type of the token file is in incorrect format!")
         }
@@ -248,7 +244,7 @@ class Networking(val tokenFile: String) {
 //            Log.d("Networking", "Updated token to: $token")
 //            Log.d("Networking", "Token valid until: $tokenValid")
         } catch (ex : Exception) {
-            Log.w("Networking", "Failed to update JWT token! $ex")
+            Log.w("Networking", "Failed to update JWT token: $ex")
         }
     }
 
@@ -259,7 +255,7 @@ class Networking(val tokenFile: String) {
     }
 
     private suspend fun refreshToken() : BearerTokens? {
-        val  response : HttpResponse = authenticationClient.post( "${baseUrl}auth/login") {
+        val  response : HttpResponse = authenticationClient.post( "${baseUrl}/v1/users/${userId}/login") {
             contentType(ContentType.Application.Json)
             setBody(localUser)
         }
@@ -268,7 +264,8 @@ class Networking(val tokenFile: String) {
             return null
         }
         val rawBody = response.bodyAsText(Charsets.UTF_8)
+//        Log.d("Networking", "Token: $rawBody")
         val parsedBody = Json.decodeFromString<Token>(rawBody)
-        return BearerTokens(parsedBody.token, "")
+        return BearerTokens(parsedBody.token, parsedBody.token)
     }
 }

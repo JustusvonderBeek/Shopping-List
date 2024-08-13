@@ -18,11 +18,15 @@ import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewM
 import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModelFactory
 import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel
 import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModelFactory
-import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListHandler
+import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,6 +44,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Setup user (this is necessary so that we can use the value throughout the app)
+        val database = ShoppingListDatabase.getInstance(application.applicationContext)
+        val localDataSource = AppUserLocalDataSource(database)
+        val networking = Networking(application.filesDir.path + "/" + "token.txt")
+        val remoteApi = AppUserRemoteDataSource(networking)
+        val userRepository = AppUserRepository(localDataSource, remoteApi)
+
 //        AppUserLocalDataSource.loadUser(application.applicationContext)
 //        AppUser.PostUserOnline(applicationContext)
 
@@ -52,10 +62,8 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfig)
         botNav.setupWithNavController(navController)
 
-        val database = ShoppingListDatabase.getInstance(application.applicationContext)
         val shoppingListHandler = ShoppingListHandler(database)
 
-        val startViewModel by viewModels<StartViewModel> { StartViewModelFactory(application) }
         val overviewViewModel by viewModels<ListOverviewViewModel> { ListOverviewViewModelFactory(application) }
         val createViewModel by viewModels<CreateShoppinglistViewModel> { CreateShoppinglistViewModelFactory(application) }
 

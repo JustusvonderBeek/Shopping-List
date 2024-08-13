@@ -27,7 +27,8 @@ class AppUserOnlineTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
 
-        val remoteApi = Networking("")
+        val tokenFile = application.filesDir.path + "/token.txt"
+        val remoteApi = Networking(tokenFile)
         val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
         val appUserLocalDataSource = AppUserLocalDataSource(database)
         val username = "Online user"
@@ -70,8 +71,9 @@ class AppUserOnlineTest {
         Assert.assertNotNull(localUser)
         val apiUser = ApiUser(localUser!!.OnlineID, localUser.Username, localUser.Password, localUser.Created, null)
         val encodedUser = json.encodeToString(apiUser)
-        val remoteApi = Networking("")
-        remoteApi.resetSerializedUser(encodedUser)
+        val tokenFile = application.filesDir.path + "/token.txt"
+        val remoteApi = Networking(tokenFile)
+        remoteApi.resetSerializedUser(encodedUser, apiUser.onlineId)
         val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
 
         val remoteUser = appUserRemoteDataSource.create(localUser!!)
@@ -103,8 +105,9 @@ class AppUserOnlineTest {
         Assert.assertNotNull(localUser)
         val apiUser = ApiUser(localUser!!.OnlineID, localUser.Username, localUser.Password, localUser.Created, null)
         val encodedUser = json.encodeToString(apiUser)
-        val remoteApi = Networking("")
-        remoteApi.resetSerializedUser(encodedUser)
+        val tokenFile = application.filesDir.path + "token.txt"
+        val remoteApi = Networking(tokenFile)
+        remoteApi.resetSerializedUser(encodedUser, apiUser.onlineId)
         val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
 
         // TODO: Check how bad requests or different connection states influence the result

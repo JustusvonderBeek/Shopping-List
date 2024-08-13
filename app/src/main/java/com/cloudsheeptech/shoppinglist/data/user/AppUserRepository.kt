@@ -1,7 +1,5 @@
 package com.cloudsheeptech.shoppinglist.data.user
 
-import android.content.Context
-
 /*
 * This class combines the offline and offline handling of the
 * user information and provides a unified way of creating,

@@ -1,5 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.user
 
+import androidx.lifecycle.LiveData
+
 /*
 * This class combines the offline and offline handling of the
 * user information and provides a unified way of creating,
@@ -27,6 +29,10 @@ class AppUserRepository(local: AppUserLocalDataSource, remote: AppUserRemoteData
     // locally
     fun read() : AppUser? {
         return appUserLocalSource.getUser()
+    }
+
+    fun readLive() : LiveData<AppUser> {
+        return appUserLocalSource.getUserLive()
     }
 
     // Update the information offline and online

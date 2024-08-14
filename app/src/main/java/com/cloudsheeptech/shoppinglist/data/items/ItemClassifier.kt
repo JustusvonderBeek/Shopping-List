@@ -1,8 +1,6 @@
-package com.cloudsheeptech.shoppinglist.data
+package com.cloudsheeptech.shoppinglist.data.items
 
 import android.content.Context
-import com.cloudsheeptech.shoppinglist.R
-import java.util.Dictionary
 
 class ItemClassifier {
 

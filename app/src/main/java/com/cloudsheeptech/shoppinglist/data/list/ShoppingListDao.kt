@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.cloudsheeptech.shoppinglist.data.DbShoppingList
+import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 
 @Dao
 interface ShoppingListDao {
@@ -29,8 +29,11 @@ interface ShoppingListDao {
     @Query("SELECT MAX(listId) FROM list_table")
     fun getLatestListId() : Long
 
-    @Query("SELECT MAX(listId) FROM list_table WHERE listId = 0 OR createdByName = :key")
+    @Query("SELECT MAX(listId) FROM list_table WHERE listId = 0 OR createdBy = :key")
     fun getLatestOwnListId(key : Long) : Long
+
+    @Query("SELECT MAX(listId) FROM list_table WHERE createdBy = :key")
+    fun getLatestListId(key : Long) : Long
 
     @Query("SELECT * FROM list_table ORDER BY listId ASC")
     fun getShoppingListsLive() : LiveData<List<DbShoppingList>>

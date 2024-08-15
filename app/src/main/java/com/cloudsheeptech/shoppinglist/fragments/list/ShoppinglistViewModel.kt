@@ -9,14 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
 import com.cloudsheeptech.shoppinglist.R
-import com.cloudsheeptech.shoppinglist.data.Item
-import com.cloudsheeptech.shoppinglist.data.ItemClassifier
-import com.cloudsheeptech.shoppinglist.data.ItemWithQuantity
-import com.cloudsheeptech.shoppinglist.data.ListMapping
-import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.items.DbItem
+import com.cloudsheeptech.shoppinglist.data.items.ItemClassifier
+import com.cloudsheeptech.shoppinglist.data.items.AppItem
+import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
+import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.UIPreference
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -29,7 +28,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     private val itemDao = database.itemDao()
     private val mappingDao = database.mappingDao()
     private val preferenceDao = database.preferenceDao()
-    private val listHandler = ShoppingListHandler(database)
+//    private val listHandler = ShoppingListRepository(database)
 
     val itemName = MutableLiveData<String>("")
     val title = MutableLiveData<String>("Liste")
@@ -81,13 +80,13 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
     // ---
 
     // The items in this list
-    private val itemsInList = MediatorLiveData<List<ItemWithQuantity>>()
+    private val itemsInList = MediatorLiveData<List<AppItem>>()
 
-    private val _previewItems = MutableLiveData<List<Item>>()
-    val previewItems : LiveData<List<Item>> get() = _previewItems
+    private val _previewItems = MutableLiveData<List<DbItem>>()
+    val previewItems : LiveData<List<DbItem>> get() = _previewItems
 
     private val _listInformation = listDao.getShoppingListLive(shoppingListId, createdBy)
-    val listInformation : LiveData<ShoppingList> get() = _listInformation
+    val listInformation : LiveData<DbShoppingList> get() = _listInformation
 
     val orderedItemsInList = itemsInList.switchMap {
         Log.d("ShoppingListViewModel", "Ordering called")
@@ -98,25 +97,25 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
                 }
                 ORDERING.CHECKED_LAST -> {
                     val sorted = it.sortedWith(
-                        compareBy({it.Checked}, {it.Name})
+                        compareBy({it.checked}, {it.name})
                     )
                     emit(sorted)
                 }
                 ORDERING.ALPHABETICAL -> {
                     val sorted = it.sortedBy {
-                        it.Name
+                        it.name
                     }
                     emit(sorted)
                 }
                 ORDERING.ALPHABETICAL_REVERSE-> {
                     val sorted = it.sortedBy {
-                        it.Name
+                        it.name
                     }.reversed()
                     emit(sorted)
                 }
                 ORDERING.SUPERMARKET_ODER -> {
                     val sorted = it.sortedWith(
-                        compareBy({ItemClassifier.convertStringToItemClass(it.Name)}, {it.Name})
+                        compareBy({ ItemClassifier.convertStringToItemClass(it.name)}, {it.name})
                     )
                     emit(sorted)
                 }
@@ -142,11 +141,11 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         }
         val itemIds = mappings.map { it -> it.ItemID }
         val liveItems = itemDao.getItemsLive(itemIds)
-        val quantityItems = mutableListOf<ItemWithQuantity>()
+        val quantityItems = mutableListOf<AppItem>()
         itemsInList.addSource(liveItems) {
             mappings.forEachIndexed { index, listMapping ->
                 // Order might not match
-                val matchingItem = liveItems.value!!.first { x -> x.ID == listMapping.ItemID }
+                val matchingItem = liveItems.value!!.first { x -> x.id == listMapping.ItemID }
                 val quantItem = combineMappingAndItemToItemWithQuantity(listMapping, matchingItem)
                 quantityItems.add(quantItem)
             }
@@ -154,8 +153,8 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         }
     }
 
-    private fun combineMappingAndItemToItemWithQuantity(mapping: ListMapping, item : Item) : ItemWithQuantity {
-        return ItemWithQuantity(mapping.ItemID, item.Name, item.Icon, mapping.Quantity, mapping.Checked, mapping.AddedBy)
+    private fun combineMappingAndItemToItemWithQuantity(mapping: ListMapping, dbItem : DbItem) : AppItem {
+        return AppItem(mapping.ItemID, dbItem.name, dbItem.icon, mapping.Quantity, mapping.Checked, mapping.AddedBy)
     }
 
     fun addItem() {
@@ -164,35 +163,35 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
             Log.i("ShoppinglistViewModel", "Do not add empty item")
             return
         }
-        val item = Item(ID = 0, Name=itemName.value!!, Icon = "ic_item")
-        listHandler.AddItemAndAddToShoppingList(item, shoppingListId, createdBy)
+        val dbItem = DbItem(id = 0, name=itemName.value!!, icon = "ic_item")
+//        listHandler.AddItemAndAddToShoppingList(dbItem, shoppingListId, createdBy)
         hideKeyboard()
         clearItemNameInput()
     }
 
     fun toggleItem(itemId : Long) {
         Log.d("ShoppinListViewModel", "Toggle item $itemId")
-        listHandler.ToggleItemInShoppingList(itemId, shoppingListId, createdBy)
+//        listHandler.ToggleItemInShoppingList(itemId, shoppingListId, createdBy)
         _finished.value = false
     }
 
 
     fun increaseItemCount(itemId : Int, quantity : Long = 1L) {
-        listHandler.IncreaseItemCountInShoppingList(itemId.toLong(), shoppingListId, createdBy, quantity)
+//        listHandler.IncreaseItemCountInShoppingList(itemId.toLong(), shoppingListId, createdBy, quantity)
     }
 
     fun decreaseItemCount(itemId : Int) {
-        listHandler.DecreaseItemCountInShoppingList(itemId.toLong(), shoppingListId, createdBy)
+//        listHandler.DecreaseItemCountInShoppingList(itemId.toLong(), shoppingListId, createdBy)
     }
 
     private fun pushListToServer() {
         Log.d("ShoppinglistViewModel", "Pushing list with ${itemsInList.value?.size} to server")
-        listHandler.PostShoppingListOnline(shoppingListId, createdBy)
+//        listHandler.PostShoppingListOnline(shoppingListId, createdBy)
     }
 
     fun updateShoppinglist() {
         _refreshing.value = true
-        listHandler.GetShoppingList(shoppingListId, createdBy)
+//        listHandler.GetShoppingList(shoppingListId, createdBy)
         _refreshing.value = false
     }
 
@@ -226,7 +225,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         withContext(Dispatchers.IO) {
             val item = itemDao.getItem(itemId) ?: return@withContext
 //            Log.d("ShoppinglistViewModel", "Found item to add")
-            listHandler.AddItemToShoppingList(item, shoppingListId, createdBy)
+//            listHandler.AddItemToShoppingList(item, shoppingListId, createdBy)
         }
     }
 
@@ -321,7 +320,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
         // TODO: Difference between own and shared list:
         // Shared list -> delete offline and sharing
         // Own list -> delete list offline and online + sharing
-        listHandler.DeleteShoppingList(shoppingListId, createdBy)
+//        listHandler.DeleteShoppingList(shoppingListId, createdBy)
         navigateUp()
     }
 
@@ -336,7 +335,7 @@ class ShoppinglistViewModel(val database: ShoppingListDatabase, private val shop
 
     fun onClearAllItemsPositiv() {
         _confirmClear.value = false
-        listHandler.ClearCheckedItemsInList(shoppingListId)
+//        listHandler.ClearCheckedItemsInList(shoppingListId)
     }
 
     fun onClearAllItemsNegative() {

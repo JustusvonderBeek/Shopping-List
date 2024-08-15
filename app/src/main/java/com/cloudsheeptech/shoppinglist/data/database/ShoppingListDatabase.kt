@@ -9,22 +9,27 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.AutoMigrationSpec
-import com.cloudsheeptech.shoppinglist.data.items.Item
+import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.ListMapping
 import com.cloudsheeptech.shoppinglist.data.ListShareDatabase
-import com.cloudsheeptech.shoppinglist.data.DbShoppingList
+import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.UIPreference
+import com.cloudsheeptech.shoppinglist.data.items.ItemDao
+import com.cloudsheeptech.shoppinglist.data.typeConverter.DatabaseTypeConverter
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.user.AppUserDao
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Singleton
 
+@Singleton
 @Database(
-    version = 20,
-    entities = [DbShoppingList::class, Item::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class],
+    version = 21,
+    entities = [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class],
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 18, to = 19),
-        AutoMigration(from = 19, to = 20, ShoppingListDatabase.Database19To20Migration::class),
+        AutoMigration(from = 19, to = 21, ShoppingListDatabase.Database19To20Migration::class),
     ],
 )
 @TypeConverters(value = [DatabaseTypeConverter::class])
@@ -44,7 +49,7 @@ abstract class ShoppingListDatabase : RoomDatabase() {
         @Volatile
         private  var INSTANCE : ShoppingListDatabase? = null
 
-        fun getInstance(context : Context) : ShoppingListDatabase {
+        fun getInstance(@ApplicationContext context : Context) : ShoppingListDatabase {
             var instance = INSTANCE
             if (instance == null) {
                 Log.i("ShoppingListDatabase", "Creating new database")
@@ -59,7 +64,42 @@ abstract class ShoppingListDatabase : RoomDatabase() {
         RenameColumn(
             tableName = "list_table",
             fromColumnName = "CreatedBy",
-            toColumnName = "CreatedByID"
+            toColumnName = "createdBy"
+        ),
+        RenameColumn(
+            tableName = "list_table",
+            fromColumnName = "ID",
+            toColumnName = "listId",
+        ),
+        RenameColumn(
+            tableName = "list_table",
+            fromColumnName = "Name",
+            toColumnName = "title",
+        ),
+        RenameColumn(
+            tableName = "list_table",
+            fromColumnName = "CreatedByName",
+            toColumnName = "createdByName",
+        ),
+        RenameColumn(
+            tableName = "list_table",
+            fromColumnName = "LastEdited",
+            toColumnName = "lastUpdated",
+        ),
+        RenameColumn(
+            tableName = "items",
+            fromColumnName = "ID",
+            toColumnName = "id",
+        ),
+        RenameColumn(
+            tableName = "items",
+            fromColumnName = "Name",
+            toColumnName = "name",
+        ),
+        RenameColumn(
+            tableName = "items",
+            fromColumnName = "Icon",
+            toColumnName = "icon",
         ),
         RenameColumn(
             tableName = "user",

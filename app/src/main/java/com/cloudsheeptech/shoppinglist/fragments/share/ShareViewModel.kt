@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,7 +21,7 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
     private val sharedDao = database.sharedDao()
     private val onlineUserDao = database.onlineUserDao()
 
-    private val listHandler = ShoppingListHandler(database)
+//    private val listHandler = ShoppingListRepository(database)
 
     val searchName = MutableLiveData<String>("")
     private val _searchedUsers = MutableLiveData<List<ShareUserPreview>>()
@@ -64,7 +63,7 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
             share.forEach { s ->
                 val user = onlineUserDao.getUser(s.SharedWith)
                 if (user != null) {
-                    previewUsers.add(ShareUserPreview(user.ID, user.Name, true))
+                    previewUsers.add(ShareUserPreview(user.onlineId, user.username, true))
                 }
             }
         }
@@ -98,9 +97,9 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
     private suspend fun searchUsersFromOnlineAndDatabase(name : String) : List<ShareUserPreview> {
         var users = emptyList<ShareUserPreview>()
         withContext(Dispatchers.IO) {
-            val onlineUsers = listHandler.SearchUsersOnline(name)
-            val onlinePreview = onlineUsers.map { x -> ShareUserPreview(x.ID, x.Name, false) }
-            users = onlinePreview
+//            val onlineUsers = listHandler.SearchUsersOnline(name)
+//            val onlinePreview = onlineUsers.map { x -> ShareUserPreview(x.ID, x.Name, false) }
+//            users = onlinePreview
         }
         return users
     }
@@ -124,16 +123,16 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
     }
 
     fun shareList(sharedWithId : Long) {
-        listHandler.ShareShoppingListOnline(listId, sharedWithId)
+//        listHandler.ShareShoppingListOnline(listId, sharedWithId)
 //        navigateUp()
     }
 
     fun unshareList() {
-        listHandler.UnshareShoppingListOnline(listId)
+//        listHandler.UnshareShoppingListOnline(listId)
     }
 
     fun unshareListForUser(userId : Long) {
-        listHandler.UnshareShoppingListForUserOnline(userId, listId)
+//        listHandler.UnshareShoppingListForUserOnline(userId, listId)
     }
 
     fun navigateUp() {

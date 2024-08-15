@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.Serializer
+package com.cloudsheeptech.shoppinglist.data.typeConverter
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer

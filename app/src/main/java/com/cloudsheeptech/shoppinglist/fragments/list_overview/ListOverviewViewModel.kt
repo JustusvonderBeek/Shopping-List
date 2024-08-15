@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.handling.ShoppingListHandler
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,7 +30,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
     private val itemDao = database.itemDao()
     private val userDao = database.userDao()
     private val itemMappingDao = database.mappingDao()
-    private val listHandler = ShoppingListHandler(database)
+//    private val listHandler = ShoppingListRepository(database)
 
     // Navigation variables
 
@@ -79,6 +79,9 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     fun removeUser() {
         vmCoroutine.launch {
+            withContext(Dispatchers.IO) {
+                userDao.resetAllUsers()
+            }
 //            AppUserLocalDataSource.deleteUser(null)
         }
     }
@@ -108,7 +111,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     private suspend fun updateListOverview() {
         withContext(Dispatchers.IO) {
-            listHandler.GetAllShoppingLists()
+//            listHandler.GetAllShoppingLists()
         }
         withContext(Dispatchers.Main) {
             _refreshing.value = false

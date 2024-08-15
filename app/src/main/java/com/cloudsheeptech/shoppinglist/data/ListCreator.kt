@@ -8,6 +8,6 @@ import kotlinx.serialization.Serializable
 @Entity(tableName = "online_user")
 data class ListCreator(
     @PrimaryKey(autoGenerate = false)
-    var ID : Long,
-    var Name : String,
+    var onlineId : Long,
+    var username : String,
 )

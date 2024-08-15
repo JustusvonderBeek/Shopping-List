@@ -16,13 +16,13 @@ interface OnlineUserDao {
     @Delete
     fun deleteUser(user : ListCreator)
 
-    @Query("DELETE FROM online_user WHERE ID = :userId")
+    @Query("DELETE FROM online_user WHERE onlineId = :userId")
     fun deleteUser(userId : Long)
 
     @Update
     fun updateUser(user: ListCreator)
 
-    @Query("SELECT * FROM online_user WHERE ID = :id")
+    @Query("SELECT * FROM online_user WHERE onlineId = :id")
     fun getUser(id : Long) : ListCreator?
 
     @Query("SELECT * FROM online_user")

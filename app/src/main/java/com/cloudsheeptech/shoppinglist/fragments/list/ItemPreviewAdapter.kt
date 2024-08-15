@@ -5,10 +5,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemPreviewBinding
 
-class ItemPreviewAdapter(val clickListener: ItemPreviewClickListener) : ListAdapter<Item, ItemPreviewAdapter.ItemViewHolder>(
+class ItemPreviewAdapter(val clickListener: ItemPreviewClickListener) : ListAdapter<DbItem, ItemPreviewAdapter.ItemViewHolder>(
     ItemDiffCallback()
 ) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -20,8 +20,8 @@ class ItemPreviewAdapter(val clickListener: ItemPreviewClickListener) : ListAdap
     }
 
     class ItemViewHolder private constructor(val binding : ShoppingItemPreviewBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(clickListener: ItemPreviewClickListener, item : Item) {
-            binding.item = item
+        fun bind(clickListener: ItemPreviewClickListener, dbItem : DbItem) {
+            binding.item = dbItem
             binding.clickListener = clickListener
             binding.executePendingBindings()
         }
@@ -36,16 +36,16 @@ class ItemPreviewAdapter(val clickListener: ItemPreviewClickListener) : ListAdap
     }
 
     class ItemPreviewClickListener(val clickListener: (id : Long) -> Unit) {
-        fun onClick(item: Item) = clickListener(item.ID)
+        fun onClick(dbItem: DbItem) = clickListener(dbItem.id)
     }
 
-    class ItemDiffCallback : DiffUtil.ItemCallback<Item>() {
-        override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
-            return oldItem.ID == newItem.ID && oldItem.Name == newItem.Name && oldItem.Icon == newItem.Icon
+    class ItemDiffCallback : DiffUtil.ItemCallback<DbItem>() {
+        override fun areItemsTheSame(oldDbItem: DbItem, newDbItem: DbItem): Boolean {
+            return oldDbItem.id == newDbItem.id && oldDbItem.name == newDbItem.name && oldDbItem.icon == newDbItem.icon
         }
 
-        override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
-            return oldItem == newItem
+        override fun areContentsTheSame(oldDbItem: DbItem, newDbItem: DbItem): Boolean {
+            return oldDbItem == newDbItem
         }
     }
 }

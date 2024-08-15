@@ -9,6 +9,7 @@ import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
+import javax.inject.Inject
 import kotlin.random.Random
 
 /*
@@ -20,7 +21,7 @@ import kotlin.random.Random
 * Delete the user information
  */
 
-class AppUserLocalDataSource(database: ShoppingListDatabase) {
+class AppUserLocalDataSource @Inject constructor(database: ShoppingListDatabase) {
 
     private val appUserDao: AppUserDao = database.userDao()
 

@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.ShoppingList
+import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingListBinding
 
-class ShoppingListAdapter(val clickListener: ListClickListener, private val resource : Resources, private val itemList : List<ShoppingList>) : ListAdapter<ShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
+class ShoppingListAdapter(val clickListener: ListClickListener, private val resource : Resources, private val itemList : List<DbShoppingList>) : ListAdapter<DbShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
     ItemDiffCallback()
 ) {
 
@@ -28,7 +28,7 @@ class ShoppingListAdapter(val clickListener: ListClickListener, private val reso
     }
 
     class ShoppingListViewHolder private constructor(val binding : ShoppingListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(clickListener: ListClickListener, list : ShoppingList, resource: Resources) {
+        fun bind(clickListener: ListClickListener, list : DbShoppingList, resource: Resources) {
             binding.list = list
             binding.clickListener = clickListener
             binding.executePendingBindings()
@@ -44,15 +44,15 @@ class ShoppingListAdapter(val clickListener: ListClickListener, private val reso
     }
 
     class ListClickListener(val clickListener: (id: Long, from : Long) -> Unit) {
-        fun onClick(list: ShoppingList) = clickListener(list.ID, list.CreatedByID)
+        fun onClick(list: DbShoppingList) = clickListener(list.listId, list.createdBy)
     }
 
-    class ItemDiffCallback : DiffUtil.ItemCallback<ShoppingList>() {
-        override fun areItemsTheSame(oldItem: ShoppingList, newItem: ShoppingList): Boolean {
-            return oldItem.ID == newItem.ID && oldItem.Name == newItem.Name
+    class ItemDiffCallback : DiffUtil.ItemCallback<DbShoppingList>() {
+        override fun areItemsTheSame(oldItem: DbShoppingList, newItem: DbShoppingList): Boolean {
+            return oldItem.listId == newItem.listId && oldItem.title == newItem.title
         }
 
-        override fun areContentsTheSame(oldItem: ShoppingList, newItem: ShoppingList): Boolean {
+        override fun areContentsTheSame(oldItem: DbShoppingList, newItem: DbShoppingList): Boolean {
             return oldItem == newItem
         }
     }

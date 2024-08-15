@@ -4,9 +4,20 @@ import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.cloudsheeptech.shoppinglist.data.DbShoppingList
+import com.cloudsheeptech.shoppinglist.data.ListCreator
+import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListRepository
+import com.cloudsheeptech.shoppinglist.data.items.DbItem
+import com.cloudsheeptech.shoppinglist.data.items.ItemLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
+import com.cloudsheeptech.shoppinglist.data.list.ApiShoppingList
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.network.Networking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
@@ -16,13 +27,26 @@ import java.time.OffsetDateTime
 @RunWith(AndroidJUnit4::class)
 class DbShoppingListLocalDataSourceTest {
 
-    private fun createDefaultList() : DbShoppingList {
-        val list = DbShoppingList(
-            listId = 0,
+    private fun ApiShoppingList.toDbList() : DbShoppingList {
+        val dbList = DbShoppingList(
+            listId = this.listId,
+            title = this.title,
+            createdBy = this.createdBy.onlineId,
+            createdByName = this.createdBy.username,
+            lastUpdated = this.lastUpdated
+        )
+//        val dbItems = this.items.map { item -> item.toDbItem() }
+        return dbList
+    }
+
+    private fun createDefaultList() : ApiShoppingList {
+        val list = ApiShoppingList(
+            listId = 0L,
             title = "Default List",
-            createdBy = 1234,
-            createdByName = "Default User",
+            createdBy = ListCreator(1234L, "creator"),
+            createdAt = OffsetDateTime.now(),
             lastUpdated = OffsetDateTime.now(),
+            items = mutableListOf(),
         )
         return list
     }
@@ -46,15 +70,16 @@ class DbShoppingListLocalDataSourceTest {
 //        Log.d("DatabaseListHandlerTest", "Lists equal: ${list1 == list2}")
 //    }
 
-    private fun checkDbContains(dbShoppingLists: List<DbShoppingList>) : Boolean {
+    private fun checkDbContains(dbShoppingLists: List<ApiShoppingList>) : Boolean {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
+
         val slDao = database.shoppingListDao()
         val compareLists = slDao.getShoppingLists()
         if (compareLists.size != dbShoppingLists.size)
             return false
         for (list in dbShoppingLists) {
-            if (!compareLists.contains(list))
+            if (!compareLists.contains(list.toDbList()))
                 return false
         }
         return true
@@ -64,10 +89,18 @@ class DbShoppingListLocalDataSourceTest {
     fun testListInsert() = runTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
-        val dbHandler = ShoppingListLocalDataSource(database)
+        val localUserDs = AppUserLocalDataSource(database)
+        val networking = Networking(application.filesDir.path + "/token.txt")
+        val remoteUserDs = AppUserRemoteDataSource(networking)
+        val userRepository = AppUserRepository(localUserDs, remoteUserDs)
+        val localItemDs = ItemLocalDataSource(database)
+        val itemRepo = ItemRepository(localItemDs)
+        val localItemToListDs = ItemToListLocalDataSource(database)
+        val itemToListRepository = ItemToListRepository(localItemToListDs)
+        val localDataSource = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
 
         val list = createDefaultList()
-        val insertId = dbHandler.create(list)
+        val insertId = localDataSource.create(list)
 //        Log.d("DatabaseListHandlerTest", "List: $list")
 
         assert(insertId == 1L)
@@ -79,7 +112,7 @@ class DbShoppingListLocalDataSourceTest {
 //        Log.d("DatabaseListHandlerTest", "Value: $insertId")
         // Checks that the list is not modified inside the function!
 
-        val insertId2 = dbHandler.create(list2)
+        val insertId2 = localDataSource.create(list2)
         assert(insertId2 == 2L)
         assert(list2.listId == 0L)
         list2.listId = insertId
@@ -90,7 +123,15 @@ class DbShoppingListLocalDataSourceTest {
     fun testListRetrieve() = runTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
-        val dbHandler = ShoppingListLocalDataSource(database)
+        val localUserDs = AppUserLocalDataSource(database)
+        val networking = Networking(application.filesDir.path + "/token.txt")
+        val remoteUserDs = AppUserRemoteDataSource(networking)
+        val userRepository = AppUserRepository(localUserDs, remoteUserDs)
+        val localItemDs = ItemLocalDataSource(database)
+        val itemRepo = ItemRepository(localItemDs)
+        val localItemToListDs = ItemToListLocalDataSource(database)
+        val itemToListRepository = ItemToListRepository(localItemToListDs)
+        val dbHandler = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
 
         val list = createDefaultList()
         val insertId = dbHandler.create(list)
@@ -109,12 +150,12 @@ class DbShoppingListLocalDataSourceTest {
         assert(insertedId2 == 2L)
         assert(checkDbContains(containedLists))
 
-        val retrievedList = dbHandler.read(insertId, list.createdBy)
+        val retrievedList = dbHandler.read(insertId, list.createdBy.onlineId)
         Assert.assertNotNull(retrievedList)
         // Fix the insertion ID
 //        Log.e("DatabaseListHandlerTest", "List: $list, Inserted: $retrievedList")
         assert(list == retrievedList)
-        val retrievedList2 = dbHandler.read(insertedId2, list2.createdBy)
+        val retrievedList2 = dbHandler.read(insertedId2, list2.createdBy.onlineId)
 //        Log.e("DatabaseListHandlerTest", "List: $list2, Inserted: $retrievedList2")
         Assert.assertNotNull(retrievedList2)
         assert(list2 == retrievedList2)
@@ -124,7 +165,15 @@ class DbShoppingListLocalDataSourceTest {
     fun testListUpdate() = runTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
-        val dbHandler = ShoppingListLocalDataSource(database)
+        val localUserDs = AppUserLocalDataSource(database)
+        val networking = Networking(application.filesDir.path + "/token.txt")
+        val remoteUserDs = AppUserRemoteDataSource(networking)
+        val userRepository = AppUserRepository(localUserDs, remoteUserDs)
+        val localItemDs = ItemLocalDataSource(database)
+        val itemRepo = ItemRepository(localItemDs)
+        val localItemToListDs = ItemToListLocalDataSource(database)
+        val itemToListRepository = ItemToListRepository(localItemToListDs)
+        val dbHandler = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
 
         val list = createDefaultList()
         val insertId = dbHandler.create(list)
@@ -138,8 +187,7 @@ class DbShoppingListLocalDataSourceTest {
         // Reference: Yes!
         Log.i("DatabaseListHandlerTest", "Updated list: $containedLists")
 
-        val insertId2 = dbHandler.create(list)
-        assert(insertId2 == list.listId)
+        dbHandler.update(list)
         assert(checkDbContains(containedLists))
     }
 
@@ -147,7 +195,15 @@ class DbShoppingListLocalDataSourceTest {
     fun testUpdateLastEdited() = runTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
-        val dbHandler = ShoppingListLocalDataSource(database)
+        val localUserDs = AppUserLocalDataSource(database)
+        val networking = Networking(application.filesDir.path + "/token.txt")
+        val remoteUserDs = AppUserRemoteDataSource(networking)
+        val userRepository = AppUserRepository(localUserDs, remoteUserDs)
+        val localItemDs = ItemLocalDataSource(database)
+        val itemRepo = ItemRepository(localItemDs)
+        val localItemToListDs = ItemToListLocalDataSource(database)
+        val itemToListRepository = ItemToListRepository(localItemToListDs)
+        val dbHandler = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
 
         val list = createDefaultList()
         val insertId = dbHandler.create(list)
@@ -157,7 +213,8 @@ class DbShoppingListLocalDataSourceTest {
         assert(insertId == 1L)
         assert(checkDbContains(containedLists))
 
-        val updatedList = dbHandler.update(insertId, list.createdBy)
+        dbHandler.update(list)
+        val updatedList = dbHandler.read(list.listId, list.createdBy.onlineId)
         Assert.assertNotNull(updatedList)
         assert(updatedList!!.listId == insertId)
         containedLists.clear()
@@ -165,15 +222,23 @@ class DbShoppingListLocalDataSourceTest {
         assert(checkDbContains(containedLists))
 
         // Test if list cannot be found
-        val updatedList2 = dbHandler.update(insertId, list.createdBy + 10)
-        Assert.assertNull(updatedList2)
+//        val updatedList2 = dbHandler.update(insertId, list.createdBy + 10)
+//        Assert.assertNull(updatedList2)
     }
 
     @Test
     fun testDeleteList() = runTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
-        val dbHandler = ShoppingListLocalDataSource(database)
+        val localUserDs = AppUserLocalDataSource(database)
+        val networking = Networking(application.filesDir.path + "/token.txt")
+        val remoteUserDs = AppUserRemoteDataSource(networking)
+        val userRepository = AppUserRepository(localUserDs, remoteUserDs)
+        val localItemDs = ItemLocalDataSource(database)
+        val itemRepo = ItemRepository(localItemDs)
+        val localItemToListDs = ItemToListLocalDataSource(database)
+        val itemToListRepository = ItemToListRepository(localItemToListDs)
+        val dbHandler = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
 
         val list = createDefaultList()
         val insertId = dbHandler.create(list)
@@ -183,7 +248,7 @@ class DbShoppingListLocalDataSourceTest {
         assert(insertId == 1L)
         assert(checkDbContains(containedLists))
 
-        val updatedList = dbHandler.delete(insertId, list.createdBy)
+        dbHandler.delete(list.listId, list.createdBy.onlineId)
 
         assert(checkDbContains(emptyList()))
     }

@@ -1,13 +1,8 @@
 package com.cloudsheeptech.shoppinglist.data.user
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
-import androidx.room.TypeConverters
-import com.cloudsheeptech.shoppinglist.data.database.DatabaseTypeConverter
 import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
 
 /*

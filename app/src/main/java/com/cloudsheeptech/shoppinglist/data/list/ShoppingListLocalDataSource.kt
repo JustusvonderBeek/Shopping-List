@@ -113,7 +113,10 @@ class ShoppingListLocalDataSource @Inject constructor(
             }
             // Update the id to the latest available ID
             val copiedList = list.copy()
-            copiedList.listId = getUniqueShoppingListID(list.createdBy.onlineId)
+            val user = userRepository.read() ?: throw IllegalStateException("user not set after login screen")
+            // In case the list comes from online, we don't want to change the id
+            if (copiedList.listId == 0L && list.createdBy.onlineId == user.OnlineID)
+                copiedList.listId = getUniqueShoppingListID(list.createdBy.onlineId)
             // We split the list from one single object into 2 parts: basic list and items
             val (dbList, items) = copiedList.toDbList()
             insertedListId = listDao.insertList(dbList)
@@ -121,6 +124,7 @@ class ShoppingListLocalDataSource @Inject constructor(
                 Log.e("ShoppingListLocalDataSource", "Database assigned a new ID during insertion which should never happen.")
                 return@withContext
             }
+            list.listId = insertedListId
             // Insert the items in case we received a remote list which is already populated
             if (items.isNotEmpty()) {
                 items.forEachIndexed { index, item ->
@@ -143,7 +147,7 @@ class ShoppingListLocalDataSource @Inject constructor(
                     }
                 }
             }
-            Log.d("ShoppingListHandler", "Inserted list $insertedListId into database")
+            Log.d("ShoppingListHandler", "Inserted list $insertedListId with ${items.size} items into database")
             return@withContext
         }
         return insertedListId
@@ -163,8 +167,10 @@ class ShoppingListLocalDataSource @Inject constructor(
             offlineList = shoppingListBase.toApiList()
             // Combine the mapping and item information to craft the item list
             val mappings = itemToListRepository.read(listId, createdBy)
-            if (mappings.isEmpty())
+            if (mappings.isEmpty()) {
+                Log.d("ShoppingListLocalDataSource", "No items found for list $listId from $createdBy")
                 return@withContext
+            }
             val apiItems = mappings.map { mapping ->
                 val apiItem = mapping.toApiItem()
                 val itemInfo = itemRepository.read(mapping.ItemID) ?: throw IllegalStateException("mapped item not stored in database")
@@ -259,6 +265,7 @@ class ShoppingListLocalDataSource @Inject constructor(
     suspend fun delete(listId: Long, createdBy: Long) {
         withContext(Dispatchers.IO) {
             listDao.deleteList(listId, createdBy)
+            itemToListRepository.deleteAllMappingsForList(listId, createdBy)
         }
     }
 

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data
+package com.cloudsheeptech.shoppinglist.data.itemToListMapping
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -11,8 +11,8 @@ data class ListMapping(
     var ID : Long,
     var ItemID : Long,
     var ListID : Long,
+    var CreatedBy : Long,
     var Quantity : Long,
     var Checked : Boolean,
-    var CreatedBy : Long,
     var AddedBy : Long
 )

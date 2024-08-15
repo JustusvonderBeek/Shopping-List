@@ -21,8 +21,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class StartViewModel(private val userRepository: AppUserRepository) : ViewModel() {
+class StartViewModel @Inject constructor(private val userRepository: AppUserRepository) : ViewModel() {
 
     // UI State
     private val job = Job()

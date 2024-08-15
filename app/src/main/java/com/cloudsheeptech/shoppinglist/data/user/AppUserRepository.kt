@@ -1,13 +1,16 @@
 package com.cloudsheeptech.shoppinglist.data.user
 
 import androidx.lifecycle.LiveData
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /*
 * This class combines the offline and offline handling of the
 * user information and provides a unified way of creating,
 * reading, updating and deleting the user information.
  */
-class AppUserRepository(local: AppUserLocalDataSource, remote: AppUserRemoteDataSource) {
+@Singleton
+class AppUserRepository @Inject constructor(local: AppUserLocalDataSource, remote: AppUserRemoteDataSource) {
 
     private val appUserLocalSource : AppUserLocalDataSource = local
     private val appUserRemoteSource: AppUserRemoteDataSource = remote

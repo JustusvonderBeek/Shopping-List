@@ -1,6 +1,10 @@
 package com.cloudsheeptech.shoppinglist.data.items
 
-class ItemRepository(private val localDataSource: ItemLocalDataSource) {
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+
+class ItemRepository @Inject constructor(private val localDataSource: ItemLocalDataSource) {
 
     /**
      * Searches for the item stored under this id
@@ -39,20 +43,21 @@ class ItemRepository(private val localDataSource: ItemLocalDataSource) {
     /**
      * Stores the new item but only
      * item does not exist
-     * @throws IllegalArgumentException if the item did exist
-     * @return the newly created item with the inserted id
+     * @throws IllegalStateException if the item did exist
+     * @return the id of the new item
      */
-    suspend fun create(newItem: DbItem) : DbItem {
+    suspend fun create(newItem: DbItem) : Long {
         val createdItem = localDataSource.create(newItem)
         return createdItem
     }
 
     /**
      * Updates an item if it already exists.
-     * @throws IllegalArgumentException if the item did not exist
+     * @throws IllegalStateException if the item did not exist
+     * @return the id of the update item
      */
-    suspend fun update(item: DbItem) {
-        localDataSource.update(item)
+    suspend fun update(item: DbItem) : Long {
+        return localDataSource.update(item)
     }
 
     /**

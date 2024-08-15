@@ -3,12 +3,9 @@ package com.cloudsheeptech.shoppinglist
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.cloudsheeptech.shoppinglist.data.Item
+import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.network.Networking
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -139,8 +136,8 @@ class NetworkingTest {
 
         success = false
         var answer = ""
-        val item = Item(123, "Test Item", "Empty")
-        val encodedItem = Json.encodeToString(item)
+        val dbItem = DbItem(123, "Test Item", "Empty")
+        val encodedItem = Json.encodeToString(dbItem)
 //        Networking.POST("v1/test/auth", encodedItem) { resp ->
 //            println("Got an answer: ${resp.bodyAsText(Charsets.UTF_8)}")
 //            if (resp.status != HttpStatusCode.OK)

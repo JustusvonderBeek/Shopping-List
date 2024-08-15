@@ -5,7 +5,7 @@
     <data>
         <variable
             name="item"
-            type="com.cloudsheeptech.shoppinglist.data.ItemWithQuantity" />
+            type="com.cloudsheeptech.shoppinglist.data.items.AppItem" />
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.fragments.list.ShoppingListItemAdapter.ShoppingItemClickListener" />
@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_margin="0dp"
-                android:checked="@{item.Checked}"
+                android:checked="@{item.checked}"
                 android:padding="0dp" />
 
 <!--            <ImageView-->
@@ -60,14 +60,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text='@{String.format("%s", item.Name)}'
+                    android:text='@{String.format("%s", item.name)}'
                     style="@style/WordListItemVocabStyle"
                     />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text='@{String.format("Menge: %d", item.Quantity)}'
+                    android:text='@{String.format("Menge: %d", item.quantity)}'
                     style="@style/WordListItemTransStyle"
                     />
 

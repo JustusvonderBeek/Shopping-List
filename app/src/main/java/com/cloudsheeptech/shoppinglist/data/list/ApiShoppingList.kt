@@ -1,6 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.list
 
-import com.cloudsheeptech.shoppinglist.data.items.ItemWire
+import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -23,5 +23,5 @@ data class ApiShoppingList @OptIn(ExperimentalSerializationApi::class) construct
     @Contextual
     var lastUpdated : OffsetDateTime,
     @JsonNames("items")
-    var items : MutableList<ItemWire>
+    var items : MutableList<ApiItem>
 )

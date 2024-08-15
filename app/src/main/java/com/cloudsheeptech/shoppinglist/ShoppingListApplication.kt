@@ -2,6 +2,8 @@ package com.cloudsheeptech.shoppinglist
 
 import android.app.Application
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListRepository
 import com.cloudsheeptech.shoppinglist.data.items.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListLocalDataSource
@@ -35,5 +37,7 @@ class ShoppingListApplication : Application() {
     @Inject lateinit var itemLocalDataSource: ItemLocalDataSource
     @Inject lateinit var itemRepository: ItemRepository
 
+    @Inject lateinit var itemToListLocalDataSource: ItemToListLocalDataSource
+    @Inject lateinit var itemToListRepository: ItemToListRepository
 
 }

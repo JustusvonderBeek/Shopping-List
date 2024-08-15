@@ -6,12 +6,16 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 import java.time.OffsetDateTime
 
 @RunWith(AndroidJUnit4::class)
+@FixMethodOrder(MethodSorters.DEFAULT)
 class AppUserOfflineTest {
 //
 //    @Test
@@ -20,6 +24,15 @@ class AppUserOfflineTest {
 //        val success = pushUsernameToServer()
 //        assert(success)
 //    }
+
+    @After
+    fun clearDatabase() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val database = ShoppingListDatabase.getInstance(application)
+        val userDao = database.userDao()
+        // Clear the db after each test so that no artifacts are contained
+        userDao.resetAllUsers()
+    }
 
     /*
     * In order to store a user, we successfully need to:

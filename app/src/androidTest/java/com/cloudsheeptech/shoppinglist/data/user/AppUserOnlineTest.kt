@@ -12,15 +12,20 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.junit.Assert
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 import java.net.ConnectException
 import java.time.OffsetDateTime
 
 @RunWith(AndroidJUnit4::class)
+@FixMethodOrder(MethodSorters.DEFAULT)
 class AppUserOnlineTest {
 
     // Requires the server running in the background
+
+
 
     @Test
     fun testCreateUser() = runTest {
@@ -30,24 +35,22 @@ class AppUserOnlineTest {
         val tokenFile = application.filesDir.path + "/token.txt"
         val remoteApi = Networking(tokenFile)
         val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
-        val appUserLocalDataSource = AppUserLocalDataSource(database)
+        val now = OffsetDateTime.now()
         val username = "Online user"
-        appUserLocalDataSource.create(username)
-        val localUser = appUserLocalDataSource.getUser()
-        Assert.assertNotNull(localUser)
+        val newOnlineUser = AppUser(ID = 1L, OnlineID = 0L, username, "secure", now)
 
-        val remoteUser = appUserRemoteDataSource.create(localUser!!)
+        val remoteUser = appUserRemoteDataSource.create(newOnlineUser)
         Assert.assertNotNull(remoteUser)
         assert(0L != remoteUser!!.OnlineID)
         assert(remoteUser.Username == username)
-        assert(remoteUser.Password == localUser.Password)
+        assert(remoteUser.Password == newOnlineUser.Password)
         Assert.assertNotNull(remoteUser.Created)
-        val now = OffsetDateTime.now()
         Log.d("AppUserOnlineTest", "Now: $now / Created: ${remoteUser.Created}")
         // TODO: Fix the server and the UTC offset
 //        assert(now.isEqual(remoteUser.Created!!) || now.isAfter(remoteUser.Created!!))
     }
 
+    // This functionality is not used right now, but might be in the future
     @Test(expected = NotImplementedError::class)
     fun testReadUser() = runTest {
         val remoteApi = Networking("")
@@ -64,29 +67,24 @@ class AppUserOnlineTest {
                 contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
             }
         }
-        val appUserLocalDataSource = AppUserLocalDataSource(database)
         val username = "Online user"
-        appUserLocalDataSource.create(username)
-        val localUser = appUserLocalDataSource.getUser()
-        Assert.assertNotNull(localUser)
-        val apiUser = ApiUser(localUser!!.OnlineID, localUser.Username, localUser.Password, localUser.Created, null)
+        val now = OffsetDateTime.now()
+        val appUser = AppUser(1L, 0L, username, "secure", now)
+        val apiUser = ApiUser(appUser.OnlineID, appUser.Username, appUser.Password, appUser.Created, appUser.Created)
         val encodedUser = json.encodeToString(apiUser)
         val tokenFile = application.filesDir.path + "/token.txt"
         val remoteApi = Networking(tokenFile)
         remoteApi.resetSerializedUser(encodedUser, apiUser.onlineId)
         val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
 
-        val remoteUser = appUserRemoteDataSource.create(localUser!!)
+        val remoteUser = appUserRemoteDataSource.create(appUser)
         Assert.assertNotNull(remoteUser)
-        appUserLocalDataSource.resetOnlineId(remoteUser!!.OnlineID)
 
         // TODO: Update user information and send this requst to the remote
         val updatedUsername = "New Online User"
-        appUserLocalDataSource.resetUsername(updatedUsername)
-        val updatedLocalUser = appUserLocalDataSource.getUser()
-        Assert.assertNotNull(updatedLocalUser)
-        appUserRemoteDataSource.update(updatedLocalUser!!)
-
+        appUser.OnlineID = remoteUser!!.OnlineID
+        appUser.Username = updatedUsername
+        appUserRemoteDataSource.update(appUser)
     }
 
     @Test
@@ -98,12 +96,10 @@ class AppUserOnlineTest {
                 contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
             }
         }
-        val appUserLocalDataSource = AppUserLocalDataSource(database)
         val username = "Online user"
-        appUserLocalDataSource.create(username)
-        val localUser = appUserLocalDataSource.getUser()
-        Assert.assertNotNull(localUser)
-        val apiUser = ApiUser(localUser!!.OnlineID, localUser.Username, localUser.Password, localUser.Created, null)
+        val now = OffsetDateTime.now()
+        val appUser = AppUser(1L, 0L, username, "secure", now)
+        val apiUser = ApiUser(appUser.OnlineID, appUser.Username, appUser.Password, appUser.Created, appUser.Created)
         val encodedUser = json.encodeToString(apiUser)
         val tokenFile = application.filesDir.path + "token.txt"
         val remoteApi = Networking(tokenFile)
@@ -111,17 +107,14 @@ class AppUserOnlineTest {
         val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
 
         // TODO: Check how bad requests or different connection states influence the result
+        var remoteUser : AppUser? = null
         try {
-            val remoteUser = appUserRemoteDataSource.create(localUser!!)
+            remoteUser = appUserRemoteDataSource.create(appUser)
             Assert.assertNotNull(remoteUser)
-            appUserLocalDataSource.resetOnlineId(remoteUser!!.OnlineID)
         } catch (ex: ConnectException) {
             Assert.fail("Failed because server was not available")
         }
-        val updatedLocalUser = appUserLocalDataSource.getUser()
-        Assert.assertNotNull(updatedLocalUser)
-
-        appUserRemoteDataSource.delete(updatedLocalUser!!)
+        appUserRemoteDataSource.delete(remoteUser!!)
     }
 
 }

@@ -19,7 +19,7 @@ object ShoppingListDatabaseModule {
     fun provideShoppingListDatabase(@ApplicationContext context: Context) : ShoppingListDatabase {
         return Room.databaseBuilder(
             context.applicationContext, ShoppingListDatabase::class.java, "shopping_list_database"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 
 }

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.database
+package com.cloudsheeptech.shoppinglist.data.itemToListMapping
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
@@ -6,13 +6,12 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.cloudsheeptech.shoppinglist.data.ListMapping
 
 @Dao
 interface ItemListMappingDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertMapping(listMapping: ListMapping)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insertMapping(listMapping: ListMapping) : Long
 
     @Update
     fun updateMapping(listMapping: ListMapping)
@@ -20,8 +19,8 @@ interface ItemListMappingDao {
     @Query("DELETE FROM item_to_list_mapping WHERE ID = :key")
     fun deleteMapping(key : Long)
 
-    @Query("DELETE FROM item_to_list_mapping WHERE ItemID = :itemId AND ListID = :listId")
-    fun deleteMappingItemListId(itemId : Long, listId : Long)
+    @Query("DELETE FROM item_to_list_mapping WHERE ItemID = :itemId AND ListID = :listId AND CreatedBy = :createdBy")
+    fun deleteMappingItemListId(itemId : Long, listId : Long, createdBy: Long)
 
     @Query("DELETE FROM item_to_list_mapping WHERE ListID = :listId AND CreatedBy = :createdBy")
     fun deleteMappingsForListId(listId : Long, createdBy: Long)
@@ -48,7 +47,7 @@ interface ItemListMappingDao {
     fun getMappingsForItemLive(itemId : Long) : LiveData<List<ListMapping>>
 
     @Query("SELECT * FROM item_to_list_mapping WHERE ItemID = :itemId AND ListID = :listId AND CreatedBy = :createdBy")
-    fun getMappingForItemAndList(itemId : Long, listId : Long, createdBy: Long) : List<ListMapping>
+    fun getMappingForItemAndList(itemId : Long, listId : Long, createdBy: Long) : List<ListMapping> // FIXME: Why a list?
 
     @Query("SELECT CASE " +
             "WHEN (SELECT COUNT(*) FROM item_to_list_mapping WHERE ListID = :listId AND CreatedBy = :createdBy AND Checked = 1) > 0 " +

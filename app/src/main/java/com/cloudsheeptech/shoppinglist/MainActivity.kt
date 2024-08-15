@@ -17,17 +17,16 @@ import com.cloudsheeptech.shoppinglist.databinding.ActivityMainBinding
 import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModel
 import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModelFactory
 import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel
-import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModelFactory
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListHandler
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityMainBinding
@@ -62,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfig)
         botNav.setupWithNavController(navController)
 
-        val shoppingListHandler = ShoppingListHandler(database)
+//        val shoppingListRepository = ShoppingListRepository(database)
 
         val overviewViewModel by viewModels<ListOverviewViewModel> { ListOverviewViewModelFactory(application) }
         val createViewModel by viewModels<CreateShoppinglistViewModel> { CreateShoppinglistViewModelFactory(application) }

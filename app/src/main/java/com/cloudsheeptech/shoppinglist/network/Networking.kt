@@ -20,6 +20,7 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
@@ -27,15 +28,19 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNames
 import java.io.File
 import java.time.Duration
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 
 /*
 * This class captures the authentication logic of the application,
 * allowing to reuse the same HTTP client for all networking requests
  */
-class Networking(val tokenFile: String) {
+@Singleton
+class Networking @Inject constructor(val tokenFile: String) {
 
     @Serializable
-    data class Token(
+    data class Token @OptIn(ExperimentalSerializationApi::class) constructor(
         @JsonNames("token")
         var token : String
     )
@@ -103,12 +108,6 @@ class Networking(val tokenFile: String) {
 
     suspend fun GET(requestUrlPath : String, responseHandler : suspend (response : HttpResponse) -> Unit) {
         withContext(Dispatchers.IO) {
-//            if (!init) {
-//                init(localUser)
-//            }
-//            if (loginRequired()) {
-//                login()
-//            }
             try {
                 val response : HttpResponse = client.get(baseUrl + requestUrlPath)
                 if (response.status == HttpStatusCode.Unauthorized) {
@@ -128,12 +127,6 @@ class Networking(val tokenFile: String) {
     @Throws(IllegalAccessError::class)
     suspend fun POST(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit, contentUpdater: (suspend (String) -> String)?) {
         withContext(Dispatchers.IO) {
-//            if (!init) {
-//                init(localUser)
-//            }
-////            if (loginRequired()) {
-//                login()
-//            }
             try {
                 var dataToPost = data
                 if (contentUpdater != null) {
@@ -157,17 +150,8 @@ class Networking(val tokenFile: String) {
     @Throws(IllegalAccessError::class)
     suspend fun PUT(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit) {
         withContext(Dispatchers.IO) {
-//            if (!init) {
-//                init(localUser)
-//            }
-//            if (loginRequired()) {
-//                login()
-//            }
             try {
                 var dataToPost = data
-//                if (contentUpdater != null) {
-//                    dataToPost = contentUpdater.invoke(data)
-//                }
                 val response : HttpResponse = client.put(baseUrl + requestUrlPath) {
                     setBody(dataToPost)
                 }
@@ -183,22 +167,15 @@ class Networking(val tokenFile: String) {
         }
     }
 
-    suspend fun DELETE(requestUrlPath: String, data: String, responseHandler: suspend (HttpResponse) -> Unit) {
+    // Because the delete method does not allow for additional data, remove this
+    // from the method body
+    suspend fun DELETE(requestUrlPath: String, responseHandler: suspend (HttpResponse) -> Unit) {
         withContext(Dispatchers.IO) {
-//            if (!init) {
-//                init(localUser)
-//            }
-//            if (loginRequired()) {
-//                login()
-//            }
             try {
-                val response : HttpResponse = client.delete(baseUrl + requestUrlPath) {
-                    if (data != "") {
-                        setBody(data)
-                    }
-                }
+                val response : HttpResponse = client.delete(baseUrl + requestUrlPath)
                 if (response.status == HttpStatusCode.Unauthorized) {
                     token = ""
+                    // TODO: Decide how to handle this
                 }
                 responseHandler(response)
                 response.bodyAsText()
@@ -211,6 +188,10 @@ class Networking(val tokenFile: String) {
     /* We only store the latest token on disk */
     private fun readTokenFromDisk(tokenFile: String) : BearerTokens {
         var token = BearerTokens("", "")
+        if (tokenFile.isEmpty()) {
+            Log.w("Networking", "Given tokenFile value is empty")
+            return token
+        }
         if (!File(tokenFile).exists()) {
             Log.d("Networking", "Token File does not exist")
             return token
@@ -226,6 +207,10 @@ class Networking(val tokenFile: String) {
     }
 
     private fun storeTokenToDisk(tokenFile: String, token: BearerTokens) {
+        if (tokenFile.isEmpty()) {
+            Log.w("Networking", "Given tokenFile is empty")
+            return
+        }
         val tokenInFileformat = Token(token.accessToken)
         val encodedToken = Json.encodeToString(tokenInFileformat)
         // Overwriting the file in case it does exist

@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.itemToListMapping
 
+import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -50,6 +51,7 @@ class ItemToListLocalDataSource @Inject constructor(database: ShoppingListDataba
         val foundMappings = mutableListOf<ListMapping>()
         withContext(Dispatchers.IO) {
             val dbMappings = mappingDao.getMappingsForList(listId, createdBy)
+//            Log.d("ItemToListLocalDataSource", "Found ${dbMappings.size} items for list $listId from $createdBy")
             foundMappings.addAll(dbMappings)
         }
         return foundMappings

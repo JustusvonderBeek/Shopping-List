@@ -24,7 +24,8 @@ class ShoppingListRemoteDataSource @Inject constructor(private val networking: N
         }
     }
 
-    suspend fun create(list: ApiShoppingList) {
+    suspend fun create(list: ApiShoppingList) : Boolean {
+        var success = false
         withContext(Dispatchers.IO) {
             try {
                 val encodedList = json.encodeToString(list)
@@ -33,6 +34,7 @@ class ShoppingListRemoteDataSource @Inject constructor(private val networking: N
                         Log.e("ShoppingListRemoteDataSource", "The list was not created online")
                         return@POST
                     }
+                    success = true
                 }
             } catch (ex: SerializationException) {
                 Log.e("ShoppingListRemoteDataSource", "Cannot serialize the list into a string: $ex")
@@ -42,7 +44,7 @@ class ShoppingListRemoteDataSource @Inject constructor(private val networking: N
         // Because we store the List ID  + User Online, the user can decide what ID the list has
         // Therefore, we are not interested in whatever ID the server assigned to the
         // posted list. Simply respond with success or failure
-        return
+        return success
     }
 
     suspend fun read(listId: Long, createdBy: Long): ApiShoppingList? {
@@ -68,7 +70,7 @@ class ShoppingListRemoteDataSource @Inject constructor(private val networking: N
     suspend fun readAll() : List<ApiShoppingList> {
         val allRemoteLists = mutableListOf<ApiShoppingList>()
         withContext(Dispatchers.IO) {
-            networking.GET("v1/lists") { response ->
+            networking.GET("/v1/lists") { response ->
                 if (response.status != HttpStatusCode.OK) {
                     Log.e("ShoppingListRemoteDataSource", "Failed to read all lists from remote")
                     return@GET
@@ -85,28 +87,34 @@ class ShoppingListRemoteDataSource @Inject constructor(private val networking: N
         return allRemoteLists
     }
 
-    suspend fun update(updatedList: ApiShoppingList) {
+    suspend fun update(updatedList: ApiShoppingList) : Boolean {
+        var success = false
         withContext(Dispatchers.IO) {
             val encodedList = json.encodeToString(updatedList)
-            networking.PUT("v1/lists/${updatedList.listId}?createdBy=${updatedList.createdBy.onlineId}", encodedList) { response ->
+            networking.PUT("/v1/lists/${updatedList.listId}?createdBy=${updatedList.createdBy.onlineId}", encodedList) { response ->
                 if (response.status != HttpStatusCode.OK) {
                     Log.e("ShoppingListRemoteDataSource", "Remote did not process updating list successfully")
                     return@PUT
                 }
+                success = true
             }
         }
+        return success
     }
 
     // Because we can only delete the lists that we created ourselves, the createdBy
     // parameter is implicitly given and we don't need to include it here
-    suspend fun deleteShoppingList(listId: Long) {
+    suspend fun deleteShoppingList(listId: Long) : Boolean {
+        var success = false
         withContext(Dispatchers.IO) {
-            networking.DELETE("v1/lists/$listId") { response ->
+            networking.DELETE("/v1/lists/$listId") { response ->
                 if (response.status != HttpStatusCode.OK) {
                     Log.e("ShoppingListRemoteDataSource", "Failed to delete list $listId at remote")
                     return@DELETE
                 }
+                success = true
             }
         }
+        return success
     }
 }

@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.user
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.data.Serializer.OffsetDateTimeSerializer
+import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -11,12 +11,13 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.time.OffsetDateTime
+import javax.inject.Inject
 
 /*
 * This class is responsible for handling all online actions including
 * creating, updating, retrieving and deleting user information.
  */
-class AppUserRemoteDataSource(private val remoteApi: Networking) {
+class AppUserRemoteDataSource @Inject constructor(private val remoteApi: Networking) {
 
     val json = Json {
         serializersModule = SerializersModule {
@@ -96,8 +97,7 @@ class AppUserRemoteDataSource(private val remoteApi: Networking) {
 
     suspend fun delete(user: AppUser) {
         withContext(Dispatchers.IO) {
-            val encodedUser = json.encodeToString(user.toApiUser())
-            remoteApi.DELETE("/v1/users/${user.OnlineID}", encodedUser) { resp ->
+            remoteApi.DELETE("/v1/users/${user.OnlineID}") { resp ->
                 if (resp.status != HttpStatusCode.OK) {
                     Log.w("AppUserRemoteDataSource", "Failed to delete user online!")
                     // In case the server cannot be reached, the call throws a

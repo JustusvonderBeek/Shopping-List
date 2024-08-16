@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.handling
+package com.cloudsheeptech.shoppinglist.repository
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
@@ -12,7 +12,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
-import kotlin.io.path.Path
 
 @RunWith(AndroidJUnit4::class)
 class AppUserRepositoryTest {

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data
+package com.cloudsheeptech.shoppinglist.data.sharing
 
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -6,9 +6,8 @@ import java.time.OffsetDateTime
 
 @Serializable
 data class ListShare(
-    var ListId : Long,
     var CreatedBy : Long,
-    var SharedWith : Long,
+    var SharedWith : List<Long>,
     @Contextual
     var Created : OffsetDateTime,
 )

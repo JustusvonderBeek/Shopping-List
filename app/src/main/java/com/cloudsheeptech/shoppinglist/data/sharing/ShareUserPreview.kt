@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data
+package com.cloudsheeptech.shoppinglist.data.sharing
 
 data class ShareUserPreview(
     var UserId : Long,

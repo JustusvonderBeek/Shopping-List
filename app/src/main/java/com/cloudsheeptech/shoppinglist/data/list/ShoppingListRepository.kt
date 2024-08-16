@@ -6,9 +6,9 @@ import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
-import com.cloudsheeptech.shoppinglist.data.ListShareDatabase
+import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
-import com.cloudsheeptech.shoppinglist.data.ShareUserPreview
+import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -84,6 +84,14 @@ class ShoppingListRepository @Inject constructor(
         }
     }
 
+    suspend fun exist(listId: Long, createdBy: Long) : Boolean {
+        var exists = false
+        withContext(Dispatchers.IO) {
+            exists = localDataSource.exists(listId, createdBy)
+        }
+        return exists
+    }
+
     suspend fun update(list: ApiShoppingList) {
         localDataSource.update(list)
         remoteApi.update(list)
@@ -94,60 +102,6 @@ class ShoppingListRepository @Inject constructor(
         remoteApi.deleteShoppingList(listId)
     }
 
-    private suspend fun updateListInDatabase(list : DbShoppingList) : Boolean {
-        var updated = false
-//        withContext(Dispatchers.IO) {
-//            val existingList = listDao.getShoppingList(list.listId, list.createdBy)
-//            if (existingList == null) {
-//                Log.i("ShoppingListHandler", "List ${list.listId} cannot be found but should exist")
-//                listDao.insertList(list)
-//                updated = true
-//                return@withContext
-//            }
-//            try {
-//                // Compare last edited value
-//                if (existingList.lastUpdated.isAfter(list.lastUpdated))
-//                    return@withContext
-//                listDao.updateList(list)
-//                updated = true
-//                Log.d("ShoppingListHandler", "Updated list ${list.listId} in database")
-//            } catch (ex : DateTimeParseException) {
-//                updated = false
-//                Log.w("ShoppingListHandler", "Failed to parse time (${list.lastUpdated}) and (${existingList.lastUpdated}): $ex")
-//            } catch (ex : Exception) {
-//                // Most likely because the instant failed to parse. Don't updated in this case
-//                updated = false
-//                Log.w("ShoppingListHandler", "Failed to update list: $ex")
-//            }
-//        }
-        return updated
-    }
-
-    // Helper function
-    private suspend fun insertMappingInDatabase(mapping : ListMapping) {
-        withContext(Dispatchers.IO) {
-            insertOrRemoveMappingsInDatabase(listOf(mapping))
-        }
-    }
-
-    private suspend fun insertOrRemoveMappingsInDatabase(mappings : List<ListMapping>, remove : Boolean = false) {
-        withContext(Dispatchers.IO) {
-            // Check if the mapping is new or does exist
-//            if (mappings.isEmpty())
-//                return@withContext
-//            if (remove)
-//                mappingDao.deleteMappingsForListId(mappings.first().ListID, mappings.first().CreatedBy)
-//            for (mapping in mappings) {
-//                val existingMappings = mappingDao.getMappingForItemAndList(mapping.ItemID, mapping.ListID, mapping.CreatedBy)
-//                if (mapping.ID == 0L || existingMappings.isEmpty()) {
-//                    mappingDao.insertMapping(mapping)
-//                    continue
-//                }
-//                mapping.ID = existingMappings.first().ID
-//                updateMappingInDatabase(mapping)
-//            }
-        }
-    }
 
     private suspend fun toggleMappingInDatabase(itemId : Long, listId : Long, createdBy: Long) {
         withContext(Dispatchers.IO) {
@@ -173,17 +127,6 @@ class ShoppingListRepository @Inject constructor(
 //                return@withContext
 //            }
 //            updateMappingInDatabase(incMapping)
-        }
-    }
-
-    private suspend fun updateMappingInDatabase(mapping: ListMapping) {
-        withContext(Dispatchers.IO) {
-//            val existingMapping = mappingDao.getMapping(mapping.ID)
-//            if (existingMapping == null) {
-//                mappingDao.insertMapping(mapping)
-//                return@withContext
-//            }
-//            mappingDao.updateMapping(mapping)
         }
     }
 
@@ -216,17 +159,6 @@ class ShoppingListRepository @Inject constructor(
         }
     }
 
-    private suspend fun deleteMappingInDatabase(item : Long, list : Long, createdBy: Long) {
-        withContext(Dispatchers.IO) {
-//            val existingMappings = mappingDao.getMappingForItemAndList(item, list, createdBy)
-//            if (existingMappings.isEmpty())
-//                return@withContext
-//            for(existingMapping in existingMappings) {
-//                mappingDao.deleteMapping(existingMapping.ID)
-//            }
-        }
-    }
-
     private suspend fun deleteAllCheckedMappingsForListId(listId: Long) {
         withContext(Dispatchers.IO) {
 //            mappingDao.deleteCheckedMappingsForListId(listId)
@@ -239,59 +171,6 @@ class ShoppingListRepository @Inject constructor(
         }
     }
 
-    private suspend fun insertItemInDatabase(dbItem : DbItem) : Long {
-        var itemId = 0L
-        withContext(Dispatchers.IO) {
-            itemId = insertItemsInDatabase(listOf(dbItem)).first()
-        }
-        return itemId
-    }
-
-    private suspend fun insertItemsInDatabase(dbItems : List<DbItem>) : List<Long> {
-        val itemIds = mutableListOf<Long>()
-        withContext(Dispatchers.IO) {
-//            for(item in dbItems) {
-//                val existingItem = itemDao.getItemFromName(item.name)
-//                if (item.id == 0L && existingItem == null) {
-//                    itemIds.add(itemDao.insertItem(item))
-//                    continue
-//                }
-//                if (item.id == 0L)
-//                    item.id = existingItem!!.id
-//                updateItemInDatabase(item)
-//                itemIds.add(item.id)
-//            }
-        }
-        return itemIds
-    }
-
-    private suspend fun updateItemInDatabase(dbItem : DbItem) {
-        withContext(Dispatchers.IO) {
-//            val existingItem = itemDao.getItem(dbItem.id)
-//            if (existingItem == null) {
-//                itemDao.insertItem(dbItem)
-//                return@withContext
-//            }
-//            itemDao.updateItem(dbItem)
-        }
-    }
-
-    private suspend fun findNextFreeListId(list: DbShoppingList, newUserId : Long) : Long {
-        var nextId = list.listId
-        withContext(Dispatchers.IO) {
-//            val updateListWithIdExists = listDao.getShoppingList(list.listId, newUserId)
-//            if (updateListWithIdExists != null) {
-//                // The list exists, so create a new ID for this list
-//                val existingLists = listDao.getLatestListId() ?: return@withContext
-//                nextId = existingLists + 1
-//                return@withContext
-//            }
-//            // The list with update userId does not exist, therefore its fine to simply update the
-//            // list here
-//            return@withContext
-        }
-        return nextId
-    }
 
     private suspend fun updateCreatedByForList(list : DbShoppingList, createdBy: Long) {
         if (createdBy == 0L || list.createdBy != 0L)
@@ -357,10 +236,6 @@ class ShoppingListRepository @Inject constructor(
 //                resetCreatedByForList(list)
 //            }
         }
-    }
-
-    private suspend fun insertUserInfoInDatabase(user : ListCreator) {
-        return insertAllUserInfoInDatabase(listOf(user))
     }
 
     private suspend fun insertAllUserInfoInDatabase(users : List<ListCreator>) {
@@ -704,120 +579,6 @@ class ShoppingListRepository @Inject constructor(
 //                Log.d("ShoppingListHandler", "Unshared list $listId")
 //            }
         }
-    }
-
-    private suspend fun getShoppingListFromOnline(listId : Long, createdBy: Long?) : ApiShoppingList? {
-        var onlineList : ApiShoppingList? = null
-        withContext(Dispatchers.IO) {
-            var requestUrl = "v1/list?listId=$listId"
-            if (createdBy != null) {
-                requestUrl = "$requestUrl&createdBy=$createdBy"
-            }
-//            Networking.GET(requestUrl) { resp ->
-//                if (resp.status != HttpStatusCode.OK) {
-//                    Log.w("ShoppingListHandler", "Failed to GET list $listId ($createdBy) from online")
-//                    return@GET
-//                }
-//                val body = resp.bodyAsText(Charsets.UTF_8)
-//                val decoded = json.decodeFromString<ShoppingListWire>(body)
-//                onlineList = decoded
-//            }
-        }
-        return onlineList
-    }
-
-    private suspend fun getShoppingListsFromOnline(lists : List<Pair<Long, Long>>) : List<ApiShoppingList> {
-        val onlineLists = mutableListOf<ApiShoppingList>()
-        withContext(Dispatchers.IO) {
-            for((listId, createdBy) in lists) {
-                val onlineList = getShoppingListFromOnline(listId, createdBy)
-                if (onlineList != null)
-                    onlineLists.add(onlineList)
-            }
-            Log.d("ShoppingListHandler", "Retrieved ${onlineLists.size}/${lists.size} lists successfully")
-        }
-        return onlineLists
-    }
-
-    private suspend fun getOwnAndSharedShoppingListsFromOnline() : List<ApiShoppingList> {
-        val onlineLists = mutableListOf<ApiShoppingList>()
-        withContext(Dispatchers.IO) {
-//            Networking.GET("v1/lists/${AppUserLocalDataSource.getUser()!!.OnlineID}") { resp ->
-//                if (resp.status != HttpStatusCode.OK) {
-//                    Log.w("ShoppingListHandler", "Failed to GET all list from online")
-//                    return@GET
-//                }
-//                val body = resp.bodyAsText(Charsets.UTF_8)
-//                val decodedShoppingLists = json.decodeFromString<List<ShoppingListWire>>(body)
-//                onlineLists.addAll(decodedShoppingLists)
-//                Log.d("ShoppingListHandler", "Retrieved ${onlineLists.size} lists successfully")
-//            }
-        }
-        return onlineLists
-    }
-
-    private suspend fun getAllShoppingListsFromOnline() {
-        withContext(Dispatchers.IO) {
-            val onlineLists = getOwnAndSharedShoppingListsFromOnline()
-            Log.d("ShoppingListHandler", "Got lists: $onlineLists")
-            for (list in onlineLists) {
-                // Automatically creates the items if not existing
-                val (localList, mappings, _) = shoppingListWireToLocal(list)
-                val updated = updateListInDatabase(localList)
-                if (updated) {
-                    insertOrRemoveMappingsInDatabase(mappings, true)
-                }
-            }
-        }
-    }
-
-    // ------------------------------------------------------------------------------
-    // The Public API
-    // ------------------------------------------------------------------------------
-
-    fun PostShoppingListOnline(listId : Long, from : Long) {
-//        localCoroutine.launch {
-//            postShoppingListOnline(listId, from)
-//        }
-    }
-
-    fun PostShoppingListOnline(list : DbShoppingList) {
-//        localCoroutine.launch {
-//            postShoppingListOnline(list)
-//        }
-    }
-
-    // Creating a new shopping list with the given name
-    // Stores the list locally
-    // Stores the list online (if possible)
-    // Returns the newly created list
-    fun CreateNewShoppingList(name : String) {
-//        localCoroutine.launch {
-//            val list = newShoppingList(name)
-//            val updatedList = postShoppingListOnline(list)
-//            insertShoppingListIntoDatabase(updatedList)
-//        }
-        // Cannot return the list here because we have the asynchronous operations before
-    }
-
-    fun DeleteShoppingList(listId : Long, from : Long) {
-//        localCoroutine.launch {
-//            val list = getShoppingListFromDatabase(listId, from) ?: return@launch
-//            DeleteShoppingList(list)
-//        }
-    }
-
-    fun DeleteShoppingList(list : DbShoppingList) {
-//        localCoroutine.launch {
-//            deleteShoppingListFromDatabase(list)
-////            if (list.CreatedByID != AppUserLocalDataSource.getUser()!!.OnlineID) {
-////                // Delete sharing online
-////                requestUnshareList(list.ID, list.CreatedByID)
-////            } else {
-////                // Should include the unsharing of the list
-////                deleteShoppingListOnline(list.ID)
-////            }
-//        }
     }
 
     fun AddItemToShoppingList(dbItem : DbItem, list : Long, createdBy: Long) : Int {

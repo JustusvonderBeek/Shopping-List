@@ -11,12 +11,13 @@ import androidx.room.TypeConverters
 import androidx.room.migration.AutoMigrationSpec
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
-import com.cloudsheeptech.shoppinglist.data.ListShareDatabase
+import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.ListCreator
 import com.cloudsheeptech.shoppinglist.data.UIPreference
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemListMappingDao
 import com.cloudsheeptech.shoppinglist.data.items.ItemDao
+import com.cloudsheeptech.shoppinglist.data.sharing.SharedDao
 import com.cloudsheeptech.shoppinglist.data.typeConverter.DatabaseTypeConverter
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.user.AppUserDao

@@ -149,9 +149,9 @@ class ShoppingListOnlineTest {
         Assert.assertEquals(listWithItems, remoteLists[0])
     }
 
-    @Test
+    @Test(expected = NotImplementedError::class)
     fun testUpdateSharedList() = runTest {
-
+        throw NotImplementedError("Not yet implemented")
     }
 
     @Test

@@ -47,4 +47,7 @@ interface ShoppingListDao {
     @Query("SELECT * FROM list_table WHERE listId = :key AND createdBy = :keyCreatedBy")
     fun getShoppingList(key : Long, keyCreatedBy: Long) : DbShoppingList?
 
+    @Query("SELECT EXISTS (SELECT * FROM list_table WHERE listId = :key AND createdBy = :keyCreatedBy)")
+    fun exists(key: Long, keyCreatedBy: Long) : Boolean
+
 }

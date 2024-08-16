@@ -13,6 +13,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /**
@@ -109,7 +110,7 @@ class ShoppingListLocalDataSource @Inject constructor(
             // Differentiate between new and existing list
             val existingList = listDao.getShoppingList(list.listId, list.createdBy.onlineId)
             if (existingList != null) {
-                throw IllegalArgumentException("list already exists")
+                throw IllegalArgumentException("list '${list.title}' already exists")
             }
             // Update the id to the latest available ID
             val copiedList = list.copy()
@@ -201,6 +202,18 @@ class ShoppingListLocalDataSource @Inject constructor(
     }
 
     /**
+     * Function making the insertion and update process more easy.
+     * @return true if the list exists, otherwise false
+     */
+    suspend fun exists(listId: Long, createdBy: Long) : Boolean {
+        var exists = false
+        withContext(Dispatchers.IO) {
+            exists = listDao.exists(listId, createdBy)
+        }
+        return exists
+    }
+
+    /**
      * Currently not implemented
      * @throws NotImplementedError
      */
@@ -224,8 +237,9 @@ class ShoppingListLocalDataSource @Inject constructor(
             // Compare last edited value
             // TODO: Make this more elaborate and allow to integrate updates when the
             // remote and locally changed values in the list
-            if (existingList.lastUpdated.isAfter(updatedList.lastUpdated)) {
-                Log.i("ShoppingListLocalDataSource", "Updating is skipped because the last list update is newer than the currently applied update")
+            // Ignore everything below seconds
+            if (existingList.lastUpdated.truncatedTo(ChronoUnit.SECONDS).isAfter(updatedList.lastUpdated.truncatedTo(ChronoUnit.SECONDS))) {
+                Log.i("ShoppingListLocalDataSource", "Updating is skipped because the last local list update is newer than the incoming update: ${existingList.lastUpdated} - (updated) ${updatedList.lastUpdated}")
                 return@withContext
             }
 

@@ -72,7 +72,16 @@ class ShoppingListRepository @Inject constructor(
     suspend fun readAllRemote() {
         val allRemoteLists = remoteApi.readAll()
         // TODO: Write an integration method with the locally stored lists
-
+        allRemoteLists.forEach { remoteList ->
+            // Create if not exists, update if exists
+            val exists = localDataSource.exists(remoteList.listId, remoteList.createdBy.onlineId)
+            Log.d("ShoppingListRepository", "List ${remoteList.listId} from ${remoteList.createdBy.onlineId} exists: $exists")
+            if (!exists) {
+                localDataSource.create(remoteList)
+            } else {
+                localDataSource.update(remoteList)
+            }
+        }
     }
 
     suspend fun update(list: ApiShoppingList) {

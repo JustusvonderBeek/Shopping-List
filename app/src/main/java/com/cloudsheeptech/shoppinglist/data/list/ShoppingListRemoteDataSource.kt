@@ -29,6 +29,7 @@ class ShoppingListRemoteDataSource @Inject constructor(private val networking: N
         withContext(Dispatchers.IO) {
             try {
                 val encodedList = json.encodeToString(list)
+                Log.d("ShoppingListRemoteDataSource", "Encoded List:\n$encodedList")
                 networking.POST("/v1/lists", encodedList) { response ->
                     if (response.status != HttpStatusCode.Created) {
                         Log.e("ShoppingListRemoteDataSource", "The list was not created online")
@@ -76,10 +77,11 @@ class ShoppingListRemoteDataSource @Inject constructor(private val networking: N
                     return@GET
                 }
                 val rawBody = response.bodyAsText(Charsets.UTF_8)
-                if (rawBody.isEmpty()) {
+                if (rawBody.isEmpty() || rawBody == "null") {
                     Log.e("ShoppingListRemoteDataSource", "Remote did not return any list body")
                     return@GET
                 }
+                Log.d("ShoppingListRemoteDataSource", "Received: $rawBody")
                 val decodedOnlineLists = json.decodeFromString<List<ApiShoppingList>>(rawBody)
                 allRemoteLists.addAll(decodedOnlineLists)
             }

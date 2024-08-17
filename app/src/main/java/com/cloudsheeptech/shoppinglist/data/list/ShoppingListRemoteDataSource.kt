@@ -13,7 +13,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.time.OffsetDateTime
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ShoppingListRemoteDataSource @Inject constructor(private val networking: Networking) {
 
     private val json = Json {

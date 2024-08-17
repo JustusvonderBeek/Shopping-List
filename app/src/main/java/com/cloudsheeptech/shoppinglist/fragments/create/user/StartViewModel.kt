@@ -14,6 +14,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@HiltViewModel
 class StartViewModel @Inject constructor(private val userRepository: AppUserRepository) : ViewModel() {
 
     // UI State
@@ -37,27 +39,6 @@ class StartViewModel @Inject constructor(private val userRepository: AppUserRepo
     val disableButton : LiveData<Boolean> get() = _disableButton
 
     // -----------------------------------------------
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(
-                modelClass: Class<T>,
-                extras: CreationExtras
-            ): T {
-                // Get the Application object from extras
-                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
-                // Create a SavedStateHandle for this ViewModel from extras
-                val database = ShoppingListDatabase.getInstance(application.applicationContext)
-                val localDataSource = AppUserLocalDataSource(database)
-                val networking = Networking(application.filesDir.path + "/" + "token.txt")
-                val remoteApi = AppUserRemoteDataSource(networking)
-                val userRepository = AppUserRepository(localDataSource, remoteApi)
-                return StartViewModel(userRepository) as T
-            }
-        }
-
-    }
 
     init {
         if (user.value != null) {

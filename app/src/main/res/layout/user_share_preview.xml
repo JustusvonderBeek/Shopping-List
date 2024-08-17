@@ -5,7 +5,7 @@
     <data>
         <variable
             name="creator"
-            type="com.cloudsheeptech.shoppinglist.data.ShareUserPreview" />
+            type="com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview" />
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.fragments.share.UserShareAdapter.UserShareClickListener" />

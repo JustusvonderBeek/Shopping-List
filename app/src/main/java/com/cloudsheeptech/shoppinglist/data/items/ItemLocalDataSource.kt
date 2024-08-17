@@ -4,7 +4,9 @@ import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ItemLocalDataSource @Inject constructor(val database: ShoppingListDatabase) {
 
     private val itemDao = database.itemDao()

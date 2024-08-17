@@ -16,11 +16,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentStartBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class StartFragment : Fragment() {
 
     private lateinit var binding : FragmentStartBinding
-    private val viewModel : StartViewModel by viewModels { StartViewModel.Factory }
+    private val viewModel : StartViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

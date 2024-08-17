@@ -1,6 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.list
 
-import com.cloudsheeptech.shoppinglist.data.ListCreator
+import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import kotlinx.serialization.Contextual
 import java.time.Duration

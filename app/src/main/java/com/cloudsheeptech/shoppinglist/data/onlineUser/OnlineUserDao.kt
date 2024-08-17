@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.database
+package com.cloudsheeptech.shoppinglist.data.onlineUser
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.cloudsheeptech.shoppinglist.data.ListCreator
 
 @Dao
 interface OnlineUserDao {

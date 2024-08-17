@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.list
 
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
-import com.cloudsheeptech.shoppinglist.data.ListCreator
+import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable

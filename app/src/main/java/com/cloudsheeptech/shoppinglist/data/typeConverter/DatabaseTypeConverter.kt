@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.typeConverter
 
 import androidx.room.TypeConverter
-import com.cloudsheeptech.shoppinglist.data.ListCreator
+import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

@@ -7,6 +7,7 @@ import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListRepository
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
+import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
@@ -15,11 +16,13 @@ import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Handles the storage and retrieval of the list that is used by the application into
  * the local database in a way that makes storage possible.
  */
+@Singleton
 class ShoppingListLocalDataSource @Inject constructor(
     private val database: ShoppingListDatabase,
     private val userRepository: AppUserRepository,
@@ -29,6 +32,16 @@ class ShoppingListLocalDataSource @Inject constructor(
 
     private val listDao = database.shoppingListDao()
 
+    private fun AppItem.toApiItem() : ApiItem {
+        return ApiItem(
+            name = this.name,
+            icon = this.icon,
+            quantity = this.quantity,
+            checked = this.checked,
+            addedBy = this.addedBy
+        )
+    }
+
     private fun ApiItem.toDbItem() : DbItem {
         val dbItem = DbItem(
             id = 0L, // Auto generated
@@ -36,6 +49,17 @@ class ShoppingListLocalDataSource @Inject constructor(
             icon = this.icon,
         )
         return dbItem
+    }
+
+    private fun DbItem.toAppItem(onlineId: Long) : AppItem {
+        return AppItem(
+            id = this.id,
+            name = this.name,
+            icon = this.icon,
+            quantity = 1L,
+            checked = false,
+            addedBy = onlineId,
+        )
     }
 
     private fun ApiItem.toListMapping(itemId: Long, listId: Long, createdBy: Long) : ListMapping {
@@ -201,6 +225,10 @@ class ShoppingListLocalDataSource @Inject constructor(
         return allLists
     }
 
+    fun readAllLive() : LiveData<List<DbShoppingList>> {
+        return listDao.getShoppingListsLive()
+    }
+
     /**
      * Function making the insertion and update process more easy.
      * @return true if the list exists, otherwise false
@@ -270,6 +298,67 @@ class ShoppingListLocalDataSource @Inject constructor(
             }
             Log.d("ShoppingListHandler", "Updated list ${updatedList.listId} in database")
         }
+    }
+
+    suspend fun insertItem(listId: Long, createdBy: Long, item: AppItem) : ApiShoppingList {
+        val updatedList : ApiShoppingList
+        withContext(Dispatchers.IO) {
+            val existingList = read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
+            existingList.items.add(item.toApiItem())
+            existingList.lastUpdated = OffsetDateTime.now()
+            update(existingList)
+            updatedList = existingList
+        }
+        return updatedList
+    }
+
+    suspend fun insertExistingItem(listId: Long, createdBy: Long, itemId: Long) : ApiShoppingList {
+        val updatedList : ApiShoppingList
+        withContext(Dispatchers.IO) {
+            val existingItem = itemRepository.read(itemId) ?: throw IllegalArgumentException("item does not exits")
+            val user = userRepository.read() ?: throw IllegalStateException("user is null after login")
+            val existingAppItem = existingItem.toAppItem(user.OnlineID)
+            updatedList = insertItem(listId, createdBy, existingAppItem)
+        }
+        return updatedList
+    }
+
+    suspend fun toggleItem(listId: Long, createdBy: Long, itemId: Long) : ApiShoppingList {
+        val updatedList : ApiShoppingList
+        withContext(Dispatchers.IO) {
+            val mappings = itemToListRepository.read(listId, createdBy)
+            if (mappings.isEmpty())
+                throw IllegalArgumentException("list does not exist")
+            val itemMapping = mappings.find { mapping -> mapping.ItemID == itemId }
+            if (itemMapping == null)
+                throw IllegalArgumentException("mapping does not exist")
+            itemMapping.Checked = itemMapping.Checked xor true
+            itemToListRepository.update(itemMapping)
+            updatedList = read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
+        }
+        return updatedList
+    }
+
+    suspend fun updateItemCount(listId: Long, createdBy: Long, itemId: Long, quantity: Long) : ApiShoppingList {
+        val updatedList : ApiShoppingList
+        withContext(Dispatchers.IO) {
+            val mappings = itemToListRepository.read(listId, createdBy)
+            if (mappings.isEmpty())
+                throw IllegalArgumentException("list does not exist")
+            val itemMapping = mappings.find { mapping -> mapping.ItemID == itemId }
+            if (itemMapping == null)
+                throw IllegalArgumentException("mapping does not exist")
+            itemMapping.Quantity += quantity
+            // Because this function is used both for increasing and decreasing the item count
+            // check if the new count removes the item from the list
+            if (itemMapping.Quantity <= 0L) {
+                itemToListRepository.delete(itemMapping)
+            } else {
+                itemToListRepository.update(itemMapping)
+            }
+            updatedList = read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
+        }
+        return updatedList
     }
 
     /**

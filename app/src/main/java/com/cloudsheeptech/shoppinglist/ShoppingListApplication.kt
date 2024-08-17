@@ -33,6 +33,7 @@ class ShoppingListApplication : Application() {
     @Inject lateinit var networking: Networking
     @Inject lateinit var shoppingListLocalDataSource: ShoppingListLocalDataSource
     @Inject lateinit var shoppingListRemoteDataSource: ShoppingListRemoteDataSource
+    @Inject lateinit var shoppingListRepository: ShoppingListRepository
 
     @Inject lateinit var itemLocalDataSource: ItemLocalDataSource
     @Inject lateinit var itemRepository: ItemRepository

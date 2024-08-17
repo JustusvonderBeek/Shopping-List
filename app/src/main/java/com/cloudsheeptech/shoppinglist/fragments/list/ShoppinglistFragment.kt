@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -28,12 +29,14 @@ import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListBinding
 import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelectedListener {
 
     private lateinit var binding : FragmentListBinding
-    private lateinit var viewModel : ShoppinglistViewModel
-    private val learningViewModel : RecipeViewModel by activityViewModels()
+    private val viewModel : ShoppinglistViewModel by viewModels()
+//    private val learningViewModel : RecipeViewModel by activityViewModels()
 
     val args : ShoppinglistFragmentArgs by navArgs()
 
@@ -95,9 +98,9 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
             findNavController().navigateUp()
 
         val database = ShoppingListDatabase.getInstance(requireContext())
-        val viewModelFactory = ShoppingListViewModelFactory(database, shoppingListId, createdBy)
+//        val viewModelFactory = ShoppingListViewModelFactory(database, shoppingListId, createdBy)
 
-        viewModel = ViewModelProvider(this, viewModelFactory)[ShoppinglistViewModel::class.java]
+//        viewModel = ViewModelProvider(this, viewModelFactory)[ShoppinglistViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = requireActivity()
 

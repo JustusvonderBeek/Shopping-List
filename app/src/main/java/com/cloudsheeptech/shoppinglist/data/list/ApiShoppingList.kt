@@ -41,4 +41,14 @@ data class ApiShoppingList @OptIn(ExperimentalSerializationApi::class) construct
         }
         return false
     }
+
+    override fun hashCode(): Int {
+        var result = listId.hashCode()
+        result = 31 * result + title.hashCode()
+        result = 31 * result + createdBy.hashCode()
+        result = 31 * result + createdAt.hashCode()
+        result = 31 * result + lastUpdated.hashCode()
+        result = 31 * result + items.hashCode()
+        return result
+    }
 }

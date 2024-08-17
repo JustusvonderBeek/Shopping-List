@@ -5,33 +5,43 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.CreationExtras
+import com.cloudsheeptech.shoppinglist.ShoppingListApplication
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
+import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel
+import com.cloudsheeptech.shoppinglist.network.Networking
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /*
 * This class is the main HUB of the application, taking care of user initialization etc.
 * When no user is found, navigate to the user creation and only allow navigating back if a user is found
  */
-class ListOverviewViewModel(application : Application) : AndroidViewModel(application) {
+@HiltViewModel
+class ListOverviewViewModel @Inject constructor(
+    private val listRepo: ShoppingListRepository,
+    private val userRepo: AppUserRepository
+) : ViewModel() {
 
     private val job = Job()
     private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
 
     // -----------------------------------------------
-
-    private val database = ShoppingListDatabase.getInstance(application.applicationContext)
-    private val shoppingListDao = database.shoppingListDao()
-    private val itemDao = database.itemDao()
-    private val userDao = database.userDao()
-    private val itemMappingDao = database.mappingDao()
-//    private val listHandler = ShoppingListRepository(database)
-
     // Navigation variables
 
     private  val _createList = MutableLiveData<Boolean>(false)
@@ -54,8 +64,8 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
         encodeDefaults = true
         ignoreUnknownKeys = false
     }
-    val user = userDao.getUserLive()
-    val shoppingList = shoppingListDao.getShoppingListsLive()
+    val user = userRepo.readLive()
+    val shoppingList = listRepo.readAllLive()   // We only require the name and creator name
 
     // -----------------------------------------------
 
@@ -79,18 +89,15 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     fun removeUser() {
         vmCoroutine.launch {
-            withContext(Dispatchers.IO) {
-                userDao.resetAllUsers()
-            }
-//            AppUserLocalDataSource.deleteUser(null)
+            userRepo.delete()
         }
     }
 
     private suspend fun removeItemsAndListsFromDatabase() {
         withContext(Dispatchers.IO) {
-            shoppingListDao.reset()
-            itemDao.deleteAll()
-            itemMappingDao.clearAll()
+//            shoppingListDao.reset()
+//            itemDao.deleteAll()
+//            itemMappingDao.clearAll()
         }
     }
 
@@ -111,7 +118,7 @@ class ListOverviewViewModel(application : Application) : AndroidViewModel(applic
 
     private suspend fun updateListOverview() {
         withContext(Dispatchers.IO) {
-//            listHandler.GetAllShoppingLists()
+            listRepo.readAllRemote()
         }
         withContext(Dispatchers.Main) {
             _refreshing.value = false

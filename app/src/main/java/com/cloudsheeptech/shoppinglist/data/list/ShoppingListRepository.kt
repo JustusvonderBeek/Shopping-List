@@ -2,19 +2,15 @@ package com.cloudsheeptech.shoppinglist.data.list
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
-import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
-import com.cloudsheeptech.shoppinglist.data.ListCreator
-import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
+import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.time.OffsetDateTime
@@ -132,6 +128,9 @@ class ShoppingListRepository @Inject constructor(
     }
 
     // TODO: Implement the functions below here or in other repos
+
+    // 1. Reset the locally created lists to createdBy = 0L when user is deleted
+    // 2. Updated the local lists when a new user is created (createdBy, createdByName)
 
     private suspend fun updateCreatedByForMappings(listId : Long, moveToId : Long, createdBy: Long) {
         withContext(Dispatchers.IO) {

@@ -1,9 +1,8 @@
 package com.cloudsheeptech.shoppinglist.data.list
 
 import android.app.Application
-import android.util.Log
 import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.data.ListCreator
+import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListRepository
@@ -14,7 +13,6 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert

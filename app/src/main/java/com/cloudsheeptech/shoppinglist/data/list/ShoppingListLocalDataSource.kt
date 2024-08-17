@@ -2,7 +2,7 @@ package com.cloudsheeptech.shoppinglist.data.list
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import com.cloudsheeptech.shoppinglist.data.ListCreator
+import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListRepository

@@ -2,7 +2,7 @@ package com.cloudsheeptech.shoppinglist.data.list
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.data.ListCreator
+import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.user.ApiUser

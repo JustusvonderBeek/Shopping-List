@@ -31,26 +31,10 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityMainBinding
 
-    // Create the vocabulary here and pass the data around the app so that every fragment share the same data
-//    private lateinit var learningViewModel : LearningViewModel
-    private lateinit var recapViewModel : StartViewModel
-    private lateinit var overviewViewModel: ListOverviewViewModel
-
     private var notificationId = 0
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Setup user (this is necessary so that we can use the value throughout the app)
-        val database = ShoppingListDatabase.getInstance(application.applicationContext)
-        val localDataSource = AppUserLocalDataSource(database)
-        val networking = Networking(application.filesDir.path + "/" + "token.txt")
-        val remoteApi = AppUserRemoteDataSource(networking)
-        val userRepository = AppUserRepository(localDataSource, remoteApi)
-
-//        AppUserLocalDataSource.loadUser(application.applicationContext)
-//        AppUser.PostUserOnline(applicationContext)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
@@ -60,11 +44,6 @@ class MainActivity : AppCompatActivity() {
         val appBarConfig = AppBarConfiguration.Builder(navIds).build()
         setupActionBarWithNavController(navController, appBarConfig)
         botNav.setupWithNavController(navController)
-
-//        val shoppingListRepository = ShoppingListRepository(database)
-
-        val overviewViewModel by viewModels<ListOverviewViewModel> { ListOverviewViewModelFactory(application) }
-        val createViewModel by viewModels<CreateShoppinglistViewModel> { CreateShoppinglistViewModelFactory(application) }
 
         // TODO: Check if we are coming from a notification; NOT yet necessary
         val redirect = intent.extras?.getString("redirect")

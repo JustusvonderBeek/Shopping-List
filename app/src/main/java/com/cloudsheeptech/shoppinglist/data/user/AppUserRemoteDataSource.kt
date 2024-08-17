@@ -12,11 +12,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.time.OffsetDateTime
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /*
 * This class is responsible for handling all online actions including
 * creating, updating, retrieving and deleting user information.
  */
+@Singleton
 class AppUserRemoteDataSource @Inject constructor(private val remoteApi: Networking) {
 
     val json = Json {

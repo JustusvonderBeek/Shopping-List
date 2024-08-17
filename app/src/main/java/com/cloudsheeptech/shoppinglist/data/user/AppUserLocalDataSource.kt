@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.random.Random
 
 /*
@@ -20,7 +21,7 @@ import kotlin.random.Random
 * Storing and retrieving the information from disk
 * Delete the user information
  */
-
+@Singleton
 class AppUserLocalDataSource @Inject constructor(database: ShoppingListDatabase) {
 
     private val appUserDao: AppUserDao = database.userDao()

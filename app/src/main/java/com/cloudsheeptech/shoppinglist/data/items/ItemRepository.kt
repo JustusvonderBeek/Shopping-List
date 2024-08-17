@@ -3,7 +3,9 @@ package com.cloudsheeptech.shoppinglist.data.items
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ItemRepository @Inject constructor(private val localDataSource: ItemLocalDataSource) {
 
     /**

@@ -13,16 +13,21 @@ import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListOverviewBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+// This is required for Hilt to inject the viewModel correctly
+// See: https://developer.android.com/training/dependency-injection/hilt-jetpack
+@AndroidEntryPoint
 class ListOverviewFragment : Fragment(), MenuProvider {
 
     private lateinit var binding : FragmentListOverviewBinding
-    private val viewModel : ListOverviewViewModel by activityViewModels()
+    private val viewModel : ListOverviewViewModel by viewModels() // Injected by hilt
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.overview_drop_down_menu, menu)

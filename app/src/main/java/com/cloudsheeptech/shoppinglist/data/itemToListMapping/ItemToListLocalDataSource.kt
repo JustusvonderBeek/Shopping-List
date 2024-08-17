@@ -1,11 +1,12 @@
 package com.cloudsheeptech.shoppinglist.data.itemToListMapping
 
-import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ItemToListLocalDataSource @Inject constructor(database: ShoppingListDatabase) {
 
     private val mappingDao = database.mappingDao()

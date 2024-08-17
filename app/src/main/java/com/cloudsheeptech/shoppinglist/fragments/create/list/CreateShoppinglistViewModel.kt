@@ -5,12 +5,27 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
+import javax.inject.Inject
 
-class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class CreateShoppinglistViewModel @Inject constructor(
+    private val shoppingListRepository: ShoppingListRepository
+) : ViewModel() {
+
+    private val job = Job()
+    private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
+
     val title = MutableLiveData<String>("")
 
     private val _navigateBack = MutableLiveData<Boolean>(false)
@@ -32,7 +47,12 @@ class CreateShoppinglistViewModel(application: Application) : AndroidViewModel(a
         // Updating the ID is handled by the list handler
         // Storing the list to database and posting it online handled by this function
 //        listHandler.CreateNewShoppingList(title.value!!)
-        navigateBack()
+        vmCoroutine.launch {
+            shoppingListRepository.create(title.value!!)
+            withContext(Dispatchers.Main) {
+                navigateBack()
+            }
+        }
     }
 
     fun navigateBack() {

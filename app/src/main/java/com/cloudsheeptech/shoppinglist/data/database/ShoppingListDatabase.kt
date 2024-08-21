@@ -33,6 +33,7 @@ import javax.inject.Singleton
     autoMigrations = [
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 19, to = 20, ShoppingListDatabase.Database19To20Migration::class),
+        AutoMigration(from = 20, to = 21, ShoppingListDatabase.Database20To21Migration::class),
     ],
 )
 @TypeConverters(value = [DatabaseTypeConverter::class])
@@ -111,5 +112,19 @@ abstract class ShoppingListDatabase : RoomDatabase() {
         )
     )
     class Database19To20Migration : AutoMigrationSpec
+
+    @RenameColumn.Entries(
+        RenameColumn(
+            tableName = "online_user",
+            fromColumnName = "ID",
+            toColumnName = "onlineId",
+        ),
+        RenameColumn(
+            tableName = "online_user",
+            fromColumnName = "Name",
+            toColumnName = "username",
+        ),
+    )
+    class Database20To21Migration : AutoMigrationSpec
 }
 

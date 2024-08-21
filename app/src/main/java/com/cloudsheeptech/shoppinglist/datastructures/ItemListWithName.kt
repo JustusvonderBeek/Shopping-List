@@ -3,7 +3,6 @@ package com.cloudsheeptech.shoppinglist.datastructures
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.cloudsheeptech.shoppinglist.data.Item
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable

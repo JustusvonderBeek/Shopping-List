@@ -87,6 +87,10 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    // Necessary to test the database migration and tell the test where to find the exported schemas
+    sourceSets {
+        androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
+    }
 }
 
 // According to documentation, this helps to dagger to reference our code for injection
@@ -148,8 +152,10 @@ dependencies {
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.2"
+
     androidTestImplementation 'junit:junit:4.13.2'
     androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.2"
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.room:room-testing:2.5.2'
 }

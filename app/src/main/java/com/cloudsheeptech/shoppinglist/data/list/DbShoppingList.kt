@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.list
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import java.time.OffsetDateTime
 
@@ -11,5 +12,6 @@ data class DbShoppingList(
     var createdBy : Long,
     // FIXME: This column is deprecated and should be removed / updated to createdAt
     var createdByName : String,
+    @ColumnInfo(defaultValue = "CURRENT_TIMESTAMP")
     var lastUpdated : OffsetDateTime
 )

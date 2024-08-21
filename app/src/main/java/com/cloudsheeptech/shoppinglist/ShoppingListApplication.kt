@@ -12,6 +12,9 @@ import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
+import com.cloudsheeptech.shoppinglist.data.sharing.ListShareLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.sharing.ListShareRemoteDataSource
+import com.cloudsheeptech.shoppinglist.data.sharing.ListShareRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
@@ -48,4 +51,7 @@ class ShoppingListApplication : Application() {
     @Inject lateinit var onlineUserRemoteDataSource: OnlineUserRemoteDataSource
     @Inject lateinit var onlineUserRepository: OnlineUserRepository
 
+    @Inject lateinit var listShareLocalDataSource: ListShareLocalDataSource
+    @Inject lateinit var listShareRemoteDataSource: ListShareRemoteDataSource
+    @Inject lateinit var listShareRepository: ListShareRepository
 }

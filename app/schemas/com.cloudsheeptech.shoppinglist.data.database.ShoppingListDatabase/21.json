@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 21,
-    "identityHash": "c2e44f3623168068de3c5d3c543fcdc5",
+    "identityHash": "829bda48cb287480036ca62e7e696085",
     "entities": [
       {
         "tableName": "list_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`listId` INTEGER NOT NULL, `title` TEXT NOT NULL, `createdBy` INTEGER NOT NULL, `createdByName` TEXT NOT NULL, `lastUpdated` TEXT NOT NULL, PRIMARY KEY(`listId`, `createdBy`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`listId` INTEGER NOT NULL, `title` TEXT NOT NULL, `createdBy` INTEGER NOT NULL, `createdByName` TEXT NOT NULL, `lastUpdated` TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(`listId`, `createdBy`))",
         "fields": [
           {
             "fieldPath": "listId",
@@ -36,7 +36,8 @@
             "fieldPath": "lastUpdated",
             "columnName": "lastUpdated",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
           }
         ],
         "primaryKey": {
@@ -275,7 +276,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c2e44f3623168068de3c5d3c543fcdc5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '829bda48cb287480036ca62e7e696085')"
     ]
   }
 }

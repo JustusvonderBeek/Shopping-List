@@ -27,6 +27,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNames
 import java.io.File
+import java.io.IOException
 import java.time.Duration
 import javax.inject.Inject
 import javax.inject.Named
@@ -156,7 +157,7 @@ class Networking @Inject constructor(val tokenFile: String) {
                     setBody(dataToPost)
                 }
                 if (response.status == HttpStatusCode.Unauthorized) {
-                    token = "token from put"
+                    token = ""
                     throw IllegalAccessError("user not authenticated online")
                 }
                 responseHandler(response)
@@ -175,6 +176,7 @@ class Networking @Inject constructor(val tokenFile: String) {
                 val response : HttpResponse = client.delete(baseUrl + requestUrlPath)
                 if (response.status == HttpStatusCode.Unauthorized) {
                     token = ""
+                    throw IllegalAccessError("user not authenticated online")
                     // TODO: Decide how to handle this
                 }
                 responseHandler(response)
@@ -211,10 +213,14 @@ class Networking @Inject constructor(val tokenFile: String) {
             Log.w("Networking", "Given tokenFile is empty")
             return
         }
-        val tokenInFileformat = Token(token.accessToken)
-        val encodedToken = Json.encodeToString(tokenInFileformat)
-        // Overwriting the file in case it does exist
-        File(tokenFile).writeText(encodedToken)
+        try {
+            val tokenInFileformat = Token(token.accessToken)
+            val encodedToken = Json.encodeToString(tokenInFileformat)
+            // Overwriting the file in case it does exist
+            File(tokenFile).writeText(encodedToken)
+        } catch (ex : IOException) {
+            Log.w("Networking", "Failed to store token on disk: $ex")
+        }
     }
 
     private fun updateToken(token : String) {

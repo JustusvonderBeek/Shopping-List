@@ -9,6 +9,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.AutoMigrationSpec
+import androidx.room.migration.Migration
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
@@ -27,7 +28,7 @@ import javax.inject.Singleton
 
 @Singleton
 @Database(
-    version = 21,
+    version = 22,
     entities = [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class],
     exportSchema = true,
     autoMigrations = [
@@ -48,7 +49,7 @@ abstract class ShoppingListDatabase : RoomDatabase() {
     abstract fun preferenceDao() : UIPreferencesDao
 
     companion object {
-        const val LATEST_VERSION = 21
+        const val LATEST_VERSION = 22
 
         @Volatile
         private  var INSTANCE : ShoppingListDatabase? = null

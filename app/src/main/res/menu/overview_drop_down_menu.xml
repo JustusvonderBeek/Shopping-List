@@ -19,6 +19,14 @@
         app:showAsAction="withText"
         />
     <item
+        android:id="@+id/config"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:icon="@drawable/ic_check"
+        android:title="Config"
+        app:showAsAction="withText"
+        />
+    <item
         android:id="@+id/clear_all_lists"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -54,6 +54,9 @@ class ListOverviewViewModel @Inject constructor(
     val navigateUser : LiveData<Boolean> get() = _navigateUser
     private val _refreshing = MutableLiveData<Boolean>(false)
 
+    private val _navigateConfig = MutableLiveData<Boolean>(false)
+    val navigateConfig : LiveData<Boolean> get() = _navigateConfig
+
     // UI State changes
 
     val refreshing : LiveData<Boolean> get() = _refreshing
@@ -154,6 +157,14 @@ class ListOverviewViewModel @Inject constructor(
 //        } else {
 //            Log.d("ListOverviewViewModel", "User is still null")
 //        }
+    }
+
+    fun navigateConfig() {
+        _navigateConfig.value = true
+    }
+
+    fun onConfigNavigated() {
+        _navigateConfig.value = false
     }
 
 }

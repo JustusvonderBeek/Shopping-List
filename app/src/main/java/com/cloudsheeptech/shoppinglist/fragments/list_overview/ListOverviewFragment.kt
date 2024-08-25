@@ -43,6 +43,10 @@ class ListOverviewFragment : Fragment(), MenuProvider {
                 viewModel.removeUser()
                 return true
             }
+            R.id.config -> {
+                viewModel.navigateConfig()
+                return true
+            }
             R.id.clear_all_lists -> {
                 viewModel.clearDatabase()
                 return true
@@ -92,6 +96,13 @@ class ListOverviewFragment : Fragment(), MenuProvider {
             if (id > 0L) {
                 findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToShoppinglist(id, from))
                 viewModel.onShoppingListNavigated()
+            }
+        })
+
+        viewModel.navigateConfig.observe(viewLifecycleOwner, Observer { navigate ->
+            if (navigate) {
+                findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToConfigFragment())
+                viewModel.onConfigNavigated()
             }
         })
 

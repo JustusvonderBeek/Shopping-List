@@ -24,6 +24,9 @@
         <action
             android:id="@+id/action_overview_to_usernameSelection"
             app:destination="@id/usernameSelection" />
+        <action
+            android:id="@+id/action_overview_to_configFragment"
+            app:destination="@id/configFragment" />
     </fragment>
     <fragment
         android:id="@+id/recipes"
@@ -92,4 +95,9 @@
             android:defaultValue="-1L"
             app:argType="long" />
     </fragment>
+    <fragment
+        android:id="@+id/configFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.config.ConfigFragment"
+        android:label="@string/config_fragment_title"
+        tools:layout="@layout/fragment_config" />
 </navigation>

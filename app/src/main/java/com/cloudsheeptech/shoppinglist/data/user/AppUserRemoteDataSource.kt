@@ -98,6 +98,9 @@ class AppUserRemoteDataSource @Inject constructor(private val remoteApi: Network
     }
 
     suspend fun delete(user: AppUser) {
+        if (user.OnlineID == 0L) {
+            return
+        }
         withContext(Dispatchers.IO) {
             remoteApi.DELETE("/v1/users/${user.OnlineID}") { resp ->
                 if (resp.status != HttpStatusCode.OK) {

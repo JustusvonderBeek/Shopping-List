@@ -14,7 +14,10 @@ import javax.inject.Singleton
 * reading, updating and deleting the user information.
  */
 @Singleton
-class AppUserRepository @Inject constructor(local: AppUserLocalDataSource, remote: AppUserRemoteDataSource) {
+class AppUserRepository @Inject constructor(
+    local: AppUserLocalDataSource,
+    remote: AppUserRemoteDataSource
+) {
 
     private val job = Job()
     private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
@@ -38,6 +41,16 @@ class AppUserRepository @Inject constructor(local: AppUserLocalDataSource, remot
             appUserLocalSource.resetOnlineId(onlineUser.OnlineID)
             appUserLocalSource.store()
         }
+    }
+
+    suspend fun createOnline() {
+        val localUser = appUserLocalSource.getUser() ?: return
+        if (localUser.OnlineID != 0L) {
+            return
+        }
+        val onlineUser = appUserRemoteSource.create(localUser) ?: return
+        appUserLocalSource.resetOnlineId(onlineUser.OnlineID)
+        appUserLocalSource.store()
     }
 
     // Should only provide the local user, since the online

@@ -3,6 +3,7 @@ package com.cloudsheeptech.shoppinglist.data.user
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.network.Networking
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
@@ -81,6 +82,27 @@ class AppUserRemoteDataSource @Inject constructor(private val remoteApi: Network
 
     suspend fun read() : AppUser? {
         throw NotImplementedError("This function is not implemented!")
+    }
+
+    private suspend fun userOnlineCreatedCallback(response: HttpResponse) {
+        withContext(Dispatchers.IO) {
+            if (response.status != HttpStatusCode.Created) {
+                Log.e("AppUserRemoteRepository", "Failed to create user online")
+                return@withContext
+            }
+            val rawBody = response.bodyAsText(Charsets.UTF_8)
+            val decodedUser = json.decodeFromString<ApiUser>(rawBody)
+            decodedUser.password = ""
+            remoteApi.resetSerializedUser(rawBody, decodedUser.onlineId)
+        }
+    }
+
+    fun registerCreateUser(user: ApiUser) {
+        remoteApi.registerUserCallback {
+            Triple(json.encodeToString(user), "/v1/users") { response ->
+//                userOnlineCreatedCallback(response)
+            }
+        }
     }
 
     // TODO: Include a method to determine if the information was successfully sent

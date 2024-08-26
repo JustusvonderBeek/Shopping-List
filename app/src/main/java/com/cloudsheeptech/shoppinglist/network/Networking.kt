@@ -30,13 +30,13 @@ import java.io.File
 import java.io.IOException
 import java.time.Duration
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 
 /*
 * This class captures the authentication logic of the application,
 * allowing to reuse the same HTTP client for all networking requests
  */
+// TODO: Add some way to intercept any request and create the user first online before the request is being made
 @Singleton
 class Networking @Inject constructor(val tokenFile: String) {
 
@@ -54,6 +54,7 @@ class Networking @Inject constructor(val tokenFile: String) {
     private var localUser = ""
     private var userId = 0L
     private var token = ""
+    private var getUserRegisterCall : () -> Triple<String, String, (response: HttpResponse) -> Unit> = { Triple("", "", {}) }
 
     // Even though we might need this client only from time to time in order to
     // update the tokens or start the connections, save the effort and store it
@@ -99,24 +100,40 @@ class Networking @Inject constructor(val tokenFile: String) {
     fun resetSerializedUser(user: String, userId: Long) {
         this.localUser = user
         this.userId = userId
+        resetToken()
     }
 
-//    fun registerApplicationDir(dir : String, db: ShoppingListDatabase) {
-//        applicationDir = dir
-//        database = db
-//        appUserDao = db.userDao()
-//    }
+    fun registerUserCallback(getUser: () -> Triple<String, String, (response: HttpResponse) -> Unit>) {
+        this.getUserRegisterCall = getUser
+    }
 
     suspend fun GET(requestUrlPath : String, responseHandler : suspend (response : HttpResponse) -> Unit) {
+        val (userToRegister, registerUrl, registerCallback) = this.getUserRegisterCall.invoke()
+        withContext(Dispatchers.IO) {
+            try {
+                // This method should return "" only when the user is already registered
+                if (userToRegister.isNotEmpty()) {
+                    post(registerUrl, userToRegister, registerCallback)
+                }
+                get(requestUrlPath, responseHandler)
+            } catch (ex : Exception) {
+                Log.w("Networking", "Failed to send GET request to $baseUrl$requestUrlPath: $ex")
+            }
+        }
+    }
+
+    private suspend fun get(requestUrlPath: String, responseHandler: suspend (HttpResponse) -> Unit) {
         withContext(Dispatchers.IO) {
             try {
                 val response : HttpResponse = client.get(baseUrl + requestUrlPath)
                 if (response.status == HttpStatusCode.Unauthorized) {
-                    token = ""
+                    Log.w("Networking", "User not authorized")
+                    resetToken()
+                    return@withContext
                 }
                 responseHandler(response)
-            } catch (ex : Exception) {
-                Log.w("Networking", "Failed to send GET request to $baseUrl$requestUrlPath: $ex")
+            } catch (ex: Exception) {
+                Log.e("Networking", "Failed to send GET request to $baseUrl$requestUrlPath")
             }
         }
     }
@@ -127,23 +144,46 @@ class Networking @Inject constructor(val tokenFile: String) {
 
     @Throws(IllegalAccessError::class)
     suspend fun POST(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit, contentUpdater: (suspend (String) -> String)?) {
+        val (userToRegister, registerUrl, registerCallback) = this.getUserRegisterCall.invoke()
         withContext(Dispatchers.IO) {
             try {
-                var dataToPost = data
-                if (contentUpdater != null) {
-                    dataToPost = contentUpdater.invoke(data)
+//                var dataToPost = data
+//                if (contentUpdater != null) {
+//                    dataToPost = contentUpdater.invoke(data)
+//                }
+                if (userToRegister.isNotEmpty()) {
+                    post(registerUrl, userToRegister, registerCallback)
                 }
                 val response : HttpResponse = client.post(baseUrl + requestUrlPath) {
-                    setBody(dataToPost)
+                    setBody(data)
                 }
                 if (response.status == HttpStatusCode.Unauthorized) {
                     token = ""
+                    // This one is directly catched by the block outside?
                     throw IllegalAccessError("user not authenticated online")
                 }
                 responseHandler(response)
-                response.bodyAsText()
+//                response.bodyAsText()
             } catch (ex : Exception) {
                 Log.w("Networking", "Failed to send POST request to $baseUrl$requestUrlPath: $ex")
+            }
+        }
+    }
+
+    private suspend fun post(requestUrlPath: String, data: String, responseHandler: suspend (HttpResponse) -> Unit) {
+        withContext(Dispatchers.IO) {
+            try {
+                val response : HttpResponse = client.post(baseUrl + requestUrlPath) {
+                    setBody(data)
+                }
+                if (response.status == HttpStatusCode.Unauthorized) {
+                    token = ""
+                    // This one is directly catched by the block outside?
+                    throw IllegalAccessError("user not authenticated online")
+                }
+                responseHandler(response)
+            } catch (ex: Exception) {
+                Log.e("Networking", "Failed to send POST to $baseUrl$requestUrlPath")
             }
         }
     }
@@ -239,10 +279,10 @@ class Networking @Inject constructor(val tokenFile: String) {
         }
     }
 
-    fun resetToken() {
-        // This is required if we delete the user but want to make a request without restarting the app
-//        this.token = ""
-//        this.tokenValid = null
+    // This is required if we delete the user but want to make a request without restarting the app
+    private fun resetToken() {
+        this.token = ""
+        storeTokenToDisk(tokenFile, BearerTokens("", ""))
     }
 
     private suspend fun refreshToken() : BearerTokens? {

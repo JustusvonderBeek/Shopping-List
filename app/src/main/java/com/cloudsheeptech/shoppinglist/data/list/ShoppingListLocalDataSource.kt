@@ -262,6 +262,13 @@ class ShoppingListLocalDataSource @Inject constructor(
         withContext(Dispatchers.IO) {
             val existingList = listDao.getShoppingList(updatedList.listId, updatedList.createdBy.onlineId)
                 ?: throw IllegalArgumentException("list does not exist")
+
+            // Fix the createdBy == 0 if the user is already logged in online
+            val user = userRepository.read()
+            if (existingList.createdBy == 0L && user != null && user.OnlineID != 0L) {
+
+            }
+
             // Compare last edited value
             // TODO: Make this more elaborate and allow to integrate updates when the
             // remote and locally changed values in the list
@@ -297,6 +304,41 @@ class ShoppingListLocalDataSource @Inject constructor(
                 }
             }
             Log.d("ShoppingListHandler", "Updated list ${updatedList.listId} in database")
+        }
+    }
+
+    suspend fun updateCreatedById(currentUserId: Long) {
+        val user = userRepository.read() ?: return
+        if (user.OnlineID == 0L) {
+            Log.d("ShoppingListLocalDataSource", "User not registered online")
+            return
+        }
+        resetAllListCreatedBy(currentUserId, user.OnlineID)
+    }
+
+    suspend fun resetCreatedBy() {
+        val user = userRepository.read() ?: return
+        if (user.OnlineID == 0L) {
+            Log.d("ShoppingListLocalDataSource", "User not registered online")
+            return
+        }
+        resetAllListCreatedBy(user.OnlineID, 0L)
+    }
+
+    private suspend fun resetAllListCreatedBy(currentCreatedById: Long, updatedCreatedById: Long) {
+        withContext(Dispatchers.IO) {
+            val dbLists = listDao.getOwnShoppingLists(currentCreatedById)
+            for (list in dbLists) {
+                list.createdBy = updatedCreatedById
+                listDao.deleteList(list.listId, updatedCreatedById)
+                listDao.insertList(list)
+                val items = itemToListRepository.read(list.listId, currentCreatedById)
+                itemToListRepository.deleteAllMappingsForList(list.listId, currentCreatedById)
+                for (item in items) {
+                    item.CreatedBy = updatedCreatedById
+                    itemToListRepository.create(item)
+                }
+            }
         }
     }
 

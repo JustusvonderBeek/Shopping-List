@@ -66,9 +66,11 @@ class ItemToListLocalDataSource @Inject constructor(database: ShoppingListDataba
     suspend fun update(mapping: ListMapping) : Long {
         var updateMappingId = 0L
         withContext(Dispatchers.IO) {
-            val existingMappings = mappingDao.getMappingForItemAndList(mapping.ItemID, mapping.ListID, mapping.CreatedBy)
+            var existingMappings = mappingDao.getMappingForItemAndList(mapping.ItemID, mapping.ListID, mapping.CreatedBy)
             if (existingMappings.isEmpty()) {
-                throw IllegalStateException("mapping does not exists")
+//                throw IllegalStateException("mapping does not exists")
+                val existingMapping = mappingDao.getMapping(mapping.ID) ?: throw IllegalStateException("mapping does not exist")
+                existingMappings = listOf(existingMapping)
             }
             if (existingMappings.size > 1) {
                 throw IllegalStateException("found more than a single mapping for the same item")

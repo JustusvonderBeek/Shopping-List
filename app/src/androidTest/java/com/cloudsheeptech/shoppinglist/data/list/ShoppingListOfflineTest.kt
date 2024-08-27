@@ -27,13 +27,15 @@ import java.time.OffsetDateTime
 @FixMethodOrder(MethodSorters.DEFAULT)
 class ShoppingListOfflineTest {
 
-    private suspend fun createLocalSLDataSource() : ShoppingListLocalDataSource {
+    private suspend fun createLocalDataSourceAndUserHandling(userId: Long) : Triple<ShoppingListLocalDataSource, AppUserLocalDataSource, AppUserRepository> {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
+        database.clearAllTables()
         val localUserDs = AppUserLocalDataSource(database)
         // Cheat the system and the later creation that the user is in fact registered online
         localUserDs.create("local user")
-        localUserDs.resetOnlineId(1234L)
+        localUserDs.resetOnlineId(userId)
+        localUserDs.store()
         val networking = Networking(application.filesDir.path + "/token.txt")
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)
@@ -42,8 +44,20 @@ class ShoppingListOfflineTest {
         val localItemToListDs = ItemToListLocalDataSource(database)
         val itemToListRepository = ItemToListRepository(localItemToListDs)
         val localDataSource = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
-        return localDataSource
+        return Triple(localDataSource, localUserDs, userRepository)
     }
+
+    private suspend fun createLocalDataSourceAndLocalUserRepo(userId: Long) : Pair<ShoppingListLocalDataSource, AppUserLocalDataSource> {
+        val (slds, userDs, _) = createLocalDataSourceAndUserHandling(userId)
+        return Pair(slds, userDs)
+    }
+
+    private suspend fun createLocalSLDataSource() : ShoppingListLocalDataSource {
+        val (slds, _, _) = createLocalDataSourceAndUserHandling(1234L)
+        return slds
+    }
+
+
 
     @After
     fun clearDatabase() {
@@ -163,6 +177,67 @@ class ShoppingListOfflineTest {
         Assert.assertNotNull(updatedItemsRetrievedList)
         Assert.assertEquals(2, updatedItemsRetrievedList!!.items.size)
         Assert.assertEquals(listWithItems, updatedItemsRetrievedList)
+    }
+
+    @Test
+    fun testSetIdToNewUserId() = runTest {
+        val (localDataSource, localUserDataStore) = createLocalDataSourceAndLocalUserRepo(0L)
+        val listWithItems = ApiShoppingList(0L, "list with items", ListCreator(0L, "local creator"), OffsetDateTime.now(), OffsetDateTime.now(), mutableListOf())
+        val items = mutableListOf<ApiItem>()
+        for (num in 1..3) {
+            val item = ApiItem("item $num", "empty icon", quantity = num.toLong(), checked = num % 2 == 0, 0L)
+            items.add(item)
+        }
+        listWithItems.items.addAll(items)
+        val insertedId = localDataSource.create(listWithItems)
+        Assert.assertEquals(1L, insertedId)
+        listWithItems.listId = insertedId
+        val retrievedList = localDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
+        Assert.assertNotNull(retrievedList)
+        Assert.assertEquals(3, retrievedList!!.items.size)
+        Assert.assertEquals(listWithItems, retrievedList)
+
+        localUserDataStore.resetOnlineId(1234L)
+        localUserDataStore.store()
+
+        // From the creation of the local data source, the user ID in the repo should be 1234L
+        // and the following should in fact work
+        localDataSource.updateCreatedById(0L)
+        val updatedList = localDataSource.read(insertedId, 1234L)
+        Assert.assertNotNull(updatedList)
+        Assert.assertEquals(1L, updatedList!!.listId)
+        Assert.assertEquals(3, updatedList.items.size)
+        Assert.assertNotEquals(items, updatedList.items)
+        items.forEach { x -> x.addedBy = 1234L }
+        Assert.assertEquals(items, updatedList.items)
+    }
+
+    @Test
+    fun testResetId() = runTest {
+        val (localDataSource, localUserDataStore, userRepo) = createLocalDataSourceAndUserHandling(1234L)
+        val listWithItems = ApiShoppingList(0L, "list with items", ListCreator(1234L, "local creator"), OffsetDateTime.now(), OffsetDateTime.now(), mutableListOf())
+        val items = mutableListOf<ApiItem>()
+        for (num in 1..3) {
+            val item = ApiItem("item $num", "empty icon", quantity = num.toLong(), checked = num % 2 == 0, 1234L)
+            items.add(item)
+        }
+        listWithItems.items.addAll(items)
+        val insertedId = localDataSource.create(listWithItems)
+        Assert.assertEquals(1L, insertedId)
+        listWithItems.listId = insertedId
+        val retrievedList = localDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
+        Assert.assertNotNull(retrievedList)
+        Assert.assertEquals(3, retrievedList!!.items.size)
+        Assert.assertEquals(listWithItems, retrievedList)
+
+        // Reset the id and check if we can retrieve the list with Id set to 0
+        localDataSource.resetCreatedBy()
+        val updatedList = localDataSource.read(insertedId, 0L)
+        Assert.assertNotNull(updatedList)
+        Assert.assertEquals(insertedId, updatedList!!.listId)
+        Assert.assertEquals(3, updatedList.items.size)
+        items.forEach { x -> x.addedBy = 0L }
+        Assert.assertEquals(items, updatedList.items)
     }
 
     @Test

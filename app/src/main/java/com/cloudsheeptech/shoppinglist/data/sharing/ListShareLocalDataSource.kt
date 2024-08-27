@@ -6,7 +6,9 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ListShareLocalDataSource @Inject constructor(database: ShoppingListDatabase, private val userRepo: AppUserRepository, private val listRepository: ShoppingListRepository) {
 
     private val shareDao = database.sharedDao()

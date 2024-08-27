@@ -13,7 +13,7 @@ interface ItemListMappingDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertMapping(listMapping: ListMapping) : Long
 
-    @Update
+    @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateMapping(listMapping: ListMapping)
 
     @Query("DELETE FROM item_to_list_mapping WHERE ID = :key")

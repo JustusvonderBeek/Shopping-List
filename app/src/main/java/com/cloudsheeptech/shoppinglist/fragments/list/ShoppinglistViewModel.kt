@@ -278,8 +278,6 @@ class ShoppinglistViewModel @Inject constructor(
     }
 
     fun shareThisList() {
-        // TODO: Let user decide who to share the list with
-        // For now use '-1' == 'all'
 //        listHandler.ShareShoppingListOnline(shoppingListId, -1)
         navigateToShare()
     }

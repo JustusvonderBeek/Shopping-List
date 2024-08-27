@@ -8,23 +8,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentShareBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ShareFragment : Fragment() {
 
     private lateinit var binding : FragmentShareBinding
+    private val viewModel : ShareViewModel by viewModels()
     private val args: ShareFragmentArgs by navArgs()
 
     companion object {
         fun newInstance() = ShareFragment()
     }
-
-    private lateinit var viewModel: ShareViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,9 +35,6 @@ class ShareFragment : Fragment() {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_share, container, false)
 
-        val listId = args.listId
-        val database = ShoppingListDatabase.getInstance(requireContext())
-        val viewModel = ShareViewModel(database, listId)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         val adapter = UserShareAdapter(UserShareAdapter.UserShareClickListener { userId ->

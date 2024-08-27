@@ -4,22 +4,37 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
+import com.cloudsheeptech.shoppinglist.data.sharing.ListShare
+import com.cloudsheeptech.shoppinglist.data.sharing.ListShareRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ShareViewModel(val database : ShoppingListDatabase, private val listId : Long) : ViewModel() {
+@HiltViewModel
+class ShareViewModel @Inject constructor(
+    private val database : ShoppingListDatabase,
+    private val onlineUserRepo: OnlineUserRepository,
+    private val sharingRepository: ListShareRepository,
+    private val savedStateHandle: SavedStateHandle,
+    ) : ViewModel() {
 
     private val job = Job()
     private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
     private val sharedDao = database.sharedDao()
     private val onlineUserDao = database.onlineUserDao()
+
+    private val listId : Long = savedStateHandle["listId"]!!
 
 //    private val listHandler = ShoppingListRepository(database)
 
@@ -100,6 +115,9 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
 //            val onlineUsers = listHandler.SearchUsersOnline(name)
 //            val onlinePreview = onlineUsers.map { x -> ShareUserPreview(x.ID, x.Name, false) }
 //            users = onlinePreview
+            val onlineUser = onlineUserRepo.readOnline(name)
+            val onlinePreview = onlineUser.map { x -> ShareUserPreview(x.onlineId, x.username, false) }
+            users = onlinePreview
         }
         return users
     }
@@ -124,15 +142,26 @@ class ShareViewModel(val database : ShoppingListDatabase, private val listId : L
 
     fun shareList(sharedWithId : Long) {
 //        listHandler.ShareShoppingListOnline(listId, sharedWithId)
+        localCoroutine.launch {
+            sharingRepository.create(listId, sharedWithId)
+        }
 //        navigateUp()
     }
 
     fun unshareList() {
 //        listHandler.UnshareShoppingListOnline(listId)
+        localCoroutine.launch {
+            sharingRepository.delete(listId)
+        }
     }
 
     fun unshareListForUser(userId : Long) {
 //        listHandler.UnshareShoppingListForUserOnline(userId, listId)
+        localCoroutine.launch {
+            val sharings = sharingRepository.read(listId)
+            val filteredSharing = sharings.filter { share -> share != userId }
+            sharingRepository.update(listId, filteredSharing)
+        }
     }
 
     fun navigateUp() {

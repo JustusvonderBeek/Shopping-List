@@ -32,7 +32,7 @@ class ShoppingListApplication : Application() {
 
     // For these injections to work, the constructor needs an @Inject as well
     @Inject lateinit var appUserLocalDataSource: AppUserLocalDataSource
-    @Inject lateinit var appUserRemoteDataSource: AppUserRemoteDataSource   // Fix the injection of the string in networking
+    @Inject lateinit var appUserRemoteDataSource: AppUserRemoteDataSource
     @Inject lateinit var appUserRepository: AppUserRepository
 
     @Inject lateinit var database: ShoppingListDatabase

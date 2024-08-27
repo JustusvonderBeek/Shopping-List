@@ -333,10 +333,10 @@ class ShoppingListLocalDataSource @Inject constructor(
                 listDao.deleteList(list.listId, updatedCreatedById)
                 listDao.insertList(list)
                 val items = itemToListRepository.read(list.listId, currentCreatedById)
-                itemToListRepository.deleteAllMappingsForList(list.listId, currentCreatedById)
                 for (item in items) {
+                    item.AddedBy = updatedCreatedById
                     item.CreatedBy = updatedCreatedById
-                    itemToListRepository.create(item)
+                    itemToListRepository.update(item)
                 }
             }
         }

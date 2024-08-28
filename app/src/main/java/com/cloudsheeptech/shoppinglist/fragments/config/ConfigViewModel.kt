@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.cloudsheeptech.shoppinglist.BuildConfig
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -13,11 +14,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class ConfigViewModel @Inject constructor(
-    private val userRepository: AppUserRepository
+    private val userRepository: AppUserRepository,
+    private val shoppingListRepository: ShoppingListRepository,
 ): ViewModel() {
 
     private val job = Job()
@@ -32,15 +35,47 @@ class ConfigViewModel @Inject constructor(
     val username : LiveData<String> get() = user.map { x -> x.Username }
 
     // We want to create the user if not already online, aka. id = 0, otherwise delete
-    private val _buttonStatus = user.map { x -> x.OnlineID == 0L }
-    val buttonStatus : LiveData<Boolean> get() = _buttonStatus
+    private val _offlineUser = user.map { x -> x.OnlineID == 0L }
+    val offlineUser : LiveData<Boolean> get() = _offlineUser
 
     fun toggleUserOnline() {
         Log.d("ConfigViewModel", "Toggling the current user status")
-        vmScope.launch {
-            userRepository.createOnline()
+        if (offlineUser.value == true) {
+            vmScope.launch {
+                createUserOnlineAndResetOwnLists()
+            }
+        } else {
+            vmScope.launch {
+                resetUserOnlineAndOwnLists()
+            }
         }
     }
 
+    private suspend fun createUserOnlineAndResetOwnLists() {
+        val currentUser = userRepository.read() ?: return
+        if (currentUser.OnlineID != 0L) {
+            Log.w("ConfigViewModel", "The current user is already registered online")
+            // Should we still run the conversion from lists with createdBy = 0L to currentId?
+            return
+        }
+        userRepository.createOnline()
+        val updatedUser = userRepository.read() ?: return
+        if (updatedUser.OnlineID == 0L) {
+            Log.w("ConfigViewModel", "Failed to create the user online")
+            return
+        }
+        // Additionally creates the lists online
+        shoppingListRepository.updateCreatedByToCurrentId()
+    }
+
+    private suspend fun resetUserOnlineAndOwnLists() {
+        val currentUser = userRepository.read() ?: return
+        if (currentUser.OnlineID == 0L) {
+            Log.w("ConfigViewModel", "The current user is not registered online")
+            return
+        }
+        shoppingListRepository.resetCreatedBy()
+        userRepository.delete()
+    }
 
 }

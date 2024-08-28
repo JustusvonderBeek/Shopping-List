@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="receipt"
+            type="com.cloudsheeptech.shoppinglist.data.receipt.DbReceipt" />
+        <variable
+            name="clickListener"
+            type="com.cloudsheeptech.shoppinglist.fragments.receipts_overview.ReceiptsListAdapter.ReceiptClickListener" />
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="@{() -> clickListener.onClick(receipt)}"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:elevation="3dp"
+        android:shadowColor="@color/shopping_gray"
+        app:cardCornerRadius="5dp"
+        >
+
+        <LinearLayout
+            android:id="@+id/itemWrapper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:padding="8dp">
+
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_recipe"
+                />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text='@{String.format("%s", receipt.name)}'
+                    style="@style/WordListItemVocabStyle"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text='@{String.format("%d", receipt.createdBy)}'
+                    style="@style/WordListItemTransStyle"
+                    />
+
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_check"
+                android:visibility="gone"
+                />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</layout>

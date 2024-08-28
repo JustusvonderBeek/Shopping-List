@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="apiIngredient"
+            type="com.cloudsheeptech.shoppinglist.data.receipt.ApiIngredient" />
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:elevation="3dp"
+        android:shadowColor="@color/shopping_gray"
+        app:cardCornerRadius="5dp"
+        >
+
+        <LinearLayout
+            android:id="@+id/itemWrapper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:padding="8dp">
+
+<!--            <ImageView-->
+<!--                android:id="@+id/itemIcon"-->
+<!--                android:layout_width="60dp"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:scaleType="centerInside"-->
+<!--                android:layout_marginEnd="16dp"-->
+<!--                />-->
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text='@{String.format("%s", apiIngredient.name)}'
+                    style="@style/WordListItemVocabStyle"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text='@{String.format("%d %s", apiIngredient.quantity, apiIngredient.quantityType)}'
+                    style="@style/WordListItemTransStyle"
+                    />
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</layout>

@@ -1,6 +1,5 @@
 package com.cloudsheeptech.shoppinglist.fragments.recipe
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -16,29 +15,29 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
-import com.cloudsheeptech.shoppinglist.databinding.FragmentRecipeBinding
+import com.cloudsheeptech.shoppinglist.databinding.FragmentReceiptBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class RecipeFragment : Fragment(), MenuProvider {
 
     private val viewModel: RecipeViewModel by viewModels()
-    private lateinit var binding : FragmentRecipeBinding
+    private lateinit var binding : FragmentReceiptBinding
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.list_drop_down_menu, menu)
+        menuInflater.inflate(R.menu.receipt_drop_down_menu, menu)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
-            R.id.delete_list -> {
+            R.id.delete_receipt -> {
                 viewModel.removeRecipe()
                 return true
             }
-//            R.id.share_list -> {
-//                viewModel.removeRecipe()
-//                return true
-//            }
+            R.id.edit_receipt -> {
+                viewModel.editReceipt()
+                return true
+            }
         }
         return false
     }
@@ -47,19 +46,25 @@ class RecipeFragment : Fragment(), MenuProvider {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_recipe, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_receipt, container, false)
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         binding.recipeVM = viewModel
         binding.lifecycleOwner = this
 
+        val descriptionAdapter = ReceiptDescriptionAdapter()
+        binding.receiptDescriptionListView.adapter = descriptionAdapter
+        val ingredientAdapter = ReceiptIngredientAdapter()
+        binding.receiptIngredientListView.adapter = ingredientAdapter
 
-        viewModel.navigateToEdit.observe(viewLifecycleOwner, Observer { selectedId ->
-            if (selectedId > 0) {
-                findNavController().navigate(RecipeFragmentDirections.actionRecipesToShoppinglist())
-                viewModel.navigatedToEditWord()
-            }
+        viewModel.navigateToEdit.observe(viewLifecycleOwner, Observer { receiptIdAndCreatedBy ->
+            val receiptId = receiptIdAndCreatedBy.first
+            val createdBy = receiptIdAndCreatedBy.second
+//            if (selectedId > 0) {
+//                findNavController().navigate(RecipeFragmentDirections.actionRecipesToShoppinglist())
+//                viewModel.navigatedToEditWord()
+//            }
         })
 
         viewModel.navigateUp.observe(viewLifecycleOwner, Observer { navigate ->
@@ -67,6 +72,11 @@ class RecipeFragment : Fragment(), MenuProvider {
                 findNavController().navigateUp()
                 viewModel.onUpNavigated()
             }
+        })
+
+        viewModel.receipt.observe(viewLifecycleOwner, Observer { x ->
+            descriptionAdapter.submitList(x.description)
+            ingredientAdapter.submitList(x.ingredients)
         })
 
         return binding.root

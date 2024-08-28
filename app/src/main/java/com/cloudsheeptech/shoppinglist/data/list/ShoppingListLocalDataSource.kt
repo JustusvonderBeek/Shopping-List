@@ -313,6 +313,8 @@ class ShoppingListLocalDataSource @Inject constructor(
             Log.d("ShoppingListLocalDataSource", "User not registered online")
             return
         }
+        if (currentUserId == user.OnlineID)
+            return
         resetAllListCreatedBy(currentUserId, user.OnlineID)
     }
 
@@ -328,6 +330,7 @@ class ShoppingListLocalDataSource @Inject constructor(
     private suspend fun resetAllListCreatedBy(currentCreatedById: Long, updatedCreatedById: Long) {
         withContext(Dispatchers.IO) {
             val dbLists = listDao.getOwnShoppingLists(currentCreatedById)
+            Log.d("ShoppingListLocalDataSource", "Updating ${dbLists.size} lists from $currentCreatedById to $updatedCreatedById")
             for (list in dbLists) {
                 list.createdBy = updatedCreatedById
                 listDao.deleteList(list.listId, updatedCreatedById)

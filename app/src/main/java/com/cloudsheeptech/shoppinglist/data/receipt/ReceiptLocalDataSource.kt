@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.receipt
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionMapping
@@ -95,22 +96,6 @@ class ReceiptLocalDataSource @Inject constructor(
                 description = convertedDescription
             )
         }
-//        // Combine the relevant fields into the receipt, but take care of the order
-//        val orderedDescriptions = descriptions.sortedBy { x -> x.descriptionOrder }
-//        val mappedLocalReceipts = localReceipts.map { receipt ->
-//            val converted = receipt.toApiReceipt()
-//            val convertedItems = receiptItems.map { x ->
-//                val dbItem = itemDao.getItem(x.itemId)
-//                ApiIngredient(x.itemId, dbItem!!.name, dbItem.icon, x.quantity, x.quantityType)
-//            }
-//            converted.ingredients = convertedItems
-//            val convertedDescription = orderedDescriptions.map { x ->
-//                ApiDescription(x.description)
-//            }
-//            converted.description = convertedDescription
-//            converted
-//        }
-//        return mappedLocalReceipts
     }
 
     fun readAllLive() : LiveData<List<DbReceipt>> {
@@ -118,9 +103,31 @@ class ReceiptLocalDataSource @Inject constructor(
     }
 
     suspend fun update(receipt: ApiReceipt) {
+        Log.d("ReceiptLocalDataSource", "Updating: $receipt")
         withContext(Dispatchers.IO) {
             val dbReceipt = receipt.toDbReceipt()
             receiptDao.update(dbReceipt)
+            receipt.ingredients.forEach { ingredient ->
+                val convertedIngredient = ReceiptItemMapping(
+                    id = ingredient.id,
+                    receiptId = receipt.onlineId,
+                    createdBy = receipt.createdBy,
+                    itemId = ingredient.id,
+                    quantity = ingredient.quantity,
+                    quantityType = ingredient.quantityType
+                )
+                receiptItemDao.update(convertedIngredient)
+            }
+            receipt.description.forEachIndexed { index, description ->
+                val convertedDesc = ReceiptDescriptionMapping(
+                    id = 0L,
+                    receiptId = receipt.onlineId,
+                    createdBy = receipt.createdBy,
+                    description = description.step,
+                    descriptionOrder = index
+                )
+                receiptDescriptionDao.insert(convertedDesc)
+            }
         }
     }
 

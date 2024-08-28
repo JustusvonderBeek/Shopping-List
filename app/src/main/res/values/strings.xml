@@ -45,4 +45,6 @@
     <string name="delete_list_dialog_yes">Yes, delete</string>
     <string name="delete_list_dialog_no">Cancel</string>
     <string name="config_fragment_title">Configuration</string>
+    <string name="config_btn_create_online">Create user online</string>
+    <string name="config_btn_delete_online">Delete online user</string>
 </resources>

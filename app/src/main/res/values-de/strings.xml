@@ -42,4 +42,6 @@
     <string name="share_btn_text">Teilen</string>
     <string name="delete_list_button_text">Liste Löschen</string>
     <string name="clear_items_in_list_button_text">Gekaufte Items entfernen</string>
+    <string name="config_btn_create_online">Online gehen</string>
+    <string name="config_btn_delete_online">Online user löschen</string>
 </resources>

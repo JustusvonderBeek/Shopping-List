@@ -42,4 +42,6 @@
     <string name="share_btn_text">Share</string>
     <string name="delete_list_button_text">Deleta</string>
     <string name="clear_items_in_list_button_text">Remove Items</string>
+    <string name="config_btn_create_online">Creer online</string>
+    <string name="config_btn_delete_online">Delete</string>
 </resources>

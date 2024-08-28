@@ -9,7 +9,11 @@ import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -38,6 +42,13 @@ class ShoppingListRepository @Inject constructor(
         }
     }
 
+    init {
+        CoroutineScope(Dispatchers.Main + Job()).launch {
+            Log.d("ShoppingListRepository", "Starting updating process")
+            updateCreatedByToCurrentId()
+        }
+    }
+
     // ------------------------------------------------------------------------------
     // Creation of a new list + Insertion + Update
     // ------------------------------------------------------------------------------
@@ -55,7 +66,12 @@ class ShoppingListRepository @Inject constructor(
         )
         val newListId = localDataSource.create(newList)
         newList.listId = newListId
-        remoteApi.create(newList)
+        try {
+            remoteApi.create(newList)
+        } catch (ex: IllegalAccessException) {
+            Log.w("ShoppingListRepository", "Ex: $ex")
+//            userRepository.createOnline()
+        }
         return newList
     }
 
@@ -67,6 +83,10 @@ class ShoppingListRepository @Inject constructor(
             storedList = remoteApi.read(listId, createdBy)
         }
         return storedList
+    }
+
+    suspend fun readAllOwn() : List<ApiShoppingList> {
+        return localDataSource.readAll()
     }
 
     suspend fun readAllRemote() {
@@ -99,7 +119,33 @@ class ShoppingListRepository @Inject constructor(
 
     suspend fun update(list: ApiShoppingList) {
         localDataSource.update(list)
-        remoteApi.update(list)
+        try {
+            remoteApi.update(list)
+        } catch (ex: IllegalStateException) {
+            userRepository.createOnline()
+            val user = userRepository.read()
+            list.createdBy.onlineId = user!!.OnlineID
+            localDataSource.update(list)
+            remoteApi.update(list)
+        }
+    }
+
+    suspend fun resetCreatedBy() {
+        localDataSource.resetCreatedBy()
+
+    }
+
+    suspend fun updateCreatedByToCurrentId() {
+        val currUser = userRepository.read()
+        if (currUser == null) {
+            Log.d("ShoppingListRepository", "user is null")
+            return
+        }
+        if (currUser.OnlineID == 0L)
+            return
+        localDataSource.updateCreatedById(0L)
+        val allLists = localDataSource.readAll()
+        allLists.forEach { list -> remoteApi.create(list) }
     }
 
     suspend fun insertItem(listId: Long, createdBy: Long, item: AppItem) {
@@ -119,7 +165,15 @@ class ShoppingListRepository @Inject constructor(
 
     suspend fun updateItemCount(listId: Long, createdBy: Long, itemId: Long, quantity: Long) {
         val updatedLocalList = localDataSource.updateItemCount(listId, createdBy, itemId, quantity)
-        remoteApi.update(updatedLocalList)
+        try {
+            remoteApi.update(updatedLocalList)
+        } catch (ex: IllegalAccessError) {
+            userRepository.createOnline()
+            val user = userRepository.read()
+            updatedLocalList.createdBy.onlineId = user!!.OnlineID
+            localDataSource.update(updatedLocalList)
+            remoteApi.update(updatedLocalList)
+        }
     }
 
     suspend fun delete(listId: Long, createdBy: Long) {
@@ -129,11 +183,21 @@ class ShoppingListRepository @Inject constructor(
 
     // TODO: Implement the functions below here or in other repos
 
-    // 1. Reset the locally created lists to createdBy = 0L when user is deleted
-    // 2. Updated the local lists when a new user is created (createdBy, createdByName)
-
-    private suspend fun updateCreatedByForMappings(listId : Long, moveToId : Long, createdBy: Long) {
+    suspend fun updateCreatedByForOwnLists() {
         withContext(Dispatchers.IO) {
+            val currUser = userRepository.read() ?: return@withContext
+            // We don't need to update the list if the id is still 0
+            if (currUser.OnlineID == 0L)
+                return@withContext
+            val allLists = localDataSource.readAll()
+            allLists.forEach { list ->
+                if (list.createdBy.onlineId == 0L) {
+                    // This list can only be created by the local user, update
+                    list.createdBy.onlineId = currUser.OnlineID
+                    localDataSource.update(list)
+                    remoteApi.create(list)
+                }
+            }
 //            val mappings = mappingDao.getMappingsForList(listId, 0L)
 //            if (mappings.isEmpty())
 //                return@withContext
@@ -147,19 +211,6 @@ class ShoppingListRepository @Inject constructor(
         }
     }
 
-    private suspend fun resetCreatedByForMappings(list: DbShoppingList) {
-        withContext(Dispatchers.IO) {
-//            val mappings = mappingDao.getMappingsForList(list.listId, list.createdBy)
-//            if (mappings.isEmpty())
-//                return@withContext
-//            for (mapping in mappings) {
-//                mapping.CreatedBy = 0L
-//                mapping.AddedBy = 0L
-//                deleteMappingInDatabase(mapping.ItemID, mapping.ListID, list.createdBy)
-//                insertMappingInDatabase(mapping)
-//            }
-        }
-    }
 
     private suspend fun deleteAllCheckedMappingsForListId(listId: Long) {
         withContext(Dispatchers.IO) {
@@ -173,72 +224,6 @@ class ShoppingListRepository @Inject constructor(
         }
     }
 
-
-    private suspend fun updateCreatedByForList(list : DbShoppingList, createdBy: Long) {
-        if (createdBy == 0L || list.createdBy != 0L)
-            return
-        withContext(Dispatchers.IO) {
-            // In case the user create new lists before updating the old ones,
-            // find the next secure listID to "move" the list to
-//            val newListId = findNextFreeListId(list, createdBy)
-//            Log.d("ShoppingListHandler", "Found $newListId as next free list id")
-//            // Update the item mappings, then the list itself
-//            Log.d("ShoppingListHandler", "Updating mappings for list ${list.listId}")
-//            updateCreatedByForMappings(list.listId, newListId, createdBy)
-//            Log.d("ShoppingListHandler", "Deleting list ${list.listId} from database")
-//            deleteShoppingListFromDatabase(list)
-//            list.createdBy = createdBy
-////            list.CreatedByName = AppUserLocalDataSource.getUser()!!.Username
-//            list.listId = newListId
-//            // This is not really an edit from the user
-////            existingList.LastEdited = OffsetDateTime.now()
-//            Log.d("ShoppingListHandler", "Inserting list $list")
-//            insertShoppingListIntoDatabase(list)
-        }
-    }
-
-    private suspend fun resetCreatedByForList(list: DbShoppingList) {
-        if (list.createdBy == 0L)
-            return
-        withContext(Dispatchers.IO) {
-            resetCreatedByForMappings(list)
-            // TODO: Include the sharing as well. This is relevant when pushing the new lists
-//            deleteShoppingListFromDatabase(list)
-//            list.createdBy = 0L
-//            insertShoppingListIntoDatabase(list)
-        }
-    }
-
-    suspend fun updatedCreatedByForAllLists() {
-        Log.d("ShoppingListHandler", "Updating all lists in database that were created offline")
-        withContext(Dispatchers.IO) {
-//            if (AppUserLocalDataSource.getUser()!!.OnlineID == 0L)
-//                return@withContext
-//            val allShoppingLists = listDao.getShoppingLists()
-//            if (allShoppingLists.isEmpty())
-//                return@withContext
-//            val uninitializedLists = allShoppingLists.filter { list -> list.createdBy == 0L }
-//            Log.d("ShoppingListHandler", "Found ${uninitializedLists.size} lists to update")
-//            for (list in uninitializedLists) {
-//                updateCreatedByForList(list, AppUserLocalDataSource.getUser()!!.OnlineID)
-//            }
-        }
-    }
-
-    suspend fun resetCreatedByForOwnLists(createdBy: Long) {
-        if (createdBy == 0L)
-            return
-        withContext(Dispatchers.IO) {
-//            val allLists = listDao.getShoppingLists()
-//            if (allLists.isEmpty())
-//                return@withContext
-//            val ownLists = allLists.filter { l -> l.createdBy == createdBy }
-//            Log.d("ShoppingListHandler", "Found ${ownLists.size} own lists to reset")
-//            for (list in ownLists) {
-//                resetCreatedByForList(list)
-//            }
-        }
-    }
 
     private suspend fun insertAllUserInfoInDatabase(users : List<ListCreator>) {
         withContext(Dispatchers.IO) {
@@ -295,21 +280,6 @@ class ShoppingListRepository @Inject constructor(
         return onlineUser
     }
 
-    private suspend fun getMatchingUsersFromOnline(name: String) : List<ListCreator> {
-        var users = emptyList<ListCreator>()
-        withContext(Dispatchers.IO) {
-//            Networking.GET("v1/users/$name") { resp ->
-//                if (resp.status != HttpStatusCode.OK) {
-//                    Log.w("ShoppingListHandler", "Failed to find users for query $name")
-//                    return@GET
-//                }
-//                val body = resp.bodyAsText(Charsets.UTF_8)
-//                val decoded = json.decodeFromString<List<ListCreator>>(body)
-//                users = decoded
-//            }
-        }
-        return users
-    }
 
     private suspend fun getAllSharedWithForListOffline(listId: Long) : List<ShareUserPreview> {
         val sharedWith = mutableListOf<ShareUserPreview>()
@@ -358,104 +328,10 @@ class ShoppingListRepository @Inject constructor(
         }
     }
 
-    private suspend fun createSharingInDatabase(userId: Long, listId: Long) {
-        withContext(Dispatchers.IO) {
-            val share = ListShareDatabase(0, listId, userId)
-//            shareDao.insertShared(share)
-        }
-    }
-
-    private suspend fun deleteSharingInDatabase(userId: Long, listId: Long) {
-        withContext(Dispatchers.IO) {
-//            shareDao.deleteForUser(userId, listId)
-        }
-    }
-
-    private suspend fun deleteAllSharingForListInDatabase(listId: Long) {
-        withContext(Dispatchers.IO) {
-//            shareDao.deleteAllFromList(listId)
-        }
-    }
-
     // ------------------------------------------------------------------------------
     // Posting and Getting Lists from Online
     // ------------------------------------------------------------------------------
 
-
-    private suspend fun shareListOnline(listId : Long, sharedWithId: Long) : Boolean {
-        var success = false
-        withContext(Dispatchers.IO) {
-//            val sharedListObject = ListShare(listId, AppUserLocalDataSource.getUser()!!.OnlineID, sharedWithId, OffsetDateTime.now())
-//            val serialized = json.encodeToString(sharedListObject)
-//            Networking.POST("v1/share/$listId", serialized) { resp ->
-//                if (resp.status != HttpStatusCode.Created) {
-//                    Log.w("ShoppingListHandler", "Failed to share list $listId online")
-//                    return@POST
-//                }
-//                success = true
-//                Log.d("ShoppingListHandler", "List $listId shared online with $sharedWithId")
-//            }
-        }
-        return success
-    }
-
-    private suspend fun unshareListOnline(listId: Long) {
-        withContext(Dispatchers.IO) {
-//            val unshareObject = ListShare(listId, AppUserLocalDataSource.getUser()!!.OnlineID, -1, OffsetDateTime.now())
-//            val serialized = json.encodeToString(unshareObject)
-//            Networking.DELETE("v1/share/$listId", serialized) { resp ->
-//                if (resp.status != HttpStatusCode.OK) {
-//                    Log.w("ShoppingListHandler", "Failed to unshare list $listId online")
-//                    return@DELETE
-//                }
-//            }
-        }
-    }
-
-    private suspend fun unshareListForUserOnline(userId: Long, listId: Long) {
-        withContext(Dispatchers.IO) {
-//            val unshareObject = ListShare(listId, AppUserLocalDataSource.getUser()!!.OnlineID, userId, OffsetDateTime.now())
-//            val serialized = json.encodeToString(unshareObject)
-//            Networking.DELETE("v1/share/$listId", serialized) { resp ->
-//                if (resp.status != HttpStatusCode.OK) {
-//                    Log.w("ShoppingListHandler", "Failed to unshare list $listId online")
-//                    return@DELETE
-//                }
-//            }
-        }
-    }
-
-    private suspend fun requestUnshareList(listId: Long, createdBy: Long) {
-        withContext(Dispatchers.IO) {
-//            val unshareObject = ListShare(listId, createdBy, AppUserLocalDataSource.getUser()!!.OnlineID, OffsetDateTime.now())
-//            val serialized = json.encodeToString(unshareObject)
-//            Networking.DELETE("v1/share/$listId", serialized) { resp ->
-//                if (resp.status != HttpStatusCode.OK) {
-//                    Log.w("ShoppingListHandler", "Failed to request unshare list $listId")
-//                    return@DELETE
-//                }
-//                Log.d("ShoppingListHandler", "Unshared list $listId")
-//            }
-        }
-    }
-
-    fun DeleteItemFromShoppingList(dbItem : DbItem, list : Long, createdBy: Long) {
-//        localCoroutine.launch {
-//            deleteMappingInDatabase(dbItem.id, list, createdBy)
-//            updateLastEditedInDatabase(list, createdBy)
-//            postShoppingListOnline(list, createdBy)
-//        }
-    }
-
-    suspend fun SearchUsersOnline(name : String) : List<ListCreator> {
-        var users = emptyList<ListCreator>()
-        withContext(Dispatchers.IO) {
-            val matchingUsers = getMatchingUsersFromOnline(name) ?: return@withContext
-            insertAllUserInfoInDatabase(matchingUsers)
-            users = matchingUsers
-        }
-        return users
-    }
 
     suspend fun GetAllSharedUsersForList(listId: Long) : List<ShareUserPreview> {
         var userPreview = listOf<ShareUserPreview>()
@@ -464,31 +340,6 @@ class ShoppingListRepository @Inject constructor(
             userPreview = matchingUser
         }
         return userPreview
-    }
-
-    fun ShareShoppingListOnline(listId: Long, sharedWithId : Long) {
-        Log.d("ShoppingListHandler", "Sharing list $listId with $sharedWithId")
-//        localCoroutine.launch {
-////            postShoppingListOnline(listId, AppUserLocalDataSource.getUser()!!.OnlineID)
-//            createSharingInDatabase(sharedWithId, listId)
-//            shareListOnline(listId, sharedWithId)
-//        }
-    }
-
-    fun UnshareShoppingListOnline(listId : Long) {
-        Log.d("ShoppingListHandler", "Unsharing list $listId")
-//        localCoroutine.launch {
-//            unshareListOnline(listId)
-//            deleteAllSharingForListInDatabase(listId)
-//        }
-    }
-
-    fun UnshareShoppingListForUserOnline(userId : Long, listId : Long) {
-        Log.d("ShoppingListHandler", "Unsharing list $listId for user $userId")
-//        localCoroutine.launch {
-//            unshareListForUserOnline(userId, listId)
-//            deleteSharingInDatabase(userId, listId)
-//        }
     }
 
     fun ClearCheckedItemsInList(listId: Long) {

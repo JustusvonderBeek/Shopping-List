@@ -1,18 +1,13 @@
 package com.cloudsheeptech.shoppinglist.fragments.recipe
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiReceipt
+import com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription
 import com.cloudsheeptech.shoppinglist.data.receipt.ReceiptRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,8 +30,8 @@ class RecipeViewModel @Inject constructor(
 
     val receipt = receiptRepository.readLive(receiptId, createdBy)
 
-    private val _navigateToEdit = MutableLiveData<Int>(-1)
-    val navigateToEdit : LiveData<Int> get() = _navigateToEdit
+    private val _navigateToEdit = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
+    val navigateToEdit : LiveData<Pair<Long, Long>> get() = _navigateToEdit
 
     private val _navigateUp = MutableLiveData<Boolean>(false)
     val navigateUp : LiveData<Boolean> get() = _navigateUp
@@ -61,12 +56,17 @@ class RecipeViewModel @Inject constructor(
 
     }
 
-    fun editWord() {
-//        _navigateToEdit.value = recipe!!.onlineId.toInt()
+    fun editReceipt() {
+        _navigateToEdit.value = Pair(receiptId, createdBy)
+        val updatedReceipt = receipt.value!!
+        updatedReceipt.description += listOf(ApiDescription("new step"))
+        vmScope.launch {
+            receiptRepository.update(updatedReceipt)
+        }
     }
 
     fun navigatedToEditWord() {
-        _navigateToEdit.value = -1
+        _navigateToEdit.value = Pair(-1L, -1L)
     }
 
     fun navigateUp() {

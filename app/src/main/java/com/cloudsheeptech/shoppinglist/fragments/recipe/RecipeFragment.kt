@@ -32,13 +32,13 @@ class RecipeFragment : Fragment(), MenuProvider {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.delete_list -> {
-                viewModel.editWord()
-                return true
-            }
-            R.id.share_list -> {
                 viewModel.removeRecipe()
                 return true
             }
+//            R.id.share_list -> {
+//                viewModel.removeRecipe()
+//                return true
+//            }
         }
         return false
     }
@@ -51,10 +51,9 @@ class RecipeFragment : Fragment(), MenuProvider {
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-//        val viewModelFactory = RecipeViewModelFactory()
-//        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[RecipeViewModel::class.java]
         binding.recipeVM = viewModel
         binding.lifecycleOwner = this
+
 
         viewModel.navigateToEdit.observe(viewLifecycleOwner, Observer { selectedId ->
             if (selectedId > 0) {
@@ -63,13 +62,12 @@ class RecipeFragment : Fragment(), MenuProvider {
             }
         })
 
-//        viewModel..observe(viewLifecycleOwner, Observer { url ->
-//            try {
-//                Glide.with(this).load(url).into(binding.recipeImage)
-//            } catch (ex : Exception) {
-//                Log.i("LearningFragment", "Failed to load URL: $url")
-//            }
-//        })
+        viewModel.navigateUp.observe(viewLifecycleOwner, Observer { navigate ->
+            if (navigate) {
+                findNavController().navigateUp()
+                viewModel.onUpNavigated()
+            }
+        })
 
         return binding.root
     }

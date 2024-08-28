@@ -2,6 +2,7 @@ package com.cloudsheeptech.shoppinglist.fragments.receipts_overview
 
 import androidx.fragment.app.viewModels
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
@@ -52,11 +53,31 @@ class ReceiptsOverviewFragment : Fragment(), MenuProvider {
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
+        val adapter = ReceiptsListAdapter(ReceiptsListAdapter.ReceiptClickListener { id, from ->
+            Log.d("ReceiptsOverviewFragment", "Got receipt $id from $from")
+            viewModel.navigateToReceipt(id, from)
+        }, requireActivity().resources)
+        binding.receiptOverviewList.adapter = adapter
+
+        viewModel.receipts.observe(viewLifecycleOwner, Observer { list ->
+            list?.let { x ->
+                adapter.submitList(x)
+            }
+        })
 
         viewModel.navigateToCreateReceipt.observe(viewLifecycleOwner, Observer { navigate ->
             if (navigate) {
                 findNavController().navigate(ReceiptsOverviewFragmentDirections.actionReceiptsOverviewToAddRecipe())
                 viewModel.onCreateReceiptNavigate()
+            }
+        })
+
+        viewModel.navigateToReceipt.observe(viewLifecycleOwner, Observer { idAndfrom ->
+            val id = idAndfrom.first
+            val from = idAndfrom.second
+            if (id > 0L) {
+                findNavController().navigate(ReceiptsOverviewFragmentDirections.actionReceiptsOverviewToReceipts(id, from))
+                viewModel.onReceiptNavigated()
             }
         })
 

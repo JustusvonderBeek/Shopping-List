@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/recipe_name_hint"
                 android:inputType="text"
-                android:text="@={viewModel.recipeName}" />
+                android:text="@={viewModel.receiptName}" />
 
             <EditText
                 android:id="@+id/recipeDescriptionInput"
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/trans_ipt_hint"
                 android:inputType="text"
-                android:text="@={viewModel.recipeDescription}" />
+                android:text="@={viewModel.receiptDescription}" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recipeItemList"
@@ -50,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:onClick="@{() -> viewModel.addNewRecipe()}"
+                android:onClick="@{() -> viewModel.create()}"
                 android:text="@string/btn_recipe_add" />
 
         </LinearLayout>

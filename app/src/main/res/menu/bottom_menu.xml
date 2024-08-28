@@ -16,12 +16,12 @@
 <!--        android:icon="@drawable/ic_shopping_list"-->
 <!--        android:title="@string/nav_btn_list" />-->
 
-<!--    <item-->
-<!--        android:id="@+id/recipes"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:title="Recipes"-->
-<!--        android:icon="@drawable/ic_recipe"-->
-<!--        />-->
+    <item
+        android:id="@+id/receiptsOverview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="@string/nav_btn_receipt"
+        android:icon="@drawable/ic_recipe"
+        />
 
 </menu>

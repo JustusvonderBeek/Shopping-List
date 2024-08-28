@@ -38,11 +38,13 @@ class ConfigFragment : Fragment() {
         binding.viewModel = configViewModel
         binding.lifecycleOwner = this
 
-        viewModel.buttonStatus.observe(viewLifecycleOwner, Observer { enable ->
-            if (enable) {
-                binding.toggleUserButton.background = requireContext().getDrawable(R.color.shopping_green)
+        viewModel.offlineUser.observe(viewLifecycleOwner, Observer { offline ->
+            if (offline) {
+                binding.toggleUserButton.setBackgroundColor(requireContext().getColor(R.color.shopping_green))
+                binding.toggleUserButton.text = requireContext().getText(R.string.config_btn_create_online)
             } else {
-                binding.toggleUserButton.background = requireContext().getDrawable(R.color.shopping_red)
+                binding.toggleUserButton.setBackgroundColor(requireContext().getColor(R.color.shopping_red))
+                binding.toggleUserButton.text = requireContext().getText(R.string.config_btn_delete_online)
             }
         })
 

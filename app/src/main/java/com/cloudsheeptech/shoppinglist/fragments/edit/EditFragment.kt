@@ -37,20 +37,20 @@ class EditFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        try {
-            val navigationArgs = EditFragmentArgs.fromBundle(requireArguments())
-            viewModel.loadWord(navigationArgs.selectedId)
-        } catch (ex : IllegalArgumentException) {
-            Log.i("EditFragment", "Failed to load navargs!")
-            viewModel.loadWord(0)
-        }
-
-        viewModel.navigateUp.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                viewModel.wordEdited()
-                findNavController().navigateUp()
-            }
-        })
+//        try {
+//            val navigationArgs = EditFragmentArgs.fromBundle(requireArguments())
+//            viewModel.loadWord(navigationArgs.selectedId)
+//        } catch (ex : IllegalArgumentException) {
+//            Log.i("EditFragment", "Failed to load navargs!")
+//            viewModel.loadWord(0)
+//        }
+//
+//        viewModel.navigateUp.observe(viewLifecycleOwner, Observer {
+//            if (it) {
+//                viewModel.wordEdited()
+//                findNavController().navigateUp()
+//            }
+//        })
 
         return binding.root
     }

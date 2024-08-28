@@ -2,7 +2,6 @@ package com.cloudsheeptech.shoppinglist.fragments.recipe
 
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
@@ -12,16 +11,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentRecipeBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class RecipeFragment : Fragment(), MenuProvider {
 
-    private lateinit var viewModel: RecipeViewModel
+    private val viewModel: RecipeViewModel by viewModels()
     private lateinit var binding : FragmentRecipeBinding
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -50,8 +51,8 @@ class RecipeFragment : Fragment(), MenuProvider {
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        val viewModelFactory = RecipeViewModelFactory()
-        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[RecipeViewModel::class.java]
+//        val viewModelFactory = RecipeViewModelFactory()
+//        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[RecipeViewModel::class.java]
         binding.recipeVM = viewModel
         binding.lifecycleOwner = this
 

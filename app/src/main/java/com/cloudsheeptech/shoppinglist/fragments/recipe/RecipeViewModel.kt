@@ -5,6 +5,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.receipt.ApiReceipt
+import com.cloudsheeptech.shoppinglist.data.receipt.ReceiptRepository
+import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
@@ -14,8 +17,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class RecipeViewModel() : ViewModel() {
+@HiltViewModel
+class RecipeViewModel @Inject constructor(
+    private val receiptRepository: ReceiptRepository,
+    private val userRepository: AppUserRepository,
+) : ViewModel() {
 
     private val job = Job()
     private val vmScope = CoroutineScope(Dispatchers.Main + job)

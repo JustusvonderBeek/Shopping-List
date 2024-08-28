@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.Recipe
+import com.cloudsheeptech.shoppinglist.data.receipt.ApiReceipt
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
@@ -20,7 +20,7 @@ class RecipeViewModel() : ViewModel() {
     private val job = Job()
     private val vmScope = CoroutineScope(Dispatchers.Main + job)
 
-    val recipe = MutableLiveData<Recipe>()
+    val recipe = MutableLiveData<ApiReceipt>()
 
     private val _navigateToEdit = MutableLiveData<Int>(-1)
     val navigateToEdit : LiveData<Int> get() = _navigateToEdit
@@ -34,7 +34,7 @@ class RecipeViewModel() : ViewModel() {
     }
 
     fun editWord() {
-        _navigateToEdit.value = recipe.value!!.ID.toInt()
+        _navigateToEdit.value = recipe.value!!.onlineId.toInt()
     }
 
     fun navigatedToEditWord() {

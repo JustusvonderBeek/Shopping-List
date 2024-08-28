@@ -21,6 +21,10 @@ import com.cloudsheeptech.shoppinglist.data.items.ItemDao
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserDao
 import com.cloudsheeptech.shoppinglist.data.receipt.DbReceipt
 import com.cloudsheeptech.shoppinglist.data.receipt.ReceiptDao
+import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionDao
+import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionMapping
+import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemDao
+import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemMapping
 import com.cloudsheeptech.shoppinglist.data.sharing.SharedDao
 import com.cloudsheeptech.shoppinglist.data.typeConverter.DatabaseTypeConverter
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
@@ -30,8 +34,8 @@ import javax.inject.Singleton
 
 @Singleton
 @Database(
-    version = 23,
-    entities = [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class, DbReceipt::class],
+    version = 24,
+    entities = [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class, DbReceipt::class, ReceiptDescriptionMapping::class, ReceiptItemMapping::class],
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 18, to = 19),
@@ -50,9 +54,11 @@ abstract class ShoppingListDatabase : RoomDatabase() {
     abstract fun sharedDao() : SharedDao
     abstract fun preferenceDao() : UIPreferencesDao
     abstract fun receiptDao() : ReceiptDao
+    abstract fun receiptDescriptionDao() : ReceiptDescriptionDao
+    abstract fun receiptItemDao() : ReceiptItemDao
 
     companion object {
-        const val LATEST_VERSION = 23
+        const val LATEST_VERSION = 24
 
         @Volatile
         private  var INSTANCE : ShoppingListDatabase? = null

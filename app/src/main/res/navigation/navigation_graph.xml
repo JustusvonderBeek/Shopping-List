@@ -32,7 +32,7 @@
         android:id="@+id/receipt"
         android:name="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeFragment"
         android:label="@string/nav_btn_overview"
-        tools:layout="@layout/fragment_recipe" >
+        tools:layout="@layout/fragment_receipt" >
         <action
             android:id="@+id/action_recipes_to_shoppinglist"
             app:destination="@id/shoppinglist"

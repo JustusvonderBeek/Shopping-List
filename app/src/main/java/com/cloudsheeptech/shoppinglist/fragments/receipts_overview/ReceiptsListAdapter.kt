@@ -12,7 +12,7 @@ import com.cloudsheeptech.shoppinglist.data.receipt.DbReceipt
 import com.cloudsheeptech.shoppinglist.databinding.ReceiptBinding
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingListBinding
 
-class ReceiptsListAdapter(val clickListener: ReceiptClickListener, private val resource : Resources, private val itemList : List<DbShoppingList>) : ListAdapter<DbReceipt, ReceiptsListAdapter.ReceiptListViewHolder>(
+class ReceiptsListAdapter(val clickListener: ReceiptClickListener, private val resource : Resources) : ListAdapter<DbReceipt, ReceiptsListAdapter.ReceiptListViewHolder>(
     ItemDiffCallback()
 ) {
 

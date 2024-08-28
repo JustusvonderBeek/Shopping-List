@@ -44,4 +44,6 @@
     <string name="clear_items_in_list_button_text">Gekaufte Items entfernen</string>
     <string name="config_btn_create_online">Online gehen</string>
     <string name="config_btn_delete_online">Online user löschen</string>
+    <string name="nav_btn_receipt">Rezepte</string>
+    <string name="receipt_overview_title">Rezepte</string>
 </resources>

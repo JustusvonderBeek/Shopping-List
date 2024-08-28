@@ -44,4 +44,5 @@
     <string name="clear_items_in_list_button_text">Remove Items</string>
     <string name="config_btn_create_online">Creer online</string>
     <string name="config_btn_delete_online">Delete</string>
+    <string name="nav_btn_receipt">Cocinar</string>
 </resources>

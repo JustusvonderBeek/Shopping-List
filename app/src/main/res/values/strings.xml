@@ -47,4 +47,6 @@
     <string name="config_fragment_title">Configuration</string>
     <string name="config_btn_create_online">Create user online</string>
     <string name="config_btn_delete_online">Delete online user</string>
+    <string name="nav_btn_receipt">Receipts</string>
+    <string name="receipt_overview_title">Receipts</string>
 </resources>

@@ -1,9 +1,13 @@
 package com.cloudsheeptech.shoppinglist.data.receipt
 
+import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionMapping
+import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemMapping
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
-import com.google.protobuf.api
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -14,6 +18,9 @@ class ReceiptLocalDataSource @Inject constructor(
 ) {
 
     private val receiptDao = database.receiptDao()
+    private val itemDao = database.itemDao()
+    private val receiptItemDao = database.receiptItemDao()
+    private val receiptDescriptionDao = database.receiptDescriptionDao()
 
     private fun DbReceipt.toApiReceipt() : ApiReceipt {
         val apiReceipt = ApiReceipt(
@@ -62,6 +69,52 @@ class ReceiptLocalDataSource @Inject constructor(
             storedReceipt = dbReceipt?.toApiReceipt()
         }
         return storedReceipt
+    }
+
+    fun readLive(receiptId: Long, createdBy: Long) : Flow<ApiReceipt> {
+        return combine(
+            receiptDao.getFlow(receiptId, createdBy),
+            receiptItemDao.readFlow(receiptId, createdBy),
+            receiptDescriptionDao.readFlow(receiptId, createdBy),
+        ) { baseReceipt : DbReceipt , receiptItems : List<ReceiptItemMapping>, receiptDescriptions : List<ReceiptDescriptionMapping>  ->
+            val convertedItems = receiptItems.map { x ->
+                val dbItem = itemDao.getItem(x.itemId)
+                ApiIngredient(x.itemId, dbItem!!.name, dbItem.icon, x.quantity, x.quantityType)
+            }
+            val orderedDescriptions = receiptDescriptions.sortedBy { x -> x.descriptionOrder }
+            val convertedDescription = orderedDescriptions.map { x ->
+                ApiDescription(x.description)
+            }
+            ApiReceipt(
+                onlineId = baseReceipt.id,
+                name = baseReceipt.name,
+                createdBy = baseReceipt.createdBy,
+                createdAt = baseReceipt.createdAt,
+                lastUpdated = baseReceipt.lastUpdated,
+                ingredients = convertedItems,
+                description = convertedDescription
+            )
+        }
+//        // Combine the relevant fields into the receipt, but take care of the order
+//        val orderedDescriptions = descriptions.sortedBy { x -> x.descriptionOrder }
+//        val mappedLocalReceipts = localReceipts.map { receipt ->
+//            val converted = receipt.toApiReceipt()
+//            val convertedItems = receiptItems.map { x ->
+//                val dbItem = itemDao.getItem(x.itemId)
+//                ApiIngredient(x.itemId, dbItem!!.name, dbItem.icon, x.quantity, x.quantityType)
+//            }
+//            converted.ingredients = convertedItems
+//            val convertedDescription = orderedDescriptions.map { x ->
+//                ApiDescription(x.description)
+//            }
+//            converted.description = convertedDescription
+//            converted
+//        }
+//        return mappedLocalReceipts
+    }
+
+    fun readAllLive() : LiveData<List<DbReceipt>> {
+        return receiptDao.getAllLive()
     }
 
     suspend fun update(receipt: ApiReceipt) {

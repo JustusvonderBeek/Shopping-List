@@ -51,6 +51,8 @@ class ConfigViewModel @Inject constructor(
         }
     }
 
+    // TODO: All this fails when the user was created online but the list not!
+    // So prevent that another function can create the user online, but not update the list
     private suspend fun createUserOnlineAndResetOwnLists() {
         val currentUser = userRepository.read() ?: return
         if (currentUser.OnlineID != 0L) {

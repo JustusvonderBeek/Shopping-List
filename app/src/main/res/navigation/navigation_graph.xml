@@ -29,7 +29,7 @@
             app:destination="@id/configFragment" />
     </fragment>
     <fragment
-        android:id="@+id/recipes"
+        android:id="@+id/receipt"
         android:name="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeFragment"
         android:label="@string/nav_btn_overview"
         tools:layout="@layout/fragment_recipe" >
@@ -37,6 +37,14 @@
             android:id="@+id/action_recipes_to_shoppinglist"
             app:destination="@id/shoppinglist"
             app:popUpTo="@id/shoppinglist" />
+        <argument
+            android:name="receiptId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+        <argument
+            android:name="createdBy"
+            app:argType="long"
+            android:defaultValue="-1L" />
     </fragment>
     <fragment
         android:id="@+id/addRecipe"
@@ -44,15 +52,12 @@
         android:label="@string/nav_btn_add" >
         <action
             android:id="@+id/action_addRecipe_to_recipes"
-            app:destination="@id/recipes" />
+            app:destination="@id/receipt" />
     </fragment>
     <fragment
         android:id="@+id/shoppinglist"
         android:name="com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistFragment"
         android:label="@string/nav_list_title" >
-        <action
-            android:id="@+id/action_edit_to_editFragment"
-            app:destination="@id/editItem" />
         <argument
             android:name="ListID"
             app:argType="long"
@@ -64,17 +69,6 @@
             android:name="CreatedBy"
             app:argType="long"
             android:defaultValue="-1L" />
-    </fragment>
-    <fragment
-        android:id="@+id/editItem"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.edit.EditFragment"
-        android:label="editItem">
-        <argument
-            android:name="selectedId"
-            app:argType="integer" />
-        <action
-            android:id="@+id/action_editItem_to_addRecipe"
-            app:destination="@id/addRecipe" />
     </fragment>
 
     <fragment
@@ -100,4 +94,16 @@
         android:name="com.cloudsheeptech.shoppinglist.fragments.config.ConfigFragment"
         android:label="@string/config_fragment_title"
         tools:layout="@layout/fragment_config" />
+    <fragment
+        android:id="@+id/receiptsOverview"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.receipts_overview.ReceiptsOverviewFragment"
+        android:label="@string/receipt_overview_title"
+        tools:layout="@layout/fragment_receipts_overview">
+        <action
+            android:id="@+id/action_receiptsOverview_to_receipts"
+            app:destination="@id/receipt" />
+        <action
+            android:id="@+id/action_receiptsOverview_to_addRecipe"
+            app:destination="@id/addRecipe" />
+    </fragment>
 </navigation>

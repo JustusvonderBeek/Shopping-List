@@ -4,11 +4,13 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistViewModel
@@ -25,11 +27,19 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityMainBinding
+
+    private val job = Job()
+    private val asyncScope = CoroutineScope(Dispatchers.Main + job)
 
     private var notificationId = 0
 
@@ -52,6 +62,16 @@ class MainActivity : AppCompatActivity() {
             // Navigate to the fragment
 //            recapViewModel.navigateToApp()
             navController.navigate(R.id.overview)
+        }
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id == R.id.usernameSelection) {
+                // Prevent the bottom nav in the start screen, otherwise user can skip
+                // the registration which would be BAD
+                botNav.visibility = View.GONE
+            } else {
+                botNav.visibility = View.VISIBLE
+            }
         }
 
         // Dirty hack to avoid storing application context in this object class

@@ -45,4 +45,6 @@
     <string name="config_btn_create_online">Creer online</string>
     <string name="config_btn_delete_online">Delete</string>
     <string name="nav_btn_receipt">Cocinar</string>
+    <string name="receipt_title">Receipt</string>
+    <string name="receipt_edit_title">Edit Receipt</string>
 </resources>

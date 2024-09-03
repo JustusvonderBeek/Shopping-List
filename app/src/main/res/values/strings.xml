@@ -49,4 +49,6 @@
     <string name="config_btn_delete_online">Delete online user</string>
     <string name="nav_btn_receipt">Receipts</string>
     <string name="receipt_overview_title">Receipts</string>
+    <string name="receipt_title">Receipt</string>
+    <string name="receipt_edit_title">Edit Receipt</string>
 </resources>

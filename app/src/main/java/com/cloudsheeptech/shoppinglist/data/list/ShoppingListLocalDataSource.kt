@@ -10,6 +10,7 @@ import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
+import com.cloudsheeptech.shoppinglist.data.receipt.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,6 +18,8 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Handles the storage and retrieval of the list that is used by the application into
@@ -364,6 +367,38 @@ class ShoppingListLocalDataSource @Inject constructor(
             val user = userRepository.read() ?: throw IllegalStateException("user is null after login")
             val existingAppItem = existingItem.toAppItem(user.OnlineID)
             updatedList = insertItem(listId, createdBy, existingAppItem)
+        }
+        return updatedList
+    }
+
+    suspend fun addAll(listId: Long, createdBy: Long, ingredients: List<ApiIngredient>) : ApiShoppingList {
+        val updatedList : ApiShoppingList
+        withContext(Dispatchers.IO) {
+            val existingItems = itemToListRepository.read(listId, createdBy)
+            val handledIngredients = mutableListOf<ApiIngredient>()
+            existingItems.forEach { mapping ->
+                val additionalMapping = ingredients.find { ingr -> ingr.id == mapping.ItemID }
+                if (additionalMapping != null) {
+                    additionalMapping.quantity = max(additionalMapping.quantity, 1)
+                    mapping.Quantity = mapping.Quantity.plus(additionalMapping.quantity)
+                    itemToListRepository.update(mapping)
+                    handledIngredients.add(additionalMapping)
+                }
+            }
+            val unhandledIngredients = ingredients.minus(handledIngredients.toSet())
+            unhandledIngredients.forEach { ingredient ->
+                val newMapping = ListMapping(
+                    ID = 0L,
+                    ItemID = ingredient.id,
+                    ListID = listId,
+                    CreatedBy = createdBy,
+                    Quantity = max(1L, ingredient.quantity.toLong()),
+                    Checked = false,
+                    AddedBy = createdBy
+                )
+                itemToListRepository.create(newMapping)
+            }
+            updatedList = read(listId, createdBy) ?: throw IllegalStateException("updated list does not exist")
         }
         return updatedList
     }

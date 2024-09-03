@@ -43,6 +43,24 @@ class ReceiptRepository @Inject constructor(
         remoteDataSource.update(receipt)
     }
 
+    suspend fun insertDescription(receiptId: Long, createdBy: Long, order: Int, description: String) {
+        localDataSource.insertDescription(receiptId, createdBy, order, description)
+        val localReceipt = localDataSource.read(receiptId, createdBy) ?: return
+        remoteDataSource.update(localReceipt)
+    }
+
+    suspend fun updateDescription(receiptId: Long, createdBy: Long, order: Int, description: String) {
+        localDataSource.updateDescription(receiptId, createdBy, order, description)
+        val localReceipt = localDataSource.read(receiptId, createdBy) ?: return
+        remoteDataSource.update(localReceipt)
+    }
+
+    suspend fun deleteDescription(receiptId: Long, createdBy: Long, order: Int) {
+        localDataSource.deleteDescription(receiptId, createdBy, order)
+        val localReceipt = localDataSource.read(receiptId, createdBy) ?: return
+        remoteDataSource.update(localReceipt)
+    }
+
     suspend fun delete(receiptId: Long, createdBy: Long) {
         remoteDataSource.delete(receiptId, createdBy)
         localDataSource.delete(receiptId, createdBy)

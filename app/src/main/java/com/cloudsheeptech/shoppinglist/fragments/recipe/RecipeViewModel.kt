@@ -1,9 +1,11 @@
 package com.cloudsheeptech.shoppinglist.fragments.recipe
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription
 import com.cloudsheeptech.shoppinglist.data.receipt.ReceiptRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
@@ -19,6 +21,7 @@ import javax.inject.Inject
 class RecipeViewModel @Inject constructor(
     private val receiptRepository: ReceiptRepository,
     private val userRepository: AppUserRepository,
+    private val listRepository: ShoppingListRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -53,7 +56,16 @@ class RecipeViewModel @Inject constructor(
     }
 
     fun addRecipeToShoppingList() {
-
+        Log.d("RecipeViewModel", "Adding items to viewmodel pressed")
+        // First we need to know which list, then we can add the items into the list
+        Log.d("RecipeViewModel", "Would add: ${receipt.value?.ingredients}")
+        vmScope.launch {
+            // TODO: Ask the user which list he wants to use, or create a new one
+            listRepository.addAll(1, 7259303, receipt!!.value!!.ingredients)
+            withContext(Dispatchers.Main) {
+                navigateUp()
+            }
+        }
     }
 
     fun editReceipt() {

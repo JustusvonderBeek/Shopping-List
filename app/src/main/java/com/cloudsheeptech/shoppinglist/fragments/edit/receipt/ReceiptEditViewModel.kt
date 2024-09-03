@@ -95,7 +95,8 @@ class ReceiptEditViewModel @Inject constructor(
     }
 
     fun deleteIngredient(itemId: Long) {
-
+        Log.d("ReceiptEditViewModel", "Filtering $itemId ingredient")
+        _receiptIngredientList.value = receiptIngredients.value?.filter { x -> x.id != itemId }
     }
 
     fun storeUpdate() {

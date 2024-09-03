@@ -90,6 +90,7 @@ class ReceiptEditViewModel @Inject constructor(
     }
 
     fun deleteDescription(order: Int) {
+        Log.d("ReceiptEditViewModel", "Filtering $order description")
         receiptDescription.value = receiptDescription.value?.filter { x -> x.order != order }
     }
 

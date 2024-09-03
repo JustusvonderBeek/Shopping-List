@@ -31,20 +31,23 @@
     <fragment
         android:id="@+id/receipt"
         android:name="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeFragment"
-        android:label="@string/nav_btn_overview"
-        tools:layout="@layout/fragment_receipt" >
+        android:label="@string/receipt_title"
+        tools:layout="@layout/fragment_receipt">
         <action
             android:id="@+id/action_recipes_to_shoppinglist"
             app:destination="@id/shoppinglist"
             app:popUpTo="@id/shoppinglist" />
         <argument
             android:name="receiptId"
-            app:argType="long"
-            android:defaultValue="-1L" />
+            android:defaultValue="-1L"
+            app:argType="long" />
         <argument
             android:name="createdBy"
-            app:argType="long"
-            android:defaultValue="-1L" />
+            android:defaultValue="-1L"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_receipt_to_receiptEditFragment"
+            app:destination="@id/receiptEditFragment" />
     </fragment>
     <fragment
         android:id="@+id/addRecipe"
@@ -105,5 +108,18 @@
         <action
             android:id="@+id/action_receiptsOverview_to_addRecipe"
             app:destination="@id/addRecipe" />
+    </fragment>
+    <fragment
+        android:id="@+id/receiptEditFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.ReceiptEditFragment"
+        android:label="@string/receipt_edit_title"
+        tools:layout="@layout/fragment_receipt_edit">
+        <argument
+            android:name="receiptId"
+            app:argType="long" />
+        <argument
+            android:name="createdBy"
+            android:defaultValue="-1L"
+            app:argType="long" />
     </fragment>
 </navigation>

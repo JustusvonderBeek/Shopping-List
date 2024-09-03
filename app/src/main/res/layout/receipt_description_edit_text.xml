@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="description"
+            type="com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription" />
+        <variable
+            name="clickListener"
+            type="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.ReceiptDescriptionEditAdapter.ReceiptDescriptionEditClickListener" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3"
+        >
+
+        <EditText
+            android:id="@+id/descriptionEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Insert description here"
+            android:text="@={description.step}"
+            android:layout_weight="2"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/deleteDescriptionButton"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:padding="0dp"
+            android:layout_margin="0dp"
+            app:icon="@drawable/ic_trash"
+            app:iconGravity="textStart"
+            android:layout_weight="1"
+            android:onClick="@{() -> clickListener.onClick(description)}"
+            />
+
+    </LinearLayout>
+
+
+</layout>

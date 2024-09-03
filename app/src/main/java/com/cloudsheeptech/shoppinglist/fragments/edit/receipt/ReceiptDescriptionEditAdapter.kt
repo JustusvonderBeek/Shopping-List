@@ -1,0 +1,53 @@
+package com.cloudsheeptech.shoppinglist.fragments.edit.receipt
+
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.cloudsheeptech.shoppinglist.data.items.AppItem
+import com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription
+import com.cloudsheeptech.shoppinglist.databinding.ReceiptDescriptionBinding
+import com.cloudsheeptech.shoppinglist.databinding.ReceiptDescriptionEditTextBinding
+
+class ReceiptDescriptionEditAdapter(val clickListener : ReceiptDescriptionEditClickListener) : ListAdapter<ApiDescription, ReceiptDescriptionEditAdapter.DescriptionViewHolder>(ItemDiffCallback())
+{
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DescriptionViewHolder {
+        return DescriptionViewHolder.from(parent)
+    }
+
+    override fun onBindViewHolder(holder: DescriptionViewHolder, position: Int) {
+        holder.bind(clickListener, getItem(position))
+    }
+
+    class DescriptionViewHolder private constructor(val binding : ReceiptDescriptionEditTextBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(clickListener: ReceiptDescriptionEditClickListener, description : ApiDescription) {
+            binding.description = description
+            binding.clickListener = clickListener
+            binding.executePendingBindings()
+        }
+
+        companion object {
+            fun from(parent : ViewGroup) : DescriptionViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = ReceiptDescriptionEditTextBinding.inflate(layoutInflater, parent, false)
+                return DescriptionViewHolder(binding)
+            }
+        }
+    }
+
+    class ReceiptDescriptionEditClickListener(val clickListener: (descOrder: Int) -> Unit) {
+        fun onClick(description: ApiDescription) = clickListener(description.order)
+    }
+
+    class ItemDiffCallback : DiffUtil.ItemCallback<ApiDescription>() {
+        override fun areItemsTheSame(oldItem: ApiDescription, newItem: ApiDescription): Boolean {
+            return oldItem.step == newItem.step
+        }
+
+        override fun areContentsTheSame(oldItem: ApiDescription, newItem: ApiDescription): Boolean {
+            return oldItem == newItem
+        }
+    }
+
+}

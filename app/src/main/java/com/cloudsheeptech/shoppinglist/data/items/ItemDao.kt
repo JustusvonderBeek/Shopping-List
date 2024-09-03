@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ItemDao {
@@ -23,6 +24,9 @@ interface ItemDao {
 
     @Query("SELECT * FROM items WHERE id = :key")
     fun getItemLive(key : Long) : LiveData<DbItem?>
+
+    @Query("SELECT * FROM items WHERE id = :key")
+    fun getItemFlow(key: Long) : Flow<DbItem>
 
     @Query("SELECT * FROM items WHERE id = :key")
     fun getItem(key : Long) : DbItem?

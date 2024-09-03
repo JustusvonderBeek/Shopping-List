@@ -48,6 +48,9 @@
         <action
             android:id="@+id/action_receipt_to_receiptEditFragment"
             app:destination="@id/receiptEditFragment" />
+        <action
+            android:id="@+id/action_receipt_to_createShoppinglistFragment"
+            app:destination="@id/createShoppinglistFragment" />
     </fragment>
     <fragment
         android:id="@+id/addRecipe"

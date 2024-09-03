@@ -2,11 +2,15 @@ package com.cloudsheeptech.shoppinglist.fragments.recipe
 
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription
+import com.cloudsheeptech.shoppinglist.data.receipt.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.receipt.ReceiptRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +20,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.math.max
 
 @HiltViewModel
 class RecipeViewModel @Inject constructor(
@@ -33,6 +38,17 @@ class RecipeViewModel @Inject constructor(
 
     val receipt = receiptRepository.readLive(receiptId, createdBy)
 
+    private val _portions = MutableLiveData<Int>(2)
+    val portions : LiveData<Int> get() = _portions
+
+    private val _ingredients = receipt.switchMap { rec ->
+        liveData {
+            emit(rec.ingredients)
+        }
+    }
+//    private val _ingredients = MediatorLiveData<List<ApiIngredient>>()
+    val ingredients : LiveData<List<ApiIngredient>> get() = _ingredients
+
     private val _navigateToEdit = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
     val navigateToEdit : LiveData<Pair<Long, Long>> get() = _navigateToEdit
 
@@ -40,9 +56,14 @@ class RecipeViewModel @Inject constructor(
     val navigateUp : LiveData<Boolean> get() = _navigateUp
 
     init {
-//        vmScope.launch {
-//            recipe = receiptRepository.read(receiptId, createdBy)
+//        _ingredients.addSource(portions) { portion ->
+//            val mappedIngredients = receipt.value?.ingredients?.map { x ->
+//                x.quantity *= portion
+//                x
+//            } ?: emptyList()
+//            _ingredients.value = mappedIngredients
 //        }
+//        _portions.value = 2
     }
 
     // TODO: Include a question if the receipt should really be deleted
@@ -68,13 +89,16 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
+    fun increasePortions() {
+        _portions.value = _portions.value?.plus(1)
+    }
+
+    fun decreasePortions() {
+        _portions.value = max(1, _portions.value?.minus(1) ?: 1)
+    }
+
     fun editReceipt() {
         _navigateToEdit.value = Pair(receiptId, createdBy)
-//        val updatedReceipt = receipt.value!!
-//        updatedReceipt.description += listOf(ApiDescription(updatedReceipt.description.size + 1, "new step"))
-//        vmScope.launch {
-//            receiptRepository.update(updatedReceipt)
-//        }
     }
 
     fun navigatedToEditWord() {

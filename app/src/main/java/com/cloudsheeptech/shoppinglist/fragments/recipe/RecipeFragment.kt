@@ -1,6 +1,7 @@
 package com.cloudsheeptech.shoppinglist.fragments.recipe
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
@@ -74,9 +75,14 @@ class RecipeFragment : Fragment(), MenuProvider {
             }
         })
 
+        viewModel.ingredients.observe(viewLifecycleOwner, Observer { x ->
+            Log.d("RecipeFragment", "Ingredients: $x")
+            ingredientAdapter.submitList(x)
+            ingredientAdapter.notifyDataSetChanged()
+        })
+
         viewModel.receipt.observe(viewLifecycleOwner, Observer { x ->
             descriptionAdapter.submitList(x.description)
-            ingredientAdapter.submitList(x.ingredients)
         })
 
         return binding.root

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
+import com.cloudsheeptech.shoppinglist.data.receipt.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
@@ -155,6 +156,12 @@ class ShoppingListRepository @Inject constructor(
 
     suspend fun insertExistingItem(listId: Long, createdBy: Long, itemId: Long) {
         val updatedLocalList = localDataSource.insertExistingItem(listId, createdBy, itemId)
+        remoteApi.update(updatedLocalList)
+    }
+
+    // TODO: Fix the signature of this function (ApiIngredients -> DbItems ??? )
+    suspend fun addAll(listId: Long, createdBy: Long, ingredients: List<ApiIngredient>) {
+        val updatedLocalList = localDataSource.addAll(listId, createdBy, ingredients)
         remoteApi.update(updatedLocalList)
     }
 

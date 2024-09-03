@@ -44,15 +44,14 @@ class ReceiptEditFragment : Fragment() {
         })
         binding.descriptionRecyclerView.adapter = receiptDescAdapter
 
-        val receiptIngredientAdapter = ReceiptIngredientEditAdapter(ReceiptIngredientEditAdapter.ReceiptIngredientEditClickListener { id ->
-            if (id > 0) {
-                viewModel.deleteIngredient(id)
-            }
+        val receiptIngredientAdapter = ReceiptIngredientEditAdapter(ReceiptIngredientEditAdapter.ReceiptIngredientEditClickListener { ingredient, quantity ->
+            viewModel.changeIngredientQuantity(ingredient, quantity)
         })
         binding.itemRecyclerView.adapter = receiptIngredientAdapter
 
         viewModel.receiptIngredients.observe(viewLifecycleOwner, Observer { items ->
             receiptIngredientAdapter.submitList(items)
+            receiptIngredientAdapter.notifyDataSetChanged()
         })
 
         viewModel.receiptDescription.observe(viewLifecycleOwner, Observer { descriptions ->

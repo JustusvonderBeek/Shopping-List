@@ -36,8 +36,8 @@ class ReceiptIngredientEditAdapter(val clickListener: ReceiptIngredientEditClick
         }
     }
 
-    class ReceiptIngredientEditClickListener(val clickListener: (itemId: Long) -> Unit) {
-        fun onClick(ingredient: ApiIngredient) = clickListener(ingredient.id)
+    class ReceiptIngredientEditClickListener(val clickListener: (itemId: Long, quantity: Int) -> Unit) {
+        fun onClick(ingredient: ApiIngredient, quantity: Int) = clickListener(ingredient.id, quantity)
     }
 
     class ItemDiffCallback : DiffUtil.ItemCallback<ApiIngredient>() {

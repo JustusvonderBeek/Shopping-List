@@ -80,6 +80,7 @@
                 android:id="@+id/descriptionRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                tools:itemCount="5"
                 tools:listitem="@layout/receipt_description_edit_text"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 />

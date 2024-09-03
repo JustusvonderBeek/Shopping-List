@@ -28,46 +28,39 @@
             android:layout_weight="3"
             />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_weight="0"
-            >
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_margin="1dp"
-                android:clickable="true"
-                android:padding="0dp"
-                android:src="@drawable/ic_minus"
-                app:backgroundTint="@color/decrease_orange" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_margin="1dp"
-                android:clickable="true"
-                android:padding="0dp"
-                android:src="@drawable/ic_plus"
-                app:backgroundTint="@color/add_green" />
-
-        </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/receiptItemDeleteButton"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="X"
-            app:iconGravity="textStart"
-            android:padding="0dp"
-            android:layout_margin="0dp"
+            android:text='@{String.format("%d", ingredient.quantity)}'
+            android:gravity="center"
             android:layout_weight="0"
-            android:onClick="@{() -> clickListener.onClick(ingredient)}"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textSize="18sp"
             />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="1dp"
+            android:clickable="true"
+            android:padding="0dp"
+            android:onClick="@{() -> clickListener.onClick(ingredient, -1)}"
+            android:src="@drawable/ic_minus"
+            app:backgroundTint="@color/decrease_orange"
+            />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="1dp"
+            android:clickable="true"
+            android:padding="0dp"
+            android:onClick="@{() -> clickListener.onClick(ingredient, 1)}"
+            android:src="@drawable/ic_plus"
+            app:backgroundTint="@color/add_green"
+            />
     </LinearLayout>
 </layout>

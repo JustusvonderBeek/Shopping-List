@@ -16,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.math.max
 
 @HiltViewModel
 class ReceiptEditViewModel @Inject constructor(
@@ -92,6 +93,17 @@ class ReceiptEditViewModel @Inject constructor(
     fun deleteDescription(order: Int) {
         Log.d("ReceiptEditViewModel", "Filtering $order description")
         receiptDescription.value = receiptDescription.value?.filter { x -> x.order != order }
+    }
+
+    fun changeIngredientQuantity(ingredient: Long, quantity: Int) {
+        Log.d("ReceiptEditViewModel", "Changing quantity of ingredient $ingredient by $quantity")
+        val changedIngredients = _receiptIngredientList.value?.map { ing ->
+            if (ing.id == ingredient) {
+                ing.quantity = max(1, ing.quantity.plus(quantity))
+            }
+            ing
+        } ?: return
+        _receiptIngredientList.value = changedIngredients
     }
 
     fun deleteIngredient(itemId: Long) {

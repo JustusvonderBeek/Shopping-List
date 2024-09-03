@@ -43,7 +43,7 @@ class AddRecipeViewModel @Inject constructor(
         val currentDescription = receiptDescription.value ?: return
         addVmScope.launch {
             val receipt = receiptRepository.create(currentTitle, "ic_receipt")
-            receipt.description = listOf(ApiDescription(currentDescription))
+            receipt.description = listOf(ApiDescription(1, currentDescription))
             receiptRepository.update(receipt)
 //            if (word.value != null && translation.value != null) {
 //                vocabulary.postVocabulary(word.value!!, translation.value!!)

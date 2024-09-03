@@ -10,22 +10,19 @@
             type="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="32dp"
             android:paddingTop="8dp"
             android:paddingEnd="32dp"
             android:paddingBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            >
 
             <ImageView
                 android:id="@+id/recipeImage"
@@ -41,7 +38,45 @@
                 android:layout_height="wrap_content"
                 android:padding="8dp"
                 android:text="@={recipeVM.receipt.name}"
-                style="@style/LearningTextViewStyle" />
+                style="@style/ReceiptTitleStyle" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="Portions: 2"
+                    android:gravity="center_vertical"
+                    android:layout_weight="2"
+                    style="@style/ReceiptTitleStyle"
+                    />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="1dp"
+                    android:clickable="true"
+                    android:padding="0dp"
+                    android:src="@drawable/ic_minus"
+                    app:backgroundTint="@color/decrease_orange" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="1dp"
+                    android:clickable="true"
+                    android:padding="0dp"
+                    android:src="@drawable/ic_plus"
+                    app:backgroundTint="@color/add_green" />
+
+            </LinearLayout>
 
             <View
                 android:id="@+id/vocabDivider"
@@ -60,6 +95,14 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 />
 
+            <View
+                android:id="@+id/ingredientsAndDescDivider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@android:color/darker_gray" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/receiptDescriptionListView"
                 android:layout_width="match_parent"
@@ -77,5 +120,5 @@
                 android:text="@string/btn_add_to_list" />
 
         </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 </layout>

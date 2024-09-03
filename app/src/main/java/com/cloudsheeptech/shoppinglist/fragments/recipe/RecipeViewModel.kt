@@ -58,11 +58,11 @@ class RecipeViewModel @Inject constructor(
 
     fun editReceipt() {
         _navigateToEdit.value = Pair(receiptId, createdBy)
-        val updatedReceipt = receipt.value!!
-        updatedReceipt.description += listOf(ApiDescription("new step"))
-        vmScope.launch {
-            receiptRepository.update(updatedReceipt)
-        }
+//        val updatedReceipt = receipt.value!!
+//        updatedReceipt.description += listOf(ApiDescription(updatedReceipt.description.size + 1, "new step"))
+//        vmScope.launch {
+//            receiptRepository.update(updatedReceipt)
+//        }
     }
 
     fun navigatedToEditWord() {

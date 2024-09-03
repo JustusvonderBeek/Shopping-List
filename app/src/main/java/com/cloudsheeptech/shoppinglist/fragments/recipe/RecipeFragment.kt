@@ -61,10 +61,10 @@ class RecipeFragment : Fragment(), MenuProvider {
         viewModel.navigateToEdit.observe(viewLifecycleOwner, Observer { receiptIdAndCreatedBy ->
             val receiptId = receiptIdAndCreatedBy.first
             val createdBy = receiptIdAndCreatedBy.second
-//            if (selectedId > 0) {
-//                findNavController().navigate(RecipeFragmentDirections.actionRecipesToShoppinglist())
-//                viewModel.navigatedToEditWord()
-//            }
+            if (receiptId > 0 && createdBy > 0) {
+                findNavController().navigate(RecipeFragmentDirections.actionReceiptToReceiptEditFragment(receiptId, createdBy))
+                viewModel.navigatedToEditWord()
+            }
         })
 
         viewModel.navigateUp.observe(viewLifecycleOwner, Observer { navigate ->

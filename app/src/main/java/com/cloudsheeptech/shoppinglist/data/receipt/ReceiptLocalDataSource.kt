@@ -3,6 +3,8 @@ package com.cloudsheeptech.shoppinglist.data.receipt
 import android.util.Log
 import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.items.DbItem
+import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionMapping
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemMapping
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
@@ -16,6 +18,7 @@ import javax.inject.Inject
 class ReceiptLocalDataSource @Inject constructor(
     private val database: ShoppingListDatabase,
     private val userRepository: AppUserRepository,
+    private val itemRepository: ItemRepository,
 ) {
 
     private val receiptDao = database.receiptDao()
@@ -82,15 +85,16 @@ class ReceiptLocalDataSource @Inject constructor(
     fun readLive(receiptId: Long, createdBy: Long) : Flow<ApiReceipt> {
         return combine(
             receiptDao.getFlow(receiptId, createdBy),
-            receiptItemDao.readFlow(receiptId, createdBy),
+            receiptItemDao.readAllForReceiptJoined(receiptId, createdBy),
             receiptDescriptionDao.readFlow(receiptId, createdBy),
-        ) { baseReceipt : DbReceipt? , receiptItems : List<ReceiptItemMapping>, receiptDescriptions : List<ReceiptDescriptionMapping>  ->
+        ) { baseReceipt : DbReceipt? , receiptItems : Map<ReceiptItemMapping, DbItem>, receiptDescriptions : List<ReceiptDescriptionMapping>  ->
             // This can in fact happen, if we delete the receipt
             if (baseReceipt == null)
                 return@combine ApiReceipt(0, "", 0L, OffsetDateTime.now(), OffsetDateTime.now(), listOf(), listOf())
-            val convertedItems = receiptItems.map { x ->
-                val dbItem = itemDao.getItem(x.itemId)
-                ApiIngredient(x.itemId, dbItem!!.name, dbItem.icon, x.quantity, x.quantityType)
+            val convertedItems = receiptItems.map { mapping ->
+                val receiptMapping = mapping.key
+                val item = mapping.value
+                ApiIngredient(receiptMapping.itemId, item!!.name, item.icon, receiptMapping.quantity, receiptMapping.quantityType)
             }
             val orderedDescriptions = receiptDescriptions.sortedBy { x -> x.descriptionOrder }
             val convertedDescription = orderedDescriptions.map { x ->
@@ -139,8 +143,19 @@ class ReceiptLocalDataSource @Inject constructor(
             val dbReceipt = receipt.toDbReceipt()
             dbReceipt.lastUpdated = OffsetDateTime.now()
             receiptDao.update(dbReceipt)
-            var existingIngredients = receiptItemDao.readAllForReceipt(receipt.onlineId, receipt.createdBy)
+            receiptItemDao.deleteAllForReceipt(receipt.onlineId, receipt.createdBy)
             receipt.ingredients.forEach { ingredient ->
+                // Check if we might need to create the item first
+                val itemExists = itemDao.getItem(ingredient.id)
+                if (ingredient.id == 0L || itemExists == null) {
+                    val item = DbItem(
+                        id = 0L,
+                        name = ingredient.name,
+                        icon = "",
+                    )
+                    val itemId = itemRepository.create(item)
+                    ingredient.id = itemId
+                }
                 val convertedIngredient = ReceiptItemMapping(
                     id = ingredient.id,
                     receiptId = receipt.onlineId,
@@ -149,36 +164,19 @@ class ReceiptLocalDataSource @Inject constructor(
                     quantity = ingredient.quantity,
                     quantityType = ingredient.quantityType
                 )
-                if (existingIngredients.contains(convertedIngredient)) {
-                    Log.d("ReceiptLocalDataSource", "Ingredients contained: $convertedIngredient")
-                    receiptItemDao.update(convertedIngredient)
-                    existingIngredients = existingIngredients.filter { x -> x.itemId != ingredient.id }
-                } else {
-                    receiptItemDao.insert(convertedIngredient)
-                }
-                existingIngredients.forEach { x ->
-                    receiptItemDao.delete(x)
-                }
+                receiptItemDao.insert(convertedIngredient)
             }
-            var existingDescriptions = receiptDescriptionDao.read(receipt.onlineId, receipt.createdBy)
-            receipt.description.forEach { description ->
+            val orderedDescriptions = receipt.description.sortedBy { x -> x.order }
+            receiptDescriptionDao.deleteAllForReceipt(receipt.onlineId, receipt.createdBy)
+            orderedDescriptions.forEachIndexed { index, description ->
                 val convertedDesc = ReceiptDescriptionMapping(
                     id = 0L,
                     receiptId = receipt.onlineId,
                     createdBy = receipt.createdBy,
                     description = description.step,
-                    descriptionOrder = description.order
+                    descriptionOrder = index
                 )
-                val exists = receiptDescriptionDao.exists(receipt.onlineId, receipt.createdBy, description.order)
-                if (exists) {
-                    receiptDescriptionDao.update(convertedDesc)
-                    existingDescriptions = existingDescriptions.filter { x -> x.descriptionOrder != convertedDesc.descriptionOrder }
-                } else {
-                    receiptDescriptionDao.insert(convertedDesc)
-                }
-                existingDescriptions.forEach { x ->
-                    receiptDescriptionDao.delete(x)
-                }
+                receiptDescriptionDao.insert(convertedDesc)
             }
         }
     }

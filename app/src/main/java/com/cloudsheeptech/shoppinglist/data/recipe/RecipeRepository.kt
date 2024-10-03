@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.receipt
+package com.cloudsheeptech.shoppinglist.data.recipe
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
@@ -7,38 +7,38 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ReceiptRepository @Inject constructor(
-    private val localDataSource: ReceiptLocalDataSource,
-    private val remoteDataSource: ReceiptRemoteDataSource,
+class RecipeRepository @Inject constructor(
+    private val localDataSource: RecipeLocalDataSource,
+    private val remoteDataSource: RecipeRemoteDataSource,
     private val userRepository: AppUserRepository,
 )  {
 
-   suspend fun create(name: String, icon: String?) : ApiReceipt {
+   suspend fun create(name: String, icon: String?) : ApiRecipe {
        val receipt = localDataSource.create(name, icon)
        remoteDataSource.create(receipt)
        return receipt
    }
 
-   suspend fun read(receiptId: Long, createdBy: Long) : ApiReceipt? {
+   suspend fun read(receiptId: Long, createdBy: Long) : ApiRecipe? {
        val receipt = localDataSource.read(receiptId, createdBy) ?: return null
        return receipt
    }
 
-    fun readLive(receiptId: Long, createdBy: Long) : LiveData<ApiReceipt> {
+    fun readLive(receiptId: Long, createdBy: Long) : LiveData<ApiRecipe> {
         val localReceipt = localDataSource.readLive(receiptId, createdBy)
         return localReceipt.asLiveData()
     }
 
     // TODO: Fix the different list type
-    fun readAllLive() : LiveData<List<DbReceipt>> {
+    fun readAllLive() : LiveData<List<DbRecipe>> {
         return localDataSource.readAllLive()
     }
 
-    suspend fun readOnline(receiptId: Long, createdBy: Long) : ApiReceipt? {
+    suspend fun readOnline(receiptId: Long, createdBy: Long) : ApiRecipe? {
         return remoteDataSource.read(receiptId, createdBy)
     }
 
-    suspend fun update(receipt: ApiReceipt) {
+    suspend fun update(receipt: ApiRecipe) {
         localDataSource.update(receipt)
         remoteDataSource.update(receipt)
     }

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.fragments.receipts_overview
+package com.cloudsheeptech.shoppinglist.fragments.recipes_overview
 
 import androidx.fragment.app.viewModels
 import android.os.Bundle
@@ -20,10 +20,10 @@ import com.cloudsheeptech.shoppinglist.databinding.FragmentReceiptsOverviewBindi
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ReceiptsOverviewFragment : Fragment(), MenuProvider {
+class RecipesOverviewFragment : Fragment(), MenuProvider {
 
     private lateinit var binding : FragmentReceiptsOverviewBinding
-    private val viewModel : ReceiptsOverviewViewModel by viewModels()
+    private val viewModel : RecipesOverviewViewModel by viewModels()
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.receipts_drop_down_menu, menu)
@@ -53,7 +53,7 @@ class ReceiptsOverviewFragment : Fragment(), MenuProvider {
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
-        val adapter = ReceiptsListAdapter(ReceiptsListAdapter.ReceiptClickListener { id, from ->
+        val adapter = RecipesListAdapter(RecipesListAdapter.ReceiptClickListener { id, from ->
             Log.d("ReceiptsOverviewFragment", "Got receipt $id from $from")
             viewModel.navigateToReceipt(id, from)
         }, requireActivity().resources)
@@ -67,7 +67,7 @@ class ReceiptsOverviewFragment : Fragment(), MenuProvider {
 
         viewModel.navigateToCreateReceipt.observe(viewLifecycleOwner, Observer { navigate ->
             if (navigate) {
-                findNavController().navigate(ReceiptsOverviewFragmentDirections.actionReceiptsOverviewToAddRecipe())
+                findNavController().navigate(ReceiptsOverviewFragmentDirections.actionReceiptsOverviewToReceiptEditFragment(-1, -1))
                 viewModel.onCreateReceiptNavigate()
             }
         })

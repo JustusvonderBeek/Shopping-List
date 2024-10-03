@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.receipt
+package com.cloudsheeptech.shoppinglist.data.recipe
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
@@ -9,13 +9,13 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ReceiptDao {
+interface RecipeDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(receipt : DbReceipt) : Long
+    fun insert(receipt : DbRecipe) : Long
 
     @Update
-    fun update(receipt: DbReceipt)
+    fun update(receipt: DbRecipe)
 
     @Query("DELETE FROM receipts WHERE id = :key AND createdBy = :createdBy")
     fun delete(key : Long, createdBy : Long)
@@ -24,15 +24,15 @@ interface ReceiptDao {
     fun reset()
 
     @Query("SELECT * FROM receipts WHERE id = :key AND createdBy = :createdBy")
-    fun get(key: Long, createdBy: Long) : DbReceipt?
+    fun get(key: Long, createdBy: Long) : DbRecipe?
 
     @Query("SELECT * FROM receipts WHERE id = :key AND createdBy = :createdBy")
-    fun getLive(key: Long, createdBy: Long) : LiveData<DbReceipt>
+    fun getLive(key: Long, createdBy: Long) : LiveData<DbRecipe>
 
     @Query("SELECT * FROM receipts WHERE id = :key AND createdBy = :createdBy")
-    fun getFlow(key: Long, createdBy: Long) : Flow<DbReceipt>
+    fun getFlow(key: Long, createdBy: Long) : Flow<DbRecipe>
 
     @Query("SELECT * FROM receipts")
-    fun getAllLive() : LiveData<List<DbReceipt>>
+    fun getAllLive() : LiveData<List<DbRecipe>>
 
 }

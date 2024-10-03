@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.receipt
+package com.cloudsheeptech.shoppinglist.data.recipe
 
 import kotlinx.serialization.Serializable
 

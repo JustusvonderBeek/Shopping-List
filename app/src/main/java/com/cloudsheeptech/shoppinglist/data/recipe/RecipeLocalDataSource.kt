@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.receipt
+package com.cloudsheeptech.shoppinglist.data.recipe
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import javax.inject.Inject
 
-class ReceiptLocalDataSource @Inject constructor(
+class RecipeLocalDataSource @Inject constructor(
     private val database: ShoppingListDatabase,
     private val userRepository: AppUserRepository,
     private val itemRepository: ItemRepository,
@@ -26,8 +26,8 @@ class ReceiptLocalDataSource @Inject constructor(
     private val receiptItemDao = database.receiptItemDao()
     private val receiptDescriptionDao = database.receiptDescriptionDao()
 
-    private fun DbReceipt.toApiReceipt() : ApiReceipt {
-        val apiReceipt = ApiReceipt(
+    private fun DbRecipe.toApiReceipt() : ApiRecipe {
+        val apiRecipe = ApiRecipe(
             onlineId = this.id,
             name = this.name,
             createdBy = this.createdBy,
@@ -36,23 +36,23 @@ class ReceiptLocalDataSource @Inject constructor(
             ingredients = emptyList(),
             description = emptyList(),
         )
-        return apiReceipt
+        return apiRecipe
     }
 
-    private fun ApiReceipt.toDbReceipt() : DbReceipt {
-        val dbReceipt = DbReceipt(
+    private fun ApiRecipe.toDbReceipt() : DbRecipe {
+        val dbRecipe = DbRecipe(
             id = this.onlineId,
             name = this.name,
             createdBy = this.createdBy,
             createdAt = this.createdAt,
             lastUpdated = this.lastUpdated,
         )
-        return dbReceipt
+        return dbRecipe
     }
 
-    suspend fun create(name: String, icon: String?) : ApiReceipt {
+    suspend fun create(name: String, icon: String?) : ApiRecipe {
         val user = userRepository.read() ?: throw IllegalStateException("user null after login")
-        val dbReceipt = DbReceipt(
+        val dbRecipe = DbRecipe(
             id = 0L,
             name = name,
             createdBy = user.OnlineID,
@@ -60,14 +60,14 @@ class ReceiptLocalDataSource @Inject constructor(
             lastUpdated = OffsetDateTime.now(),
         )
         withContext(Dispatchers.IO) {
-            val receiptId = receiptDao.insert(dbReceipt)
-            dbReceipt.id = receiptId
+            val receiptId = receiptDao.insert(dbRecipe)
+            dbRecipe.id = receiptId
         }
-        return dbReceipt.toApiReceipt()
+        return dbRecipe.toApiReceipt()
     }
 
-    suspend fun read(receiptId: Long, createdBy: Long) : ApiReceipt? {
-        var storedReceipt : ApiReceipt? = null
+    suspend fun read(receiptId: Long, createdBy: Long) : ApiRecipe? {
+        var storedReceipt : ApiRecipe? = null
         withContext(Dispatchers.IO) {
             val dbReceipt = receiptDao.get(receiptId, createdBy) ?: return@withContext
             storedReceipt = dbReceipt.toApiReceipt()
@@ -82,15 +82,15 @@ class ReceiptLocalDataSource @Inject constructor(
         return storedReceipt
     }
 
-    fun readLive(receiptId: Long, createdBy: Long) : Flow<ApiReceipt> {
+    fun readLive(receiptId: Long, createdBy: Long) : Flow<ApiRecipe> {
         return combine(
             receiptDao.getFlow(receiptId, createdBy),
             receiptItemDao.readAllForReceiptJoined(receiptId, createdBy),
             receiptDescriptionDao.readFlow(receiptId, createdBy),
-        ) { baseReceipt : DbReceipt? , receiptItems : Map<ReceiptItemMapping, DbItem>, receiptDescriptions : List<ReceiptDescriptionMapping>  ->
+        ) { baseReceipt : DbRecipe?, receiptItems : Map<ReceiptItemMapping, DbItem>, receiptDescriptions : List<ReceiptDescriptionMapping>  ->
             // This can in fact happen, if we delete the receipt
             if (baseReceipt == null)
-                return@combine ApiReceipt(0, "", 0L, OffsetDateTime.now(), OffsetDateTime.now(), listOf(), listOf())
+                return@combine ApiRecipe(0, "", 0L, OffsetDateTime.now(), OffsetDateTime.now(), listOf(), listOf())
             val convertedItems = receiptItems.map { mapping ->
                 val receiptMapping = mapping.key
                 val item = mapping.value
@@ -100,7 +100,7 @@ class ReceiptLocalDataSource @Inject constructor(
             val convertedDescription = orderedDescriptions.map { x ->
                 ApiDescription(x.descriptionOrder, x.description)
             }
-            ApiReceipt(
+            ApiRecipe(
                 onlineId = baseReceipt.id,
                 name = baseReceipt.name,
                 createdBy = baseReceipt.createdBy,
@@ -112,7 +112,7 @@ class ReceiptLocalDataSource @Inject constructor(
         }
     }
 
-    fun readAllLive() : LiveData<List<DbReceipt>> {
+    fun readAllLive() : LiveData<List<DbRecipe>> {
         return receiptDao.getAllLive()
     }
 
@@ -137,7 +137,7 @@ class ReceiptLocalDataSource @Inject constructor(
         }
     }
 
-    suspend fun update(receipt: ApiReceipt) {
+    suspend fun update(receipt: ApiRecipe) {
         Log.d("ReceiptLocalDataSource", "Updating: $receipt")
         withContext(Dispatchers.IO) {
             val dbReceipt = receipt.toDbReceipt()

@@ -1,6 +1,5 @@
-package com.cloudsheeptech.shoppinglist.data.receipt
+package com.cloudsheeptech.shoppinglist.data.recipe
 
-import androidx.lifecycle.MutableLiveData
 import kotlinx.serialization.Serializable
 
 @Serializable

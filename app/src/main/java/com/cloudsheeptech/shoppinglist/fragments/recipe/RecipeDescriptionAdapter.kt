@@ -5,10 +5,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription
+import com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription
 import com.cloudsheeptech.shoppinglist.databinding.ReceiptDescriptionBinding
 
-class ReceiptDescriptionAdapter() : ListAdapter<ApiDescription, ReceiptDescriptionAdapter.DescriptionViewHolder>(ItemDiffCallback())
+class RecipeDescriptionAdapter() : ListAdapter<ApiDescription, RecipeDescriptionAdapter.DescriptionViewHolder>(ItemDiffCallback())
 {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DescriptionViewHolder {
         return DescriptionViewHolder.from(parent)

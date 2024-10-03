@@ -5,8 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.SingleEvent
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription
-import com.cloudsheeptech.shoppinglist.data.receipt.ReceiptRepository
+import com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription
+import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddRecipeViewModel @Inject constructor(
-    private val receiptRepository: ReceiptRepository,
+    private val recipeRepository: RecipeRepository,
     private val userRepository: AppUserRepository,
 ) : ViewModel() {
 
@@ -42,9 +42,9 @@ class AddRecipeViewModel @Inject constructor(
         val currentTitle = receiptName.value ?: return
         val currentDescription = receiptDescription.value ?: return
         addVmScope.launch {
-            val receipt = receiptRepository.create(currentTitle, "ic_receipt")
+            val receipt = recipeRepository.create(currentTitle, "ic_receipt")
             receipt.description = listOf(ApiDescription(1, currentDescription))
-            receiptRepository.update(receipt)
+            recipeRepository.update(receipt)
 //            if (word.value != null && translation.value != null) {
 //                vocabulary.postVocabulary(word.value!!, translation.value!!)
 //                resetValues()

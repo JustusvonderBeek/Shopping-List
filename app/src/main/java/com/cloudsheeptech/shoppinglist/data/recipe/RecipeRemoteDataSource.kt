@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.receipt
+package com.cloudsheeptech.shoppinglist.data.recipe
 
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
@@ -13,7 +13,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ReceiptRemoteDataSource @Inject constructor(
+class RecipeRemoteDataSource @Inject constructor(
     private val networking: Networking,
 ) {
 
@@ -25,10 +25,10 @@ class ReceiptRemoteDataSource @Inject constructor(
         }
     }
 
-    suspend fun create(receipt: ApiReceipt) : Boolean {
+    suspend fun create(receipt: ApiRecipe) : Boolean {
         var success = false
         val encodedReceipt = json.encodeToString(receipt)
-        networking.POST("/v1/receipts", encodedReceipt) { response ->
+        networking.POST("/v1/recipe", encodedReceipt) { response ->
             if (response.status != HttpStatusCode.OK) {
                 Log.e("ReceiptRemoteDataSource", "Failed to create remote receipt")
                 return@POST
@@ -38,9 +38,9 @@ class ReceiptRemoteDataSource @Inject constructor(
         return success
     }
 
-    suspend fun read(receiptId: Long, createdBy: Long) : ApiReceipt? {
-        var onlineReceipt : ApiReceipt? = null
-        networking.GET("/v1/receipts/$receiptId?createdBy=$createdBy") { response ->
+    suspend fun read(receiptId: Long, createdBy: Long) : ApiRecipe? {
+        var onlineReceipt : ApiRecipe? = null
+        networking.GET("/v1/recipe/$receiptId?createdBy=$createdBy") { response ->
             if (response.status != HttpStatusCode.OK) {
                 Log.e("ReceiptRemoteDataSource", "Failed to get receipt $receiptId from $createdBy online")
                 return@GET
@@ -50,17 +50,17 @@ class ReceiptRemoteDataSource @Inject constructor(
                 Log.w("ReceiptRemoteDataSource", "List $receiptId from $createdBy not found online")
                 return@GET
             }
-            val decoded = json.decodeFromString<ApiReceipt>(rawBody)
+            val decoded = json.decodeFromString<ApiRecipe>(rawBody)
             onlineReceipt = decoded
             Log.d("ReceiptRemoteDataSource", "Found receipt $receiptId with ${onlineReceipt?.ingredients?.size} online")
         }
         return onlineReceipt
     }
 
-    suspend fun update(receipt: ApiReceipt) : Boolean {
+    suspend fun update(receipt: ApiRecipe) : Boolean {
         var success = false
         val encodedReceipt = json.encodeToString(receipt)
-        networking.PUT("/v1/receipts/${receipt.onlineId}?createdBy=${receipt.createdBy}", encodedReceipt) { response ->
+        networking.PUT("/v1/recipe/${receipt.onlineId}?createdBy=${receipt.createdBy}", encodedReceipt) { response ->
             if (response.status != HttpStatusCode.OK) {
                 Log.e("ReceiptRemoteDataSource", "Failed to update receipt ${receipt.onlineId} online")
                 return@PUT
@@ -72,7 +72,7 @@ class ReceiptRemoteDataSource @Inject constructor(
 
     suspend fun delete(receiptId: Long, createdBy: Long) : Boolean {
         var success = false
-        networking.DELETE("/v1/receipts/$receiptId?createdBy=$createdBy") { response ->
+        networking.DELETE("/v1/recipe/$receiptId?createdBy=$createdBy") { response ->
             if (response.status != HttpStatusCode.OK) {
                 Log.e("ReceiptRemoteDataSource", "Failed to delete receipt $receiptId online")
                 return@DELETE

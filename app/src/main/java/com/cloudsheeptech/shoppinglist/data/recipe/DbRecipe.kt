@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.receipt
+package com.cloudsheeptech.shoppinglist.data.recipe
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import java.time.OffsetDateTime
 
 @Entity(tableName = "receipts")
-data class DbReceipt(
+data class DbRecipe(
     @PrimaryKey(autoGenerate = true)
     var id : Long,
     var name: String,

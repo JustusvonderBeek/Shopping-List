@@ -2,18 +2,15 @@ package com.cloudsheeptech.shoppinglist.data.list
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiIngredient
-import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
+import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json

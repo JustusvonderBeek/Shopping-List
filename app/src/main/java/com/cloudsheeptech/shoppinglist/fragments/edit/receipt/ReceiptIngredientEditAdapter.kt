@@ -5,9 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiIngredient
-import com.cloudsheeptech.shoppinglist.databinding.ReceiptItemBinding
+import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.databinding.ReceiptItemEditTextBinding
 
 class ReceiptIngredientEditAdapter(val clickListener: ReceiptIngredientEditClickListener) : ListAdapter<ApiIngredient, ReceiptIngredientEditAdapter.ReceiptItemViewHolder>(ItemDiffCallback()) {

@@ -35,5 +35,4 @@ interface ReceiptItemDao {
 
     @Query("DELETE FROM receipt_to_item WHERE receiptId = :receiptId AND createdBy = :createdBy")
     fun deleteAllForReceipt(receiptId: Long, createdBy: Long)
-
 }

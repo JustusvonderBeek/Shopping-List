@@ -54,9 +54,9 @@ class RecipeFragment : Fragment(), MenuProvider {
         binding.recipeVM = viewModel
         binding.lifecycleOwner = this
 
-        val descriptionAdapter = ReceiptDescriptionAdapter()
+        val descriptionAdapter = RecipeDescriptionAdapter()
         binding.receiptDescriptionListView.adapter = descriptionAdapter
-        val ingredientAdapter = ReceiptIngredientAdapter()
+        val ingredientAdapter = RecipeIngredientAdapter()
         binding.receiptIngredientListView.adapter = ingredientAdapter
 
         viewModel.navigateToEdit.observe(viewLifecycleOwner, Observer { receiptIdAndCreatedBy ->
@@ -83,6 +83,13 @@ class RecipeFragment : Fragment(), MenuProvider {
 
         viewModel.receipt.observe(viewLifecycleOwner, Observer { x ->
             descriptionAdapter.submitList(x.description)
+        })
+
+        viewModel.navigateToSelectList.observe(viewLifecycleOwner, Observer { navigate ->
+            if (navigate) {
+                findNavController().navigate(RecipeFragmentDirections.actionReceiptToListPickerFragment())
+                viewModel.onSelectListNavigated()
+            }
         })
 
         return binding.root

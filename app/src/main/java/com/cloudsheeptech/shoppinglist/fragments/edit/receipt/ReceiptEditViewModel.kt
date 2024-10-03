@@ -5,9 +5,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiIngredient
-import com.cloudsheeptech.shoppinglist.data.receipt.ReceiptRepository
+import com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription
+import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
+import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +20,7 @@ import kotlin.math.max
 
 @HiltViewModel
 class ReceiptEditViewModel @Inject constructor(
-    private val receiptRepository: ReceiptRepository,
+    private val recipeRepository: RecipeRepository,
     private val userRepository: AppUserRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -37,9 +37,9 @@ class ReceiptEditViewModel @Inject constructor(
     private val _store = MutableLiveData<Boolean>(false)
     val store : LiveData<Boolean> get() = _store
 
-    private val receipt = receiptRepository.readLive(receiptId, createdBy)
+    private val receipt = recipeRepository.readLive(receiptId, createdBy)
 
-    val title = MutableLiveData<String>("Title")
+    val title = MutableLiveData<String>("")
 
     val receiptDescription = MutableLiveData<List<ApiDescription>>(emptyList())
 //    val receiptDescription : LiveData<List<ReceiptDescription>> get() = _receiptDescriptionList
@@ -50,14 +50,18 @@ class ReceiptEditViewModel @Inject constructor(
     init {
         // The user should be able to modify the existing receipt, therefore load ingredients
         // and descriptions at the start
-        vmScope.launch {
-            val storedReceipt = receiptRepository.read(receiptId, createdBy) ?: return@launch
-            Log.d("ReceiptEditViewModel", "Loaded: $storedReceipt")
-            withContext(Dispatchers.Main) {
-                receiptDescription.value = storedReceipt.description
-                _receiptIngredientList.value = storedReceipt.ingredients
-                title.value = storedReceipt.name
+        if (receiptId != -1L && createdBy != -1L) {
+            vmScope.launch {
+                val storedReceipt = recipeRepository.read(receiptId, createdBy) ?: return@launch
+                Log.d("ReceiptEditViewModel", "Loaded: $storedReceipt")
+                withContext(Dispatchers.Main) {
+                    receiptDescription.value = storedReceipt.description
+                    _receiptIngredientList.value = storedReceipt.ingredients
+                    title.value = storedReceipt.name
+                }
             }
+        } else {
+            Log.d("ReceiptEditViewModel", "Creating new receipt")
         }
     }
 
@@ -112,14 +116,32 @@ class ReceiptEditViewModel @Inject constructor(
     }
 
     fun storeUpdate() {
-        vmScope.launch {
-            val updatedReceipt = receiptRepository.read(receiptId, createdBy) ?: return@launch
-            updatedReceipt.name = title.value ?: "Title"
-            updatedReceipt.ingredients = _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
-            updatedReceipt.description = receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
-            receiptRepository.update(updatedReceipt)
-            withContext(Dispatchers.Main) {
-                navigateUp()
+        if (title.value == null || title.value!!.isEmpty()) {
+            Log.e("ReceiptEditViewModel", "Title cannot be empty!")
+            // TODO: Make toast
+            return
+        }
+        // Differentiate between completely new receipt and existing one
+        if (receiptId == -1L && createdBy == -1L) {
+            vmScope.launch {
+                val newReceipt = recipeRepository.create(title.value!!, "")
+                newReceipt.ingredients = _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
+                newReceipt.description = receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
+                recipeRepository.update(newReceipt)
+                withContext(Dispatchers.Main) {
+                    navigateUp()
+                }
+            }
+        } else {
+            vmScope.launch {
+                val updatedReceipt = recipeRepository.read(receiptId, createdBy) ?: return@launch
+                updatedReceipt.name = title.value ?: "Title"
+                updatedReceipt.ingredients = _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
+                updatedReceipt.description = receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
+                recipeRepository.update(updatedReceipt)
+                withContext(Dispatchers.Main) {
+                    navigateUp()
+                }
             }
         }
     }

@@ -10,7 +10,7 @@ import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiIngredient
+import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,7 +19,6 @@ import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Handles the storage and retrieval of the list that is used by the application into

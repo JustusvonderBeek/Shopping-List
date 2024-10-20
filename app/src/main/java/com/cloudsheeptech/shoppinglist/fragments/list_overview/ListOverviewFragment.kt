@@ -73,7 +73,7 @@ class ListOverviewFragment : Fragment(), MenuProvider {
         val adapter = ShoppingListAdapter(ShoppingListAdapter.ListClickListener { id, from ->
             Log.d("ListOverviewFragment", "Got ID $id from $from")
             viewModel.navigateToShoppingList(id, from)
-        }, requireActivity().resources, listOf())
+        })
         binding.listOverviewList.adapter = adapter
 
         viewModel.shoppingList.observe(viewLifecycleOwner, Observer {

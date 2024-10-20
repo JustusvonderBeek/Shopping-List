@@ -47,8 +47,9 @@
     <string name="config_fragment_title">Configuration</string>
     <string name="config_btn_create_online">Create user online</string>
     <string name="config_btn_delete_online">Delete online user</string>
-    <string name="nav_btn_receipt">Receipts</string>
-    <string name="receipt_overview_title">Receipts</string>
-    <string name="receipt_title">Receipt</string>
-    <string name="receipt_edit_title">Edit Receipt</string>
+    <string name="nav_btn_receipt">Recipes</string>
+    <string name="receipt_overview_title">Recipes</string>
+    <string name="receipt_title">Recipe</string>
+    <string name="receipt_edit_title">Edit Recipe</string>
+    <string name="fragment_list_picker_title">Choose a list</string>
 </resources>

@@ -67,7 +67,7 @@ class RecipesOverviewFragment : Fragment(), MenuProvider {
 
         viewModel.navigateToCreateReceipt.observe(viewLifecycleOwner, Observer { navigate ->
             if (navigate) {
-                findNavController().navigate(ReceiptsOverviewFragmentDirections.actionReceiptsOverviewToReceiptEditFragment(-1, -1))
+                findNavController().navigate(RecipesOverviewFragmentDirections.actionReceiptsOverviewToReceiptEditFragment(-1, -1))
                 viewModel.onCreateReceiptNavigate()
             }
         })
@@ -76,7 +76,7 @@ class RecipesOverviewFragment : Fragment(), MenuProvider {
             val id = idAndfrom.first
             val from = idAndfrom.second
             if (id > 0L) {
-                findNavController().navigate(ReceiptsOverviewFragmentDirections.actionReceiptsOverviewToReceipts(id, from))
+                findNavController().navigate(RecipesOverviewFragmentDirections.actionReceiptsOverviewToReceipts(id, from))
                 viewModel.onReceiptNavigated()
             }
         })

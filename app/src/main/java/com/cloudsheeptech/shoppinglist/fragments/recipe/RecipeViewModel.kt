@@ -2,16 +2,15 @@ package com.cloudsheeptech.shoppinglist.fragments.recipe
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
-import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
+import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
-import com.cloudsheeptech.shoppinglist.data.receipt.ApiIngredient
-import com.cloudsheeptech.shoppinglist.data.receipt.ReceiptRepository
+import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
+import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +23,7 @@ import kotlin.math.max
 
 @HiltViewModel
 class RecipeViewModel @Inject constructor(
-    private val receiptRepository: ReceiptRepository,
+    private val recipeRepository: RecipeRepository,
     private val userRepository: AppUserRepository,
     private val listRepository: ShoppingListRepository,
     savedStateHandle: SavedStateHandle
@@ -33,10 +32,14 @@ class RecipeViewModel @Inject constructor(
     private val job = Job()
     private val vmScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val receiptId : Long = savedStateHandle["receiptId"]!!
-    private val createdBy : Long = savedStateHandle["createdBy"]!!
+    private val receiptId : Long = savedStateHandle["receiptId"] ?: -1L
+    private val createdBy : Long = savedStateHandle["createdBy"] ?: -1L
+    private var selectedList : Pair<Long, Long> = Pair(-1L, -1L)
 
-    val receipt = receiptRepository.readLive(receiptId, createdBy)
+    private val _shoppingLists = listRepository.readAllLive()
+    val shoppingLists : LiveData<List<DbShoppingList>> get() = _shoppingLists
+
+    val receipt = recipeRepository.readLive(receiptId, createdBy)
 
     private val _portions = MutableLiveData<Int>(2)
     val portions : LiveData<Int> get() = _portions
@@ -51,6 +54,12 @@ class RecipeViewModel @Inject constructor(
 
     private val _navigateToEdit = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
     val navigateToEdit : LiveData<Pair<Long, Long>> get() = _navigateToEdit
+
+    private val _navigateToSelectList = MutableLiveData<Boolean>(false)
+    val navigateToSelectList : LiveData<Boolean> get() = _navigateToSelectList
+
+    private val _navigateToCreateList = MutableLiveData<Boolean>(false)
+    val navigateToCreateList : LiveData<Boolean> get() = _navigateToCreateList
 
     private val _navigateUp = MutableLiveData<Boolean>(false)
     val navigateUp : LiveData<Boolean> get() = _navigateUp
@@ -69,7 +78,7 @@ class RecipeViewModel @Inject constructor(
     // TODO: Include a question if the receipt should really be deleted
     fun removeRecipe() {
         vmScope.launch {
-            receiptRepository.delete(receiptId, createdBy)
+            recipeRepository.delete(receiptId, createdBy)
             withContext(Dispatchers.Main) {
                 navigateUp()
             }
@@ -80,13 +89,16 @@ class RecipeViewModel @Inject constructor(
         Log.d("RecipeViewModel", "Adding items to viewmodel pressed")
         // First we need to know which list, then we can add the items into the list
         Log.d("RecipeViewModel", "Would add: ${receipt.value?.ingredients}")
-        vmScope.launch {
-            // TODO: Ask the user which list he wants to use, or create a new one
-            listRepository.addAll(1, 7259303, receipt!!.value!!.ingredients)
-            withContext(Dispatchers.Main) {
-                navigateUp()
-            }
-        }
+        navigateToSelectList()
+//        if (selectedList.first == -1L || selectedList.second == 1L)
+//            return
+//        vmScope.launch {
+//            // TODO: Ask the user which list he wants to use, or create a new one
+//            listRepository.addAll(1, 7259303, receipt!!.value!!.ingredients)
+//            withContext(Dispatchers.Main) {
+//                navigateUp()
+//            }
+//        }
     }
 
     fun increasePortions() {
@@ -99,6 +111,38 @@ class RecipeViewModel @Inject constructor(
 
     fun editReceipt() {
         _navigateToEdit.value = Pair(receiptId, createdBy)
+    }
+
+    private fun navigateToSelectList() {
+        _navigateToSelectList.value = true
+    }
+
+    fun selectList(listId: Long, createdBy: Long) {
+        selectedList = Pair(listId, createdBy)
+        navigateUp()
+        vmScope.launch {
+            Log.d("RecipeViewModel", "${receipt.value}")
+            listRepository.addAll(listId,createdBy, receipt.value?.ingredients ?: emptyList())
+            withContext(Dispatchers.Main) {
+                navigateUp()
+            }
+        }
+    }
+
+    fun onSelectListNavigated() {
+        _navigateToSelectList.value = false
+    }
+
+    fun createList() {
+        navigateToCreateList()
+    }
+
+    private fun navigateToCreateList() {
+        _navigateToCreateList.value = true
+    }
+
+    fun onCreateListNavigated() {
+        _navigateToCreateList.value = false
     }
 
     fun navigatedToEditWord() {

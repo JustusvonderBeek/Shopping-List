@@ -5,7 +5,7 @@
     <data>
         <variable
             name="description"
-            type="com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription" />
+            type="com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription" />
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.ReceiptDescriptionEditAdapter.ReceiptDescriptionEditClickListener" />

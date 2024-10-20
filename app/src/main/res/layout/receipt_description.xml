@@ -4,7 +4,7 @@
     <data>
         <variable
             name="description"
-            type="com.cloudsheeptech.shoppinglist.data.receipt.ApiDescription" />
+            type="com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription" />
     </data>
 
     <LinearLayout

@@ -84,7 +84,7 @@ class AppUserRemoteDataSource @Inject constructor(private val remoteApi: Network
         throw NotImplementedError("This function is not implemented!")
     }
 
-    private suspend fun userOnlineCreatedCallback(response: HttpResponse) {
+    private suspend fun userOnlineCreatedCallback(response: HttpResponse, user: AppUser) {
         withContext(Dispatchers.IO) {
             if (response.status != HttpStatusCode.Created) {
                 Log.e("AppUserRemoteRepository", "Failed to create user online")
@@ -92,15 +92,22 @@ class AppUserRemoteDataSource @Inject constructor(private val remoteApi: Network
             }
             val rawBody = response.bodyAsText(Charsets.UTF_8)
             val decodedUser = json.decodeFromString<ApiUser>(rawBody)
-            decodedUser.password = ""
-            remoteApi.resetSerializedUser(rawBody, decodedUser.onlineId)
+            decodedUser.password = user.Password
+            val encodedUser = json.encodeToString(decodedUser)
+            remoteApi.resetSerializedUser(encodedUser, decodedUser.onlineId)
         }
     }
 
-    fun registerCreateUser(user: ApiUser) {
+    fun registerCreateUser(user: AppUser) {
+        val serializedUser = json.encodeToString(user.toApiUser())
+        remoteApi.resetSerializedUser(serializedUser, user.OnlineID)
         remoteApi.registerUserCallback {
-            Triple(json.encodeToString(user), "/v1/users") { response ->
-//                userOnlineCreatedCallback(response)
+            if (user.OnlineID != 0L) {
+                Triple("", "", { })
+            } else {
+                Triple(serializedUser, "/v1/users") { response ->
+                    userOnlineCreatedCallback(response, user)
+                }
             }
         }
     }

@@ -36,9 +36,10 @@ import javax.inject.Singleton
 * This class captures the authentication logic of the application,
 * allowing to reuse the same HTTP client for all networking requests
  */
-// TODO: Add some way to intercept any request and create the user first online before the request is being made
 @Singleton
-class Networking @Inject constructor(val tokenFile: String) {
+class Networking @Inject constructor(
+    private val tokenFile: String,
+) {
 
     @Serializable
     data class Token @OptIn(ExperimentalSerializationApi::class) constructor(
@@ -49,12 +50,12 @@ class Networking @Inject constructor(val tokenFile: String) {
 //    private val baseUrl = "https://shop.cloudsheeptech.com:46152/"
 //    private val baseUrl = "https://ec2-3-120-40-62.eu-central-1.compute.amazonaws.com:46152/"
     private val baseUrl = "https://10.0.2.2:46152"
+    private var token = ""
     private var tokenInterceptor = JwtTokenInterceptor()
 
     private var localUser = ""
     private var userId = 0L
-    private var token = ""
-    private var getUserRegisterCall : () -> Triple<String, String, (response: HttpResponse) -> Unit> = { Triple("", "", {}) }
+    private var getUserRegisterCall : () -> Triple<String, String, suspend (response: HttpResponse) -> Unit> = { Triple("", "", {}) }
 
     // Even though we might need this client only from time to time in order to
     // update the tokens or start the connections, save the effort and store it
@@ -103,7 +104,7 @@ class Networking @Inject constructor(val tokenFile: String) {
         resetToken()
     }
 
-    fun registerUserCallback(getUser: () -> Triple<String, String, (response: HttpResponse) -> Unit>) {
+    fun registerUserCallback(getUser: () -> Triple<String, String, suspend (response: HttpResponse) -> Unit>) {
         this.getUserRegisterCall = getUser
     }
 
@@ -113,6 +114,7 @@ class Networking @Inject constructor(val tokenFile: String) {
             try {
                 // This method should return "" only when the user is already registered
                 if (userToRegister.isNotEmpty()) {
+                    resetToken()
                     post(registerUrl, userToRegister, registerCallback)
                 }
                 get(requestUrlPath, responseHandler)
@@ -127,9 +129,8 @@ class Networking @Inject constructor(val tokenFile: String) {
             try {
                 val response : HttpResponse = client.get(baseUrl + requestUrlPath)
                 if (response.status == HttpStatusCode.Unauthorized) {
-                    Log.w("Networking", "User not authorized")
                     resetToken()
-                    return@withContext
+                    throw IllegalAccessError("user not authenticated online")
                 }
                 responseHandler(response)
             } catch (ex: Exception) {
@@ -154,16 +155,7 @@ class Networking @Inject constructor(val tokenFile: String) {
                 if (userToRegister.isNotEmpty()) {
                     post(registerUrl, userToRegister, registerCallback)
                 }
-                val response : HttpResponse = client.post(baseUrl + requestUrlPath) {
-                    setBody(data)
-                }
-                if (response.status == HttpStatusCode.Unauthorized) {
-                    token = ""
-                    // This one is directly catched by the block outside?
-                    throw IllegalAccessError("user not authenticated online")
-                }
-                responseHandler(response)
-//                response.bodyAsText()
+                post(requestUrlPath, data, responseHandler)
             } catch (ex : Exception) {
                 Log.w("Networking", "Failed to send POST request to $baseUrl$requestUrlPath: $ex")
             }
@@ -177,7 +169,7 @@ class Networking @Inject constructor(val tokenFile: String) {
                     setBody(data)
                 }
                 if (response.status == HttpStatusCode.Unauthorized) {
-                    token = ""
+                    resetToken()
                     // This one is directly catched by the block outside?
                     throw IllegalAccessError("user not authenticated online")
                 }
@@ -190,18 +182,31 @@ class Networking @Inject constructor(val tokenFile: String) {
 
     @Throws(IllegalAccessError::class)
     suspend fun PUT(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit) {
+        val (userToRegister, registerUrl, registerCallback) = this.getUserRegisterCall.invoke()
         withContext(Dispatchers.IO) {
             try {
-                var dataToPost = data
+//                if (userToRegister.isNotEmpty()) {
+//                    post(registerUrl, userToRegister, registerCallback)
+//                }
+                put(requestUrlPath, data, responseHandler)
+            } catch (ex : Exception) {
+                Log.w("Networking", "Failed to send POST request to $baseUrl$requestUrlPath: $ex")
+            }
+        }
+    }
+
+    private suspend fun put(requestUrlPath: String, data : String, responseHandler: suspend (HttpResponse) -> Unit) {
+        withContext(Dispatchers.IO) {
+            try {
                 val response : HttpResponse = client.put(baseUrl + requestUrlPath) {
-                    setBody(dataToPost)
+                    setBody(data)
                 }
                 if (response.status == HttpStatusCode.Unauthorized) {
-                    token = ""
+                    resetToken()
                     throw IllegalAccessError("user not authenticated online")
                 }
                 responseHandler(response)
-                response.bodyAsText()
+//                response.bodyAsText()
             } catch (ex : Exception) {
                 Log.w("Networking", "Failed to send POST request to $baseUrl$requestUrlPath: $ex")
             }
@@ -215,9 +220,8 @@ class Networking @Inject constructor(val tokenFile: String) {
             try {
                 val response : HttpResponse = client.delete(baseUrl + requestUrlPath)
                 if (response.status == HttpStatusCode.Unauthorized) {
-                    token = ""
+                    resetToken()
                     throw IllegalAccessError("user not authenticated online")
-                    // TODO: Decide how to handle this
                 }
                 responseHandler(response)
                 response.bodyAsText()
@@ -286,6 +290,9 @@ class Networking @Inject constructor(val tokenFile: String) {
     }
 
     private suspend fun refreshToken() : BearerTokens? {
+        if (userId == 0L || localUser.isEmpty()) {
+            return null
+        }
         val  response : HttpResponse = authenticationClient.post( "${baseUrl}/v1/users/${userId}/login") {
             contentType(ContentType.Application.Json)
             setBody(localUser)

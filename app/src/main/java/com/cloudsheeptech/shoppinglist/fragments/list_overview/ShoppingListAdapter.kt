@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingListBinding
 
-class ShoppingListAdapter(val clickListener: ListClickListener, private val resource : Resources, private val itemList : List<DbShoppingList>) : ListAdapter<DbShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
+class ShoppingListAdapter(val clickListener: ListClickListener) : ListAdapter<DbShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
     ItemDiffCallback()
 ) {
 
@@ -24,11 +24,11 @@ class ShoppingListAdapter(val clickListener: ListClickListener, private val reso
     }
 
     override fun onBindViewHolder(holder: ShoppingListViewHolder, position: Int) {
-        holder.bind(clickListener, getItem(position), resource)
+        holder.bind(clickListener, getItem(position))
     }
 
     class ShoppingListViewHolder private constructor(val binding : ShoppingListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(clickListener: ListClickListener, list : DbShoppingList, resource: Resources) {
+        fun bind(clickListener: ListClickListener, list : DbShoppingList) {
             binding.list = list
             binding.clickListener = clickListener
             binding.executePendingBindings()

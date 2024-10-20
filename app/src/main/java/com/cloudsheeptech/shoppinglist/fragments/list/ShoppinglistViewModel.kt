@@ -355,11 +355,16 @@ class ShoppinglistViewModel @Inject constructor(
 
     fun onDeleteConfirmed() {
         _confirmDelete.value = false
+        viewModelScope.launch {
+            listRepo.delete(shoppingListId, createdBy)
+            withContext(Dispatchers.Main) {
+                navigateUp()
+            }
+        }
         // TODO: Difference between own and shared list:
         // Shared list -> delete offline and sharing
         // Own list -> delete list offline and online + sharing
 //        listHandler.DeleteShoppingList(shoppingListId, createdBy)
-        navigateUp()
     }
 
     fun onDeleteCanceled() {

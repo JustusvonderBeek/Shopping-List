@@ -49,16 +49,8 @@
             android:id="@+id/action_receipt_to_receiptEditFragment"
             app:destination="@id/receiptEditFragment" />
         <action
-            android:id="@+id/action_receipt_to_createShoppinglistFragment"
-            app:destination="@id/createShoppinglistFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/addRecipe"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.create.recipe.AddRecipeFragment"
-        android:label="@string/nav_btn_add" >
-        <action
-            android:id="@+id/action_addRecipe_to_recipes"
-            app:destination="@id/receipt" />
+            android:id="@+id/action_receipt_to_listPickerFragment"
+            app:destination="@id/listPickerFragment" />
     </fragment>
     <fragment
         android:id="@+id/shoppinglist"
@@ -102,15 +94,15 @@
         tools:layout="@layout/fragment_config" />
     <fragment
         android:id="@+id/receiptsOverview"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.receipts_overview.ReceiptsOverviewFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.recipes_overview.RecipesOverviewFragment"
         android:label="@string/receipt_overview_title"
         tools:layout="@layout/fragment_receipts_overview">
         <action
             android:id="@+id/action_receiptsOverview_to_receipts"
             app:destination="@id/receipt" />
         <action
-            android:id="@+id/action_receiptsOverview_to_addRecipe"
-            app:destination="@id/addRecipe" />
+            android:id="@+id/action_receiptsOverview_to_receiptEditFragment"
+            app:destination="@id/receiptEditFragment" />
     </fragment>
     <fragment
         android:id="@+id/receiptEditFragment"
@@ -124,5 +116,14 @@
             android:name="createdBy"
             android:defaultValue="-1L"
             app:argType="long" />
+    </fragment>
+    <fragment
+        android:id="@+id/listPickerFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.list_picker.ListPickerFragment"
+        android:label="@string/fragment_list_picker_title"
+        tools:layout="@layout/fragment_list_picker" >
+        <action
+            android:id="@+id/action_listPickerFragment_to_createShoppinglistFragment"
+            app:destination="@id/createShoppinglistFragment" />
     </fragment>
 </navigation>

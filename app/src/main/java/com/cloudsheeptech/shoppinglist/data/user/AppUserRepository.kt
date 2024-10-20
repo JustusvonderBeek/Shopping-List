@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @Singleton
 class AppUserRepository @Inject constructor(
     local: AppUserLocalDataSource,
-    remote: AppUserRemoteDataSource
+    remote: AppUserRemoteDataSource,
 ) {
 
     private val job = Job()
@@ -28,6 +28,9 @@ class AppUserRepository @Inject constructor(
     init {
         vmCoroutine.launch {
             appUserLocalSource.read()
+            createOnline()
+            val user = appUserLocalSource.getUser() ?: return@launch
+            remote.registerCreateUser(user)
         }
     }
 

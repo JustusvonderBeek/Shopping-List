@@ -1,19 +1,18 @@
 package com.cloudsheeptech.shoppinglist
 
 import android.util.Log
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.network.Networking
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-
+import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
 import java.io.File
 import java.time.OffsetDateTime
 
@@ -24,7 +23,6 @@ import java.time.OffsetDateTime
  */
 @RunWith(AndroidJUnit4::class)
 class NetworkingTest {
-
     @Test
     fun useAppContext() {
         // Context of the app under test.
@@ -32,7 +30,18 @@ class NetworkingTest {
         assertEquals("com.cloudsheeptech.shoppinglist", appContext.packageName)
     }
 
-    private suspend fun createUserAccount(fileDirPath : String) : Boolean {
+    fun testInterceptor() =
+        runTest {
+            val authenticationInterceptor =
+                AuthenticationInterceptor(
+                    { "" },
+                    { "" },
+                    { true },
+                )
+            val networking = Networking("token.txt", authenticationInterceptor)
+        }
+
+    private suspend fun createUserAccount(fileDirPath: String): Boolean {
         var success = false
         if (File(fileDirPath, "user.json").exists()) {
             success = true
@@ -61,7 +70,7 @@ class NetworkingTest {
         return success
     }
 
-    private suspend fun getTestPathUnauth() : Boolean {
+    private suspend fun getTestPathUnauth(): Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val db = ShoppingListDatabase.getInstance(appContext)
 //        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
@@ -78,14 +87,15 @@ class NetworkingTest {
     }
 
     @Test
-    fun testFetchingPathWithoutLogin() = runTest {
-        println("Testing if the network can fetch a resource")
-        // This should show that the network can automatically determine the state and reconnect / login if required
-        val success = getTestPathUnauth()
-        assert(success)
-    }
+    fun testFetchingPathWithoutLogin() =
+        runTest {
+            println("Testing if the network can fetch a resource")
+            // This should show that the network can automatically determine the state and reconnect / login if required
+            val success = getTestPathUnauth()
+            assert(success)
+        }
 
-    private suspend fun getTestPathAuth() : Boolean {
+    private suspend fun getTestPathAuth(): Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val db = ShoppingListDatabase.getInstance(appContext)
 //        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
@@ -110,23 +120,25 @@ class NetworkingTest {
     }
 
     @Test
-    fun testFetchResourceAuth() = runTest {
-        println("Testing if the network can automatically login and fetch a resource")
-        val success = getTestPathAuth()
-        assert(success)
-    }
+    fun testFetchResourceAuth() =
+        runTest {
+            println("Testing if the network can automatically login and fetch a resource")
+            val success = getTestPathAuth()
+            assert(success)
+        }
 
     @Test
-    fun testFetchResourceTimeout() = runTest {
-        println("Testing if the network automatically logs in when token timeouts")
-        var success = getTestPathAuth()
-        assert(success)
-        Thread.sleep(5000)
-        success = getTestPathAuth()
-        assert(success)
-    }
+    fun testFetchResourceTimeout() =
+        runTest {
+            println("Testing if the network automatically logs in when token timeouts")
+            var success = getTestPathAuth()
+            assert(success)
+            Thread.sleep(5000)
+            success = getTestPathAuth()
+            assert(success)
+        }
 
-    private suspend fun postTestPathAuth() : Boolean {
+    private suspend fun postTestPathAuth(): Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val db = ShoppingListDatabase.getInstance(appContext)
 //        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
@@ -153,10 +165,10 @@ class NetworkingTest {
     }
 
     @Test
-    fun testPostResourceAuth() = runTest {
-        println("Testing if we can post resources authenticated")
-        val success = postTestPathAuth()
-        assert(success)
-    }
-
+    fun testPostResourceAuth() =
+        runTest {
+            println("Testing if we can post resources authenticated")
+            val success = postTestPathAuth()
+            assert(success)
+        }
 }

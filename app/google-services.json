@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "238773786935",
+    "project_id": "shopping-list-6580c",
+    "storage_bucket": "shopping-list-6580c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:238773786935:android:1e24baf5bd58bdebd322b2",
+        "android_client_info": {
+          "package_name": "com.cloudsheeptech.shoppinglist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFu2bZlIzaT08Jjpd7r-Br01lvNIavMLk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

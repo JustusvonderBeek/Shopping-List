@@ -19,6 +19,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
+import com.cloudsheeptech.shoppinglist.network.TokenProvider
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -29,29 +30,61 @@ import javax.inject.Inject
  */
 @HiltAndroidApp
 class ShoppingListApplication : Application() {
-
     // For these injections to work, the constructor needs an @Inject as well
-    @Inject lateinit var appUserLocalDataSource: AppUserLocalDataSource
-    @Inject lateinit var appUserRemoteDataSource: AppUserRemoteDataSource
-    @Inject lateinit var appUserRepository: AppUserRepository
+    @Inject
+    lateinit var appUserLocalDataSource: AppUserLocalDataSource
 
-    @Inject lateinit var database: ShoppingListDatabase
-    @Inject lateinit var networking: Networking
-    @Inject lateinit var shoppingListLocalDataSource: ShoppingListLocalDataSource
-    @Inject lateinit var shoppingListRemoteDataSource: ShoppingListRemoteDataSource
-    @Inject lateinit var shoppingListRepository: ShoppingListRepository
+    @Inject
+    lateinit var appUserRemoteDataSource: AppUserRemoteDataSource
 
-    @Inject lateinit var itemLocalDataSource: ItemLocalDataSource
-    @Inject lateinit var itemRepository: ItemRepository
+    @Inject
+    lateinit var appUserRepository: AppUserRepository
 
-    @Inject lateinit var itemToListLocalDataSource: ItemToListLocalDataSource
-    @Inject lateinit var itemToListRepository: ItemToListRepository
+    @Inject
+    lateinit var database: ShoppingListDatabase
 
-    @Inject lateinit var onlineUserLocalDataSource: OnlineUserLocalDataSource
-    @Inject lateinit var onlineUserRemoteDataSource: OnlineUserRemoteDataSource
-    @Inject lateinit var onlineUserRepository: OnlineUserRepository
+    @Inject
+    lateinit var networking: Networking
 
-    @Inject lateinit var listShareLocalDataSource: ListShareLocalDataSource
-    @Inject lateinit var listShareRemoteDataSource: ListShareRemoteDataSource
-    @Inject lateinit var listShareRepository: ListShareRepository
+    @Inject
+    lateinit var shoppingListLocalDataSource: ShoppingListLocalDataSource
+
+    @Inject
+    lateinit var shoppingListRemoteDataSource: ShoppingListRemoteDataSource
+
+    @Inject
+    lateinit var shoppingListRepository: ShoppingListRepository
+
+    @Inject
+    lateinit var itemLocalDataSource: ItemLocalDataSource
+
+    @Inject
+    lateinit var itemRepository: ItemRepository
+
+    @Inject
+    lateinit var itemToListLocalDataSource: ItemToListLocalDataSource
+
+    @Inject
+    lateinit var itemToListRepository: ItemToListRepository
+
+    @Inject
+    lateinit var onlineUserLocalDataSource: OnlineUserLocalDataSource
+
+    @Inject
+    lateinit var onlineUserRemoteDataSource: OnlineUserRemoteDataSource
+
+    @Inject
+    lateinit var onlineUserRepository: OnlineUserRepository
+
+    @Inject
+    lateinit var listShareLocalDataSource: ListShareLocalDataSource
+
+    @Inject
+    lateinit var listShareRemoteDataSource: ListShareRemoteDataSource
+
+    @Inject
+    lateinit var listShareRepository: ListShareRepository
+
+    @Inject
+    lateinit var tokenProvider: TokenProvider
 }

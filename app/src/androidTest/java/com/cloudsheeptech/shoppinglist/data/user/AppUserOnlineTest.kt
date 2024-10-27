@@ -4,10 +4,12 @@ import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.cloudsheeptech.shoppinglist.ShoppingListApplication
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -19,6 +21,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.time.OffsetDateTime
 
+/** Testing the creation and handling of the user online
+ */
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.DEFAULT)
 class AppUserOnlineTest {
@@ -38,23 +42,30 @@ class AppUserOnlineTest {
         return Triple(appUserLocalDataSource, appUserRemoteDataSource, remoteApi)
     }
 
+    private fun createLocalUser(
+        shoppingListApplication: ShoppingListApplication,
+        name: String,
+    ) {
+        shoppingListApplication.appUserLocalDataSource.create(name)
+    }
+
     @Test
     fun testCreateUser() =
         runTest {
-            val (localSource, remoteSource, api) = setupRemoteAppUserDataSource()
+            TestUtil.initialize()
 
-            val now = OffsetDateTime.now()
             val username = "Online user"
-            val newOnlineUser = localSource.getUser()!!
+            createLocalUser(TestUtil.shoppingListApplication, username)
+            val newOnlineUser = TestUtil.shoppingListApplication.appUserLocalDataSource.getUser()!!
             newOnlineUser.Username += " changed for test"
 
-            val success = remoteSource.update(newOnlineUser)
+            val success = TestUtil.shoppingListApplication.appUserRemoteDataSource.update(newOnlineUser)
             assert(success)
             Thread.sleep(10)
-            val updatedLocalUser = localSource.getUser()
+            val updatedLocalUser = TestUtil.shoppingListApplication.appUserLocalDataSource.getUser()
             Assert.assertNotNull(updatedLocalUser)
             assert(0L != updatedLocalUser!!.OnlineID)
-            Log.d("AppUserOnlineTest", "Now: $now / Created: ${updatedLocalUser.Created}")
+            Log.d("AppUserOnlineTest", "Now: ${OffsetDateTime.now()} / Created: ${updatedLocalUser.Created}")
             // TODO: Fix the server and the UTC offset
 //        assert(now.isEqual(remoteUser.Created!!) || now.isAfter(remoteUser.Created!!))
         }

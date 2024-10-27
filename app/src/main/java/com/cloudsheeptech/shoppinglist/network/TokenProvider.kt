@@ -98,10 +98,11 @@ class TokenProvider
         private suspend fun createUserIfNotExists(): Boolean {
             val success =
                 withContext(Dispatchers.IO) {
+                    val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.BASE_USER_URL.url}"
                     try {
                         val payload = payloadProvider.provideUserCreationPayload() ?: return@withContext true
                         val response: HttpResponse =
-                            unauthenticatedClient.post("${UrlProviderEnum.BASE_URL.value}${UrlProviderEnum.USER_CREATE.value}") {
+                            unauthenticatedClient.post("$finalRequestUrl") {
                                 setBody(payload)
                             }
                         if (response.status != HttpStatusCode.Created) {
@@ -113,7 +114,7 @@ class TokenProvider
                     } catch (ex: Exception) {
                         Log.e(
                             "TokenProvider",
-                            "Failed to send POST to ${UrlProviderEnum.BASE_URL}${UrlProviderEnum.USER_CREATE}",
+                            "Failed to send POST to $finalRequestUrl",
                         )
                     }
                     return@withContext false
@@ -125,6 +126,7 @@ class TokenProvider
             Log.d("Networking", "refreshing token...")
             val tokens: BearerTokens? =
                 withContext(Dispatchers.IO) {
+                    val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.BASE_USER_URL.url}"
                     try {
                         val successfullyCreated = createUserIfNotExists()
                         if (!successfullyCreated) {
@@ -136,13 +138,13 @@ class TokenProvider
                         }
                         val response: HttpResponse =
                             unauthenticatedClient.post(
-                                "${UrlProviderEnum.BASE_URL.value}${UrlProviderEnum.USER_LOGIN.value}/$userId/login",
+                                "$finalRequestUrl/$userId/login",
                             ) {
                                 setBody(payload)
                             }
                         when (response.status) {
                             HttpStatusCode.NotFound -> {
-                                Log.w("TokenProvider", "The user was created online but not found!")
+                                Log.e("TokenProvider", "The user login request was made but the userId not found online")
                                 // TODO: This should only happen during testing, never in a production system
                                 return@withContext null
                             }

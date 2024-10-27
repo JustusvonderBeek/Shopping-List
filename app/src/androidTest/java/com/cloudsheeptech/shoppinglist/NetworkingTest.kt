@@ -6,11 +6,10 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
-import com.cloudsheeptech.shoppinglist.network.Networking
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
@@ -32,13 +31,7 @@ class NetworkingTest {
 
     fun testInterceptor() =
         runTest {
-            val authenticationInterceptor =
-                AuthenticationInterceptor(
-                    { "" },
-                    { "" },
-                    { true },
-                )
-            val networking = Networking("token.txt", authenticationInterceptor)
+//            val networking = Networking("token.txt", authenticationInterceptor)
         }
 
     private suspend fun createUserAccount(fileDirPath: String): Boolean {

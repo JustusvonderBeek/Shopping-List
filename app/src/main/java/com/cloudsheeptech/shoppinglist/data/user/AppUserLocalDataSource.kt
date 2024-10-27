@@ -4,7 +4,10 @@ import android.util.Base64
 import android.util.Log
 import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -33,6 +36,12 @@ class AppUserLocalDataSource
         private val DEFAULT_PASSWORD_LENGTH = 64
         private val tokenArray = ByteArray(DEFAULT_PASSWORD_LENGTH)
         private var appUser: AppUser? = null
+
+        init {
+            CoroutineScope(Dispatchers.Main + Job()).launch {
+                read()
+            }
+        }
 
         fun isInitialized(): Boolean = appUser != null && appUser?.Username!!.isNotEmpty() && appUser?.Password!!.isNotEmpty()
 

@@ -5,38 +5,22 @@ import android.app.NotificationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistViewModel
-import com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistViewModelFactory
 import com.cloudsheeptech.shoppinglist.databinding.ActivityMainBinding
-import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModel
-import com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModelFactory
-import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
-import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
-import com.cloudsheeptech.shoppinglist.network.Networking
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding : ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
 
     private val job = Job()
     private val asyncScope = CoroutineScope(Dispatchers.Main + job)
@@ -48,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        val botNav : BottomNavigationView = binding.bottomNavigation
+        val botNav: BottomNavigationView = binding.bottomNavigation
         val navController = findNavController(R.id.navHostFragment)
         val navIds = navController.graph
         val appBarConfig = AppBarConfiguration.Builder(navIds).build()

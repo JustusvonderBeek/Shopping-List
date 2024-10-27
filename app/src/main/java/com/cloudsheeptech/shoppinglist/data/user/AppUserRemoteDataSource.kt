@@ -3,9 +3,6 @@ package com.cloudsheeptech.shoppinglist.data.user
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.network.Networking
-import io.ktor.client.HttpClient
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -60,43 +57,43 @@ class AppUserRemoteDataSource
                 this.created,
             )
 
-        companion object {
-            @Throws(IllegalAccessError::class, IllegalStateException::class)
-            suspend fun create(
-                user: AppUser,
-                json: Json,
-                httpClient: HttpClient,
-            ): AppUser? {
-                var appUser: AppUser? = null
-                withContext(Dispatchers.IO) {
-                    val encodedUser = json.encodeToString(user)
-                    val resp =
-                        httpClient.post("/v1/users") {
-                            setBody(encodedUser)
-                        }
-
-                    // Authentication already handled by the networking object
-                    if (resp.status != HttpStatusCode.Created) {
-                        Log.w("AppUserRemoteDataSource", "Failed to create the user online!")
-                        throw IllegalArgumentException("bad request")
-                    }
-                    val rawBody = resp.bodyAsText(Charsets.UTF_8)
-                    val parsedApiUser = json.decodeFromString<ApiUser>(rawBody)
-                    // Automatically update the network class with the correct
-                    // new online id
-                    parsedApiUser.password = user.Password
-                    val updatedUser = json.encodeToString(parsedApiUser)
-//                        httpClient.resetSerializedUser(updatedUser, parsedApiUser.onlineId)
-                    // And return the update user
-                    appUser = parsedApiUser.toAppUser()
-                    Log.i(
-                        "AppUserRemoteDataSource",
-                        "Created the user ${parsedApiUser.onlineId} online",
-                    )
-                }
-                return appUser
-            }
-        }
+//        companion object {
+//            @Throws(IllegalAccessError::class, IllegalStateException::class)
+//            suspend fun create(
+//                user: AppUser,
+//                json: Json,
+//                httpClient: HttpClient,
+//            ): AppUser? {
+//                var appUser: AppUser? = null
+//                withContext(Dispatchers.IO) {
+//                    val encodedUser = json.encodeToString(user)
+//                    val resp =
+//                        httpClient.post("/v1/users") {
+//                            setBody(encodedUser)
+//                        }
+//
+//                    // Authentication already handled by the networking object
+//                    if (resp.status != HttpStatusCode.Created) {
+//                        Log.w("AppUserRemoteDataSource", "Failed to create the user online!")
+//                        throw IllegalArgumentException("bad request")
+//                    }
+//                    val rawBody = resp.bodyAsText(Charsets.UTF_8)
+//                    val parsedApiUser = json.decodeFromString<ApiUser>(rawBody)
+//                    // Automatically update the network class with the correct
+//                    // new online id
+//                    parsedApiUser.password = user.Password
+//                    val updatedUser = json.encodeToString(parsedApiUser)
+// //                        httpClient.resetSerializedUser(updatedUser, parsedApiUser.onlineId)
+//                    // And return the update user
+//                    appUser = parsedApiUser.toAppUser()
+//                    Log.i(
+//                        "AppUserRemoteDataSource",
+//                        "Created the user ${parsedApiUser.onlineId} online",
+//                    )
+//                }
+//                return appUser
+//            }
+//        }
 
         suspend fun read(): AppUser = throw NotImplementedError("This function is not implemented!")
 
@@ -150,14 +147,18 @@ class AppUserRemoteDataSource
                 return
             }
             withContext(Dispatchers.IO) {
-                remoteApi.DELETE("/v1/users/${user.OnlineID}") { resp ->
-                    if (resp.status != HttpStatusCode.OK) {
-                        Log.w("AppUserRemoteDataSource", "Failed to delete user online!")
-                        // In case the server cannot be reached, the call throws a
-                        // ConnectException, therefore this only happens when the request was bad
-                        throw IllegalArgumentException("bad request")
+                try {
+                    remoteApi.DELETE("/v1/users/${user.OnlineID}") { resp ->
+                        if (resp.status != HttpStatusCode.OK) {
+                            Log.w("AppUserRemoteDataSource", "Failed to delete user online!")
+                            // In case the server cannot be reached, the call throws a
+                            // ConnectException, therefore this only happens when the request was bad
+                            throw IllegalArgumentException("bad request")
+                        }
+                        Log.i("AppUserRemoteDataSource", "Deleted user ${user.OnlineID} online")
                     }
-                    Log.i("AppUserRemoteDataSource", "Deleted user ${user.OnlineID} online")
+                } catch (ex: IllegalAccessException) {
+                    Log.w("AppUserRemoteDataSource", "Failed to delete user online: $ex")
                 }
             }
         }

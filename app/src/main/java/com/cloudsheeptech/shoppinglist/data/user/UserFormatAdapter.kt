@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.user
 
+import java.time.OffsetDateTime
 import javax.inject.Singleton
 
 @Singleton
@@ -11,7 +12,7 @@ class UserFormatAdapter {
                 this.Username,
                 this.Password,
                 this.Created,
-                null,
+                OffsetDateTime.now(),
             )
 
         private fun ApiUser.toAppUser(): AppUser =

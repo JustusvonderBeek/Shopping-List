@@ -13,17 +13,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNames
+import java.io.File
+import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class TokenProvider
     @Inject
     constructor(
-        private val userCreationPayloadProvider: () -> String?,
-        private val userCreationPayloadProcessor: suspend (response: String) -> Unit,
-        private val userLoginPayloadProvider: () -> Pair<String, Long>,
+        private val payloadProvider: UserCreationPayloadProvider,
     ) {
         @Serializable
         data class Token
@@ -36,7 +39,7 @@ class TokenProvider
         private var jwtToken: String? = null
         private var apiToken: String? = null
 
-        private val authenticationClient =
+        private val unauthenticatedClient =
             HttpClient(OkHttp) {
                 engine {
                     config {
@@ -47,7 +50,44 @@ class TokenProvider
                 }
             }
 
-        // TODO: Add loading token from disk in case we use a longer running one
+        // We only store the latest token on disk
+        private fun readTokenFromDisk(tokenFile: String): BearerTokens {
+            var token = BearerTokens("", "")
+            if (tokenFile.isEmpty()) {
+                Log.w("Networking", "Given tokenFile value is empty")
+                return token
+            }
+            if (!File(tokenFile).exists()) {
+                Log.d("Networking", "Token File does not exist")
+                return token
+            }
+            val content = File(tokenFile).readText(Charsets.UTF_8)
+            try {
+                val decodedToken = Json.decodeFromString<Token>(content)
+                token = BearerTokens(decodedToken.token, decodedToken.token)
+            } catch (ex: SerializationException) {
+                Log.d("Networking", "The type of the token file is in incorrect format!")
+            }
+            return token
+        }
+
+        private fun storeTokenToDisk(
+            tokenFile: String,
+            token: BearerTokens,
+        ) {
+            if (tokenFile.isEmpty()) {
+                Log.w("Networking", "Given tokenFile is empty")
+                return
+            }
+            try {
+                val tokenInFileformat = Token(token.accessToken)
+                val encodedToken = Json.encodeToString(tokenInFileformat)
+                // Overwriting the file in case it does exist
+                File(tokenFile).writeText(encodedToken)
+            } catch (ex: IOException) {
+                Log.w("Networking", "Failed to store token on disk: $ex")
+            }
+        }
 
         fun getToken(): BearerTokens? = if (jwtToken != null) BearerTokens(jwtToken!!, jwtToken!!) else null
 
@@ -59,21 +99,21 @@ class TokenProvider
             val success =
                 withContext(Dispatchers.IO) {
                     try {
-                        val payload = userCreationPayloadProvider.invoke() ?: return@withContext true
+                        val payload = payloadProvider.provideUserCreationPayload() ?: return@withContext true
                         val response: HttpResponse =
-                            authenticationClient.post("${UrlProviderEnum.BASE_URL}${UrlProviderEnum.USER_CREATION}") {
+                            unauthenticatedClient.post("${UrlProviderEnum.BASE_URL.value}${UrlProviderEnum.USER_CREATE.value}") {
                                 setBody(payload)
                             }
                         if (response.status != HttpStatusCode.Created) {
                             return@withContext false
                         }
                         val rawBody = response.bodyAsText(Charsets.UTF_8)
-                        userCreationPayloadProcessor.invoke(rawBody)
+                        payloadProvider.processUserCreationResponse(rawBody)
                         return@withContext true
                     } catch (ex: Exception) {
                         Log.e(
                             "TokenProvider",
-                            "Failed to send POST to ${UrlProviderEnum.BASE_URL}${UrlProviderEnum.USER_CREATION}",
+                            "Failed to send POST to ${UrlProviderEnum.BASE_URL}${UrlProviderEnum.USER_CREATE}",
                         )
                     }
                     return@withContext false
@@ -90,18 +130,32 @@ class TokenProvider
                         if (!successfullyCreated) {
                             return@withContext null
                         }
-                        val (payload, userId) = userLoginPayloadProvider.invoke()
-                        val response: HttpResponse =
-                            authenticationClient.post("${UrlProviderEnum.BASE_URL}${UrlProviderEnum.USER_LOGIN}/$userId/login") {
-                                setBody(payload)
-                            }
-                        if (response.status != HttpStatusCode.OK) {
-                            Log.e("TokenProvider", "Login failed: ${response.status}")
+                        val (payload, userId) = payloadProvider.provideLoginPayload()
+                        if (userId == -1L || payload.isEmpty()) {
                             return@withContext null
                         }
-                        val rawBody = response.bodyAsText(Charsets.UTF_8)
-                        val decodedToken = Json.decodeFromString<Token>(rawBody)
-                        return@withContext BearerTokens(decodedToken.token, decodedToken.token)
+                        val response: HttpResponse =
+                            unauthenticatedClient.post(
+                                "${UrlProviderEnum.BASE_URL.value}${UrlProviderEnum.USER_LOGIN.value}/$userId/login",
+                            ) {
+                                setBody(payload)
+                            }
+                        when (response.status) {
+                            HttpStatusCode.NotFound -> {
+                                Log.w("TokenProvider", "The user was created online but not found!")
+                                // TODO: This should only happen during testing, never in a production system
+                                return@withContext null
+                            }
+                            HttpStatusCode.OK -> {
+                                val rawBody = response.bodyAsText(Charsets.UTF_8)
+                                val decodedToken = Json.decodeFromString<Token>(rawBody)
+                                return@withContext BearerTokens(decodedToken.token, decodedToken.token)
+                            }
+                            else -> {
+                                // empty
+                            }
+                        }
+                        return@withContext null
                     } catch (ex: Exception) {
                         Log.e("TokenProvider", "Failed to refresh tokens: $ex")
                     }

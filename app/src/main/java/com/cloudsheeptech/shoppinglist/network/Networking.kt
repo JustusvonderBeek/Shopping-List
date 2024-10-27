@@ -13,8 +13,6 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.Url
-import io.ktor.http.encodedPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Duration
@@ -41,7 +39,7 @@ class Networking
         private var getUserRegisterCall: () -> Triple<String, String, suspend (response: HttpResponse) -> Unit> =
             { Triple("", "", {}) }
 
-        private val client =
+        private val authClient =
             HttpClient(OkHttp) {
                 engine {
                     config {
@@ -60,9 +58,9 @@ class Networking
                             tokenProvider.refreshTokenAndCreateUserIfNotExists()
                         }
                         // Always include our authToken when asking our service
-                        sendWithoutRequest { request ->
-                            request.url.encodedPath == Url("$baseUrl/v1").encodedPath
-                        }
+//                        sendWithoutRequest { request ->
+//                            request.url.encodedPath == Url("${UrlProviderEnum.BASE_URL}").encodedPath
+//                        }
                     }
                 }
             }
@@ -83,14 +81,13 @@ class Networking
             requestUrlPath: String,
             responseHandler: suspend (response: HttpResponse) -> Unit,
         ) {
-            val (userToRegister, registerUrl, registerCallback) = this.getUserRegisterCall.invoke()
             withContext(Dispatchers.IO) {
                 try {
                     // This method should return "" only when the user is already registered
-                    if (userToRegister.isNotEmpty()) {
-//                        resetToken()
-                        post(registerUrl, userToRegister, registerCallback)
-                    }
+//                    if (userToRegister.isNotEmpty()) {
+// //                        resetToken()
+//                        post(registerUrl, userToRegister, registerCallback)
+//                    }
                     get(requestUrlPath, responseHandler)
                 } catch (ex: Exception) {
                     Log.w("Networking", "Failed to send GET request to $baseUrl$requestUrlPath: $ex")
@@ -104,10 +101,10 @@ class Networking
         ) {
             withContext(Dispatchers.IO) {
                 try {
-                    val response: HttpResponse = client.get(baseUrl + requestUrlPath)
+                    val response: HttpResponse = authClient.get(baseUrl + requestUrlPath)
                     if (response.status == HttpStatusCode.Unauthorized) {
 //                        resetToken()
-                        throw IllegalAccessError("user not authenticated online")
+                        throw IllegalAccessException("user not authenticated online")
                     }
                     responseHandler(response)
                 } catch (ex: Exception) {
@@ -156,13 +153,13 @@ class Networking
             withContext(Dispatchers.IO) {
                 try {
                     val response: HttpResponse =
-                        client.post(baseUrl + requestUrlPath) {
+                        authClient.post(baseUrl + requestUrlPath) {
                             setBody(data)
                         }
                     if (response.status == HttpStatusCode.Unauthorized) {
 //                        resetToken()
                         // This one is directly catched by the block outside?
-                        throw IllegalAccessError("user not authenticated online")
+                        throw IllegalAccessException("user not authenticated online")
                     }
                     responseHandler(response)
                 } catch (ex: Exception) {
@@ -198,12 +195,12 @@ class Networking
             withContext(Dispatchers.IO) {
                 try {
                     val response: HttpResponse =
-                        client.put(baseUrl + requestUrlPath) {
+                        authClient.put(baseUrl + requestUrlPath) {
                             setBody(data)
                         }
                     if (response.status == HttpStatusCode.Unauthorized) {
 //                        resetToken()
-                        throw IllegalAccessError("user not authenticated online")
+                        throw IllegalAccessException("user not authenticated online")
                     }
                     responseHandler(response)
 //                response.bodyAsText()
@@ -221,10 +218,10 @@ class Networking
         ) {
             withContext(Dispatchers.IO) {
                 try {
-                    val response: HttpResponse = client.delete(baseUrl + requestUrlPath)
+                    val response: HttpResponse = authClient.delete(baseUrl + requestUrlPath)
                     if (response.status == HttpStatusCode.Unauthorized) {
 //                        resetToken()
-                        throw IllegalAccessError("user not authenticated online")
+                        throw IllegalAccessException("user not authenticated online")
                     }
                     responseHandler(response)
                     response.bodyAsText()
@@ -233,45 +230,6 @@ class Networking
                 }
             }
         }
-
-        // We only store the latest token on disk
-//        private fun readTokenFromDisk(tokenFile: String): BearerTokens {
-//            var token = BearerTokens("", "")
-//            if (tokenFile.isEmpty()) {
-//                Log.w("Networking", "Given tokenFile value is empty")
-//                return token
-//            }
-//            if (!File(tokenFile).exists()) {
-//                Log.d("Networking", "Token File does not exist")
-//                return token
-//            }
-//            val content = File(tokenFile).readText(Charsets.UTF_8)
-//            try {
-//                val decodedToken = Json.decodeFromString<Token>(content)
-//                token = BearerTokens(decodedToken.token, decodedToken.token)
-//            } catch (ex: SerializationException) {
-//                Log.d("Networking", "The type of the token file is in incorrect format!")
-//            }
-//            return token
-//        }
-
-//        private fun storeTokenToDisk(
-//            tokenFile: String,
-//            token: BearerTokens,
-//        ) {
-//            if (tokenFile.isEmpty()) {
-//                Log.w("Networking", "Given tokenFile is empty")
-//                return
-//            }
-//            try {
-//                val tokenInFileformat = Token(token.accessToken)
-//                val encodedToken = Json.encodeToString(tokenInFileformat)
-//                // Overwriting the file in case it does exist
-//                File(tokenFile).writeText(encodedToken)
-//            } catch (ex: IOException) {
-//                Log.w("Networking", "Failed to store token on disk: $ex")
-//            }
-//        }
 
 //        private fun updateToken(token: String) {
 //            if (token.isEmpty()) {

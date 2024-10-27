@@ -1,10 +1,10 @@
 package com.cloudsheeptech.shoppinglist.data.user
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,35 +26,14 @@ class AppUserRepository
         private val appUserLocalSource: AppUserLocalDataSource = local
         private val appUserRemoteSource: AppUserRemoteDataSource = remote
 
-        init {
-            vmCoroutine.launch {
-                appUserLocalSource.read()
-                createOnline()
-                val user = appUserLocalSource.getUser() ?: return@launch
-                remote.registerCreateUser(user)
-            }
-        }
-
         // Creating the user information both offline and online
         suspend fun create(username: String) {
             appUserLocalSource.create(username)
             appUserLocalSource.store()
-            val user = appUserLocalSource.getUser()
-            if (user != null) {
-                val onlineUser = appUserRemoteSource.create(user) ?: return
-                appUserLocalSource.setOnlineId(onlineUser.OnlineID)
-                appUserLocalSource.store()
-            }
-        }
-
-        suspend fun createOnline() {
-            val localUser = appUserLocalSource.getUser() ?: return
-            if (localUser.OnlineID != 0L) {
-                return
-            }
-            val onlineUser = appUserRemoteSource.create(localUser) ?: return
-            appUserLocalSource.setOnlineId(onlineUser.OnlineID)
-            appUserLocalSource.store()
+            // Online user creation can take place anytime
+            // and is therefore explicitly build into the
+            // networking modules
+            // No need to perform this action here
         }
 
         // Should only provide the local user, since the online
@@ -78,7 +57,11 @@ class AppUserRepository
             val localUser = appUserLocalSource.getUser() ?: return
             // TODO: What happens if we cannot remove the user online?
             // Think about this problem later
-            appUserRemoteSource.delete(localUser)
+            try {
+                appUserRemoteSource.delete(localUser)
+            } catch (ex: Exception) {
+                Log.w("AppUserRepository", "User not deleted online")
+            }
             appUserLocalSource.delete()
         }
     }

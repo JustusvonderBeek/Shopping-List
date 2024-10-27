@@ -1,6 +1,7 @@
 package com.cloudsheeptech.shoppinglist.network
 
 import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,9 +10,9 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object UserCallbackProviderModule {
+object UserCreationPayloadProviderModule {
     @Provides
     @Singleton
-    fun provideUserCreationPayloadProvider(localUserLocalDataSource: AppUserLocalDataSource): () -> String? {
-    }
+    fun provideUserCreationPayloadProvider(appUserLocalDataSource: AppUserLocalDataSource): UserCreationPayloadProvider =
+        UserCreationDataProvider(appUserLocalDataSource)
 }

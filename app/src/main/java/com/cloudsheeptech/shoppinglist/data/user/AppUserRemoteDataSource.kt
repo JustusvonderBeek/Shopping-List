@@ -48,55 +48,6 @@ class AppUserRemoteDataSource
                 null,
             )
 
-        private fun ApiUser.toAppUser(): AppUser =
-            AppUser(
-                1,
-                this.onlineId,
-                this.username,
-                this.password ?: "",
-                this.created,
-            )
-
-//        companion object {
-//            @Throws(IllegalAccessError::class, IllegalStateException::class)
-//            suspend fun create(
-//                user: AppUser,
-//                json: Json,
-//                httpClient: HttpClient,
-//            ): AppUser? {
-//                var appUser: AppUser? = null
-//                withContext(Dispatchers.IO) {
-//                    val encodedUser = json.encodeToString(user)
-//                    val resp =
-//                        httpClient.post("/v1/users") {
-//                            setBody(encodedUser)
-//                        }
-//
-//                    // Authentication already handled by the networking object
-//                    if (resp.status != HttpStatusCode.Created) {
-//                        Log.w("AppUserRemoteDataSource", "Failed to create the user online!")
-//                        throw IllegalArgumentException("bad request")
-//                    }
-//                    val rawBody = resp.bodyAsText(Charsets.UTF_8)
-//                    val parsedApiUser = json.decodeFromString<ApiUser>(rawBody)
-//                    // Automatically update the network class with the correct
-//                    // new online id
-//                    parsedApiUser.password = user.Password
-//                    val updatedUser = json.encodeToString(parsedApiUser)
-// //                        httpClient.resetSerializedUser(updatedUser, parsedApiUser.onlineId)
-//                    // And return the update user
-//                    appUser = parsedApiUser.toAppUser()
-//                    Log.i(
-//                        "AppUserRemoteDataSource",
-//                        "Created the user ${parsedApiUser.onlineId} online",
-//                    )
-//                }
-//                return appUser
-//            }
-//        }
-
-        suspend fun read(): AppUser = throw NotImplementedError("This function is not implemented!")
-
         private suspend fun userOnlineCreatedCallback(
             response: HttpResponse,
             user: AppUser,

@@ -20,6 +20,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.network.UserCreationPayloadProvider
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -84,6 +85,9 @@ class ShoppingListApplication : Application() {
 
     @Inject
     lateinit var listShareRepository: ListShareRepository
+
+    @Inject
+    lateinit var userCreationPayloadProvider: UserCreationPayloadProvider
 
     @Inject
     lateinit var tokenProvider: TokenProvider

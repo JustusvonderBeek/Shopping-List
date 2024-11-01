@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -44,54 +45,56 @@ class AppUserOfflineTest {
     @Test
     fun testStoreUser() =
         runTest {
-            val application = ApplicationProvider.getApplicationContext<Application>()
-
-            val database = ShoppingListDatabase.getInstance(application)
-            val localAppUserHandler = AppUserLocalDataSource(database)
+            TestUtil.initialize()
 
             val username = "new user"
-            localAppUserHandler.create(username)
-            val user = localAppUserHandler.getUser()
+            val appUserLocalDataSource = TestUtil.shoppingListApplication.appUserLocalDataSource
+            appUserLocalDataSource.create(username)
+
+            val user = appUserLocalDataSource.getUser()
             Assert.assertNotNull(user)
             Assert.assertEquals(1L, user?.ID)
             Assert.assertEquals(0L, user?.OnlineID)
             Assert.assertEquals(username, user?.Username)
             Assert.assertNotEquals("", user?.Password)
             Assert.assertNotNull(user?.Created)
+
             val now = OffsetDateTime.now()
             Log.d("AppUserOfflineTest", "Now: $now, Created: ${user?.Created}")
             assert(now.isEqual(user?.Created) || now.isAfter(user?.Created))
             assert(64 <= user?.Password!!.length)
 
-//        storeUserInDatabase(application)
-            localAppUserHandler.store()
+            appUserLocalDataSource.store()
             // Give enough time to store the user into the database
-            Thread.sleep(50)
+            Thread.sleep(20)
 
+            val database = TestUtil.shoppingListApplication.database
             val userDao = database.userDao()
             val dbUser = userDao.getUser()
             Assert.assertNotNull(dbUser)
             Assert.assertEquals(user, dbUser)
 
-            localAppUserHandler.resetPassword()
-            val resetPasswordUser = localAppUserHandler.getUser()
+            appUserLocalDataSource.resetPassword()
+            val resetPasswordUser = appUserLocalDataSource.getUser()
             Assert.assertNotNull(resetPasswordUser)
             Assert.assertNotEquals(resetPasswordUser?.Password, user.Password)
 
-            localAppUserHandler.store()
-            Thread.sleep(50)
+            appUserLocalDataSource.store()
+            Thread.sleep(20)
+
             val dbUser2 = userDao.getUser()
             Assert.assertNotNull(dbUser2)
             Assert.assertEquals(dbUser2?.Password, resetPasswordUser?.Password)
 
             val newUsername = "new test user"
-            localAppUserHandler.setUsername(newUsername)
-            val resetUsernameUser = localAppUserHandler.getUser()
+            appUserLocalDataSource.setUsername(newUsername)
+            val resetUsernameUser = appUserLocalDataSource.getUser()
             Assert.assertNotNull(resetUsernameUser)
             Assert.assertNotEquals(dbUser2?.Username, resetUsernameUser?.Username)
 
-            localAppUserHandler.store()
-            Thread.sleep(50)
+            appUserLocalDataSource.store()
+            Thread.sleep(20)
+
             val dbUser3 = userDao.getUser()
             Assert.assertNotNull(dbUser3)
             Assert.assertEquals(dbUser3?.Username, resetUsernameUser?.Username)
@@ -100,33 +103,34 @@ class AppUserOfflineTest {
     @Test
     fun testRepeatedStoreUserInDatabase() =
         runTest {
-            val application = ApplicationProvider.getApplicationContext<Application>()
-
-            val database = ShoppingListDatabase.getInstance(application)
-            val localAppUserHandler = AppUserLocalDataSource(database)
+            TestUtil.initialize()
 
             val username = "new user"
-            localAppUserHandler.create(username)
-            val createdUser = localAppUserHandler.getUser()
-            localAppUserHandler.store()
-            Thread.sleep(50)
+            val appUserLocalDataSource = TestUtil.shoppingListApplication.appUserLocalDataSource
+            appUserLocalDataSource.create(username)
+            val user = appUserLocalDataSource.getUser()
 
+            appUserLocalDataSource.store()
+            // Give enough time to store the user into the database
+            Thread.sleep(20)
+
+            val database = TestUtil.shoppingListApplication.database
             val userDao = database.userDao()
             val users = userDao.debugGetAllUserEntries()
-            assert(1 == users.size)
+            Assert.assertEquals(1, users.size)
             val dbUser = userDao.getUser()
             Assert.assertNotNull(dbUser)
-            Assert.assertEquals(createdUser, dbUser)
+            Assert.assertEquals(user, dbUser)
 
             val newUsername = "new user with new username"
-            localAppUserHandler.create(newUsername)
-            localAppUserHandler.store()
-            Thread.sleep(50)
+            appUserLocalDataSource.create(newUsername)
+            appUserLocalDataSource.store()
+            Thread.sleep(20)
 
             val allUsers = userDao.debugGetAllUserEntries()
-            assert(1 == allUsers.size)
+            Assert.assertEquals(1, users.size)
             val newDbUser = userDao.getUser()
-            val updatedUser = localAppUserHandler.getUser()
+            val updatedUser = appUserLocalDataSource.getUser()
             Assert.assertEquals(newDbUser, updatedUser)
             Assert.assertNotEquals(dbUser, newDbUser)
         }
@@ -134,41 +138,46 @@ class AppUserOfflineTest {
     @Test
     fun testStoreIncorrectUserDatabase() =
         runTest {
-            val application = ApplicationProvider.getApplicationContext<Application>()
+            TestUtil.initialize()
 
-            val database = ShoppingListDatabase.getInstance(application)
-            val localAppUserHandler = AppUserLocalDataSource(database)
+            val username = "new user"
+            val appUserLocalDataSource = TestUtil.shoppingListApplication.appUserLocalDataSource
 
+            appUserLocalDataSource.store()
+            Thread.sleep(10)
+
+            val database = TestUtil.shoppingListApplication.database
             val userDao = database.userDao()
-            localAppUserHandler.store()
             val dbUser = userDao.getUser()
-//        Log.d("AppUserOfflineTest", "Retrieved user: $dbUser")
             Assert.assertNull(dbUser)
 
-            val username = "test user"
-            localAppUserHandler.create(username)
+            appUserLocalDataSource.create(username)
+            val appUser = appUserLocalDataSource.getUser()
+            Assert.assertNotNull(appUser)
             // This should now only work on a copy not on the original data
             // and therefore storing should be possible afterwards
-            localAppUserHandler.getUser()!!.Username = ""
-            localAppUserHandler.store()
+            appUser!!.Username = ""
+            appUserLocalDataSource.store()
             // Leave enough time to insert the user
-            Thread.sleep(50)
+            Thread.sleep(20)
+
             val dbUser2 = userDao.getUser()
-//        Log.d("AppUserOfflineTest", "Retrieved user: $dbUser2")
             Assert.assertNotNull(dbUser2)
 
-            localAppUserHandler.getUser()!!.Username = username
-            localAppUserHandler.getUser()!!.Password = ""
-            localAppUserHandler.store()
+            appUser.Username = username
+            appUser.Password = ""
+            appUserLocalDataSource.store()
             // Leave enough time to insert the user
-            Thread.sleep(50)
+            Thread.sleep(20)
+
             val dbUser3 = userDao.getUser()
             Assert.assertNotNull(dbUser3)
 
-            localAppUserHandler.getUser()!!.Password = "1234"
-            localAppUserHandler.store()
+            appUser.Password = "1234"
+            appUserLocalDataSource.store()
             // Leave enough time to insert the user
-            Thread.sleep(50)
+            Thread.sleep(20)
+
             val dbUser4 = userDao.getUser()
             Assert.assertNotNull(dbUser4)
         }
@@ -176,29 +185,31 @@ class AppUserOfflineTest {
     @Test
     fun testLoadUser() =
         runTest {
-            val application = ApplicationProvider.getApplicationContext<Application>()
-
-            val database = ShoppingListDatabase.getInstance(application)
-            val localAppUserHandler = AppUserLocalDataSource(database)
+            TestUtil.initialize()
 
             val username = "new user"
-            localAppUserHandler.create(username)
-            localAppUserHandler.store()
-            Thread.sleep(50)
+            val appUserLocalDataSource = TestUtil.shoppingListApplication.appUserLocalDataSource
+            appUserLocalDataSource.create(username)
 
+            appUserLocalDataSource.store()
+            // Give enough time to store the user into the database
+            Thread.sleep(20)
+
+            val database = TestUtil.shoppingListApplication.database
             val userDao = database.userDao()
             val dbUser = userDao.getUser()
             Assert.assertNotNull(dbUser)
             // Storing complete, now retrieve
 
             val newUsername = "test user"
-            localAppUserHandler.setUsername(newUsername)
-            val updatedUser = localAppUserHandler.getUser()
+            appUserLocalDataSource.setUsername(newUsername)
+            val updatedUser = appUserLocalDataSource.getUser()
             Assert.assertNotNull(updatedUser)
             Assert.assertEquals(newUsername, updatedUser?.Username)
-            localAppUserHandler.read()
-            Thread.sleep(50)
-            val loadedUser = localAppUserHandler.getUser()
+            appUserLocalDataSource.read()
+            Thread.sleep(20)
+
+            val loadedUser = appUserLocalDataSource.getUser()
             Assert.assertNotNull(loadedUser)
             Assert.assertEquals(username, loadedUser?.Username)
         }
@@ -206,26 +217,27 @@ class AppUserOfflineTest {
     @Test
     fun testDeleteUser() =
         runTest {
-            val application = ApplicationProvider.getApplicationContext<Application>()
-
-            val database = ShoppingListDatabase.getInstance(application)
-            val localAppUserHandler = AppUserLocalDataSource(database)
+            TestUtil.initialize()
 
             val username = "new user"
-            localAppUserHandler.create(username)
-            localAppUserHandler.store()
-            Thread.sleep(50)
+            val appUserLocalDataSource = TestUtil.shoppingListApplication.appUserLocalDataSource
+            appUserLocalDataSource.create(username)
 
+            appUserLocalDataSource.store()
+            // Give enough time to store the user into the database
+            Thread.sleep(20)
+
+            val database = TestUtil.shoppingListApplication.database
             val userDao = database.userDao()
             val dbUser = userDao.getUser()
             Assert.assertNotNull(dbUser)
 
-            localAppUserHandler.delete()
-            Thread.sleep(50)
+            appUserLocalDataSource.delete()
+            Thread.sleep(20)
 
             val users = userDao.debugGetAllUserEntries()
             assert(users.isEmpty())
-            val handlerUser = localAppUserHandler.getUser()
+            val handlerUser = appUserLocalDataSource.getUser()
             Assert.assertNull(handlerUser)
         }
 }

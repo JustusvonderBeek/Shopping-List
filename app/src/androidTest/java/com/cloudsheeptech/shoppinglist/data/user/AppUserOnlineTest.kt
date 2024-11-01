@@ -6,14 +6,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.ShoppingListApplication
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.TokenProvider
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
 import org.junit.Assert
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -74,72 +70,49 @@ class AppUserOnlineTest {
     @Test(expected = NotImplementedError::class)
     fun testReadUser() =
         runTest {
-            val (localSource, remoteSource, api) = setupRemoteAppUserDataSource()
-            remoteSource.read()
+            TestUtil.initialize()
+            val remoteAppUserDataSource = TestUtil.shoppingListApplication.appUserRemoteDataSource
+            remoteAppUserDataSource.read()
         }
 
     @Test
     fun testUpdateUser() =
         runTest {
-            val application = ApplicationProvider.getApplicationContext<Application>()
-            val database = ShoppingListDatabase.getInstance(application)
-            val json =
-                Json {
-                    serializersModule =
-                        SerializersModule {
-                            contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
-                        }
-                }
-            val username = "Online user"
-            val now = OffsetDateTime.now()
-            val appUser = AppUser(1L, 0L, username, "secure", now)
-            val apiUser = ApiUser(appUser.OnlineID, appUser.Username, appUser.Password, appUser.Created, appUser.Created)
-            val encodedUser = json.encodeToString(apiUser)
-            val tokenFile = application.filesDir.path + "/token.txt"
-//            val remoteApi = Networking(tokenFile)
-//            remoteApi.resetSerializedUser(encodedUser, apiUser.onlineId)
-//            val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
-//
-//            val remoteUser = appUserRemoteDataSource.create(appUser)
-//            Assert.assertNotNull(remoteUser)
-//
-//            // TODO: Update user information and send this requst to the remote
-//            val updatedUsername = "New Online User"
-//            appUser.OnlineID = remoteUser.OnlineID
-//            appUser.Username = updatedUsername
-//            appUserRemoteDataSource.update(appUser)
+            TestUtil.initialize()
+
+            val username = "test user update"
+            val appUserOnlineDataSource = TestUtil.shoppingListApplication.appUserRemoteDataSource
+            val appUserOfflineDataSource = TestUtil.shoppingListApplication.appUserLocalDataSource
+            appUserOfflineDataSource.create(username)
+            Thread.sleep(10)
+            val appUser = appUserOfflineDataSource.getUser()
+            Assert.assertNotNull(appUser)
+            var success = appUserOnlineDataSource.update(appUser!!)
+            assert(success)
+
+            val updatedUsername = "test user updated name for test"
+            appUser.Username = updatedUsername
+            success = appUserOnlineDataSource.update(appUser)
+            assert(success)
         }
 
     @Test
     fun testDeleteUser() =
         runTest {
-            val application = ApplicationProvider.getApplicationContext<Application>()
-            val database = ShoppingListDatabase.getInstance(application)
-            val json =
-                Json {
-                    serializersModule =
-                        SerializersModule {
-                            contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
-                        }
-                }
-            val username = "Online user"
-            val now = OffsetDateTime.now()
-            val appUser = AppUser(1L, 0L, username, "secure", now)
-            val apiUser = ApiUser(appUser.OnlineID, appUser.Username, appUser.Password, appUser.Created, appUser.Created)
-            val encodedUser = json.encodeToString(apiUser)
-            val tokenFile = application.filesDir.path + "token.txt"
-//            val remoteApi = Networking(tokenFile)
-//            remoteApi.resetSerializedUser(encodedUser, apiUser.onlineId)
-//            val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
-//
-//            // TODO: Check how bad requests or different connection states influence the result
-//            var remoteUser: AppUser? = null
-//            try {
-//                remoteUser = appUserRemoteDataSource.create(appUser)
-//                Assert.assertNotNull(remoteUser)
-//            } catch (ex: ConnectException) {
-//                Assert.fail("Failed because server was not available")
-//            }
-//            appUserRemoteDataSource.delete(remoteUser!!)
+            TestUtil.initialize()
+
+            val username = "test user update"
+            val appUserOnlineDataSource = TestUtil.shoppingListApplication.appUserRemoteDataSource
+            val appUserOfflineDataSource = TestUtil.shoppingListApplication.appUserLocalDataSource
+            appUserOfflineDataSource.create(username)
+            appUserOfflineDataSource.store()
+            Thread.sleep(10)
+            val appUser = appUserOfflineDataSource.getUser()
+            Assert.assertNotNull(appUser)
+            var success = appUserOnlineDataSource.update(appUser!!)
+            assert(success)
+
+            success = appUserOnlineDataSource.delete(appUser)
+            assert(success)
         }
 }

@@ -20,17 +20,30 @@ object TestUtil {
         createRemoteAppUserDS()
     }
 
-    private fun createDatabase(): ShoppingListDatabase {
-        val application = ApplicationProvider.getApplicationContext<Application>()
-        val database = ShoppingListDatabase.getInstance(application)
-        shoppingListApplication.database = database
+    private fun createDatabase(clear: Boolean = true): ShoppingListDatabase {
+        val database: ShoppingListDatabase?
+        if (shoppingListApplication.isDatabaseInitialized()) {
+            database = shoppingListApplication.database
+        } else {
+            val application = ApplicationProvider.getApplicationContext<Application>()
+            database = ShoppingListDatabase.getInstance(application)
+            shoppingListApplication.database = database
+        }
+        if (clear) {
+            database.clearAllTables()
+        }
         return database
     }
 
     private fun createLocalAppUserDS(): AppUserLocalDataSource {
-        val database = createDatabase()
-        val localDataSource = AppUserLocalDataSource(database)
-        shoppingListApplication.appUserLocalDataSource = localDataSource
+        val localDataSource: AppUserLocalDataSource?
+        if (shoppingListApplication.isAppUserLocalDSInitialized()) {
+            localDataSource = shoppingListApplication.appUserLocalDataSource
+        } else {
+            val database = createDatabase()
+            localDataSource = AppUserLocalDataSource(database)
+            shoppingListApplication.appUserLocalDataSource = localDataSource
+        }
         return localDataSource
     }
 

@@ -103,12 +103,6 @@ class AppUserLocalDataSource
         suspend fun read() {
             val loadedUser = loadUserFromDataStore() ?: return
             appUser = loadedUser
-            // The using application needs to take care of pushing the user online
-            //            if (UserId == 0L && Username.isNotEmpty() && Password.isNotEmpty()) {
-            //                Log.d("AppUser", "User ID not yet available")
-            //                pushUserOnline(appContext)
-            //                storeUserDatabase(DatabaseUser(getUser()))
-            //            }
             Log.d("AppUser", "User ${getUser()} loaded from database")
         }
 

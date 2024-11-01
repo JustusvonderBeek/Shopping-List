@@ -9,23 +9,24 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.AutoMigrationSpec
-import com.cloudsheeptech.shoppinglist.data.items.DbItem
+import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemListMappingDao
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
-import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
+import com.cloudsheeptech.shoppinglist.data.items.DbItem
+import com.cloudsheeptech.shoppinglist.data.items.ItemDao
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
-import com.cloudsheeptech.shoppinglist.data.UIPreference
-import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemListMappingDao
-import com.cloudsheeptech.shoppinglist.data.items.ItemDao
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserDao
-import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeDao
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionDao
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionMapping
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemDao
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemMapping
+import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
+import com.cloudsheeptech.shoppinglist.data.recipe.RecipeDao
+import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.sharing.SharedDao
 import com.cloudsheeptech.shoppinglist.data.typeConverter.DatabaseTypeConverter
+import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreference
+import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreferencesDao
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.user.AppUserDao
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -44,29 +45,46 @@ import javax.inject.Singleton
 )
 @TypeConverters(value = [DatabaseTypeConverter::class])
 abstract class ShoppingListDatabase : RoomDatabase() {
+    abstract fun shoppingListDao(): ShoppingListDao
 
-    abstract fun shoppingListDao() : ShoppingListDao
-    abstract fun itemDao() : ItemDao
-    abstract fun mappingDao() : ItemListMappingDao
-    abstract fun userDao() : AppUserDao
-    abstract fun onlineUserDao() : OnlineUserDao
-    abstract fun sharedDao() : SharedDao
-    abstract fun preferenceDao() : UIPreferencesDao
-    abstract fun receiptDao() : RecipeDao
-    abstract fun receiptDescriptionDao() : ReceiptDescriptionDao
-    abstract fun receiptItemDao() : ReceiptItemDao
+    abstract fun itemDao(): ItemDao
+
+    abstract fun mappingDao(): ItemListMappingDao
+
+    abstract fun userDao(): AppUserDao
+
+    abstract fun onlineUserDao(): OnlineUserDao
+
+    abstract fun sharedDao(): SharedDao
+
+    abstract fun preferenceDao(): UIPreferencesDao
+
+    abstract fun receiptDao(): RecipeDao
+
+    abstract fun receiptDescriptionDao(): ReceiptDescriptionDao
+
+    abstract fun receiptItemDao(): ReceiptItemDao
 
     companion object {
         const val LATEST_VERSION = 24
 
         @Volatile
-        private  var INSTANCE : ShoppingListDatabase? = null
+        private var INSTANCE: ShoppingListDatabase? = null
 
-        fun getInstance(@ApplicationContext context : Context) : ShoppingListDatabase {
+        fun getInstance(
+            @ApplicationContext context: Context,
+        ): ShoppingListDatabase {
             var instance = INSTANCE
             if (instance == null) {
                 Log.i("ShoppingListDatabase", "Creating new database")
-                instance = Room.databaseBuilder(context.applicationContext, ShoppingListDatabase::class.java, "shopping_list_database").fallbackToDestructiveMigration().build()
+                instance =
+                    Room
+                        .databaseBuilder(
+                            context.applicationContext,
+                            ShoppingListDatabase::class.java,
+                            "shopping_list_database",
+                        ).fallbackToDestructiveMigration()
+                        .build()
                 INSTANCE = instance
             }
             return instance
@@ -77,7 +95,7 @@ abstract class ShoppingListDatabase : RoomDatabase() {
         RenameColumn(
             tableName = "list_table",
             fromColumnName = "CreatedBy",
-            toColumnName = "createdBy"
+            toColumnName = "createdBy",
         ),
         RenameColumn(
             tableName = "list_table",
@@ -117,8 +135,8 @@ abstract class ShoppingListDatabase : RoomDatabase() {
         RenameColumn(
             tableName = "user",
             fromColumnName = "UserId",
-            toColumnName = "OnlineID"
-        )
+            toColumnName = "OnlineID",
+        ),
     )
     class Database19To20Migration : AutoMigrationSpec
 
@@ -136,4 +154,3 @@ abstract class ShoppingListDatabase : RoomDatabase() {
     )
     class Database20To21Migration : AutoMigrationSpec
 }
-

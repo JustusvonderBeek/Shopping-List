@@ -91,4 +91,16 @@ class ShoppingListApplication : Application() {
 
     @Inject
     lateinit var tokenProvider: TokenProvider
+
+    // ------ Testing Utilities -------
+
+    fun isDatabaseInitialized() = ::database.isInitialized
+
+    fun isAppUserLocalDSInitialized() = ::appUserLocalDataSource.isInitialized
+
+    fun isAppUserRemoteDSInitialized() = ::appUserRemoteDataSource.isInitialized
+
+    fun isAppUserRepositoryInitialized() = ::appUserRepository.isInitialized
+
+    fun isNetworkingInitialized() = ::networking.isInitialized
 }

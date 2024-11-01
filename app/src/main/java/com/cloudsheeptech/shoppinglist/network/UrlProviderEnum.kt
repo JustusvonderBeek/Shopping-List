@@ -9,4 +9,5 @@ enum class UrlProviderEnum(
 //    BASE_URL("https://ec2-3-120-40-62.eu-central-1.compute.amazonaws.com:46152/"),
     BASE_USER_URL("/v1/users"),
     SHOPPING_LIST_CREATE("/v1/list"),
+    ITEM_PRICE("/v1/item/prices"),
 }

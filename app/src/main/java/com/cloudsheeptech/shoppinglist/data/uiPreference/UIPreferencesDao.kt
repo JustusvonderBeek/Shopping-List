@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.database
+package com.cloudsheeptech.shoppinglist.data.uiPreference
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
@@ -6,25 +6,24 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.cloudsheeptech.shoppinglist.data.UIPreference
 
 @Dao
 interface UIPreferencesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertPreference(pref : UIPreference)
+    fun insertPreference(pref: UIPreference)
 
     @Update
-    fun updatePreference(pref : UIPreference)
+    fun updatePreference(pref: UIPreference)
 
     @Query("DELETE FROM ui_preferences WHERE ListId = :listId")
-    fun deletePreferenceForList(listId : Long)
+    fun deletePreferenceForList(listId: Long)
 
     @Query("DELETE FROM ui_preferences")
     fun clearPreferences()
 
     @Query("SELECT * FROM ui_preferences WHERE ListId = :listId")
-    fun getPreferenceForList(listId: Long) : UIPreference?
+    fun getPreferenceForList(listId: Long): UIPreference?
 
     @Query("SELECT * FROM ui_preferences WHERE ListId = :listId")
-    fun getPreferencesForListLive(listId: Long) : LiveData<UIPreference>
+    fun getPreferencesForListLive(listId: Long): LiveData<UIPreference>
 }

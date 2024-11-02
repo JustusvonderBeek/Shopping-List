@@ -41,7 +41,7 @@ class ShoppingListOfflineTest {
         localUserDs.store()
         val payloadProvider = UserCreationDataProvider(localUserDs)
         val tokenProvider = TokenProvider(payloadProvider)
-        val networking = Networking(application.filesDir.path + "/token.txt", tokenProvider)
+        val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)
         val localItemDs = ItemLocalDataSource(database)
@@ -390,7 +390,10 @@ class ShoppingListOfflineTest {
             val database = ShoppingListDatabase.getInstance(application)
             val itemToList = database.mappingDao()
             val mappings =
-                itemToList.getMappingsForList(listWithItems.listId, listWithItems.createdBy.onlineId)
+                itemToList.getMappingsForList(
+                    listWithItems.listId,
+                    listWithItems.createdBy.onlineId,
+                )
             assert(mappings.isEmpty())
         }
 }

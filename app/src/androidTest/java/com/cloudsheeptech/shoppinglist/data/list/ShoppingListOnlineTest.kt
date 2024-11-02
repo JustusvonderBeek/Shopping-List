@@ -40,7 +40,7 @@ class ShoppingListOnlineTest {
         val localUserDs = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserDs)
         val tokenProvider = TokenProvider(payloadProvider)
-        val networking = Networking(application.filesDir.path + "/token.txt", tokenProvider)
+        val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val appUserRepository = AppUserRepository(localUserDs, remoteUserDs)
         val remoteDataSource = ShoppingListRemoteDataSource(networking, appUserRepository)
@@ -75,7 +75,14 @@ class ShoppingListOnlineTest {
                     mutableListOf(),
                 )
             for (num in 1..3) {
-                val item = ApiItem("item $num", "empty icon", quantity = num.toLong(), checked = num % 2 == 0, appUser.OnlineID)
+                val item =
+                    ApiItem(
+                        "item $num",
+                        "empty icon",
+                        quantity = num.toLong(),
+                        checked = num % 2 == 0,
+                        appUser.OnlineID,
+                    )
                 listWithItems.items.add(item)
             }
             success = remoteDataSource.create(listWithItems)
@@ -99,14 +106,22 @@ class ShoppingListOnlineTest {
                     mutableListOf(),
                 )
             for (num in 1..3) {
-                val item = ApiItem("item $num", "empty icon", quantity = num.toLong(), checked = num % 2 == 0, appUser.OnlineID)
+                val item =
+                    ApiItem(
+                        "item $num",
+                        "empty icon",
+                        quantity = num.toLong(),
+                        checked = num % 2 == 0,
+                        appUser.OnlineID,
+                    )
                 listWithItems.items.add(item)
             }
             val success = remoteDataSource.create(listWithItems)
             assert(success)
 
             // TODO: Seems like the online lists contains the number of elements
-            val remoteList = remoteDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
+            val remoteList =
+                remoteDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
             Assert.assertNotNull(remoteList)
             Assert.assertEquals(listWithItems.title, remoteList!!.title)
             Assert.assertEquals(listWithItems, remoteList)
@@ -129,7 +144,14 @@ class ShoppingListOnlineTest {
                     mutableListOf(),
                 )
             for (num in 1..3) {
-                val item = ApiItem("item $num", "empty icon", quantity = num.toLong(), checked = num % 2 == 0, appUser.OnlineID)
+                val item =
+                    ApiItem(
+                        "item $num",
+                        "empty icon",
+                        quantity = num.toLong(),
+                        checked = num % 2 == 0,
+                        appUser.OnlineID,
+                    )
                 listWithItems.items.add(item)
             }
             var success = remoteDataSource.create(listWithItems)
@@ -141,7 +163,14 @@ class ShoppingListOnlineTest {
             secondListWithItems.listId = 4L
             secondListWithItems.items = mutableListOf()
             for (num in 1..2) {
-                val item = ApiItem("item $num", "empty icon", quantity = num.toLong(), checked = num % 2 == 0, appUser.OnlineID)
+                val item =
+                    ApiItem(
+                        "item $num",
+                        "empty icon",
+                        quantity = num.toLong(),
+                        checked = num % 2 == 0,
+                        appUser.OnlineID,
+                    )
                 secondListWithItems.items.add(item)
             }
             success = remoteDataSource.create(secondListWithItems)
@@ -176,7 +205,14 @@ class ShoppingListOnlineTest {
                     mutableListOf(),
                 )
             for (num in 1..3) {
-                val item = ApiItem("item $num", "empty icon", quantity = num.toLong(), checked = num % 2 == 0, appUser.OnlineID)
+                val item =
+                    ApiItem(
+                        "item $num",
+                        "empty icon",
+                        quantity = num.toLong(),
+                        checked = num % 2 == 0,
+                        appUser.OnlineID,
+                    )
                 listWithItems.items.add(item)
             }
             var success = remoteDataSource.create(listWithItems)
@@ -216,7 +252,14 @@ class ShoppingListOnlineTest {
                     mutableListOf(),
                 )
             for (num in 1..3) {
-                val item = ApiItem("item $num", "empty icon", quantity = num.toLong(), checked = num % 2 == 0, appUser.OnlineID)
+                val item =
+                    ApiItem(
+                        "item $num",
+                        "empty icon",
+                        quantity = num.toLong(),
+                        checked = num % 2 == 0,
+                        appUser.OnlineID,
+                    )
                 listWithItems.items.add(item)
             }
             var success = remoteDataSource.create(listWithItems)
@@ -225,7 +268,8 @@ class ShoppingListOnlineTest {
             success = remoteDataSource.deleteShoppingList(listWithItems.listId)
             assert(success)
 
-            val remoteList = remoteDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
+            val remoteList =
+                remoteDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
             Assert.assertNull(remoteList)
         }
 }

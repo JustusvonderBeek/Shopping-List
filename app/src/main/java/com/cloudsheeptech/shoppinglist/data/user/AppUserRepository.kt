@@ -2,9 +2,6 @@ package com.cloudsheeptech.shoppinglist.data.user
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,15 +14,9 @@ import javax.inject.Singleton
 class AppUserRepository
     @Inject
     constructor(
-        local: AppUserLocalDataSource,
-        remote: AppUserRemoteDataSource,
+        private val appUserLocalSource: AppUserLocalDataSource,
+        private val appUserRemoteSource: AppUserRemoteDataSource,
     ) {
-        private val job = Job()
-        private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
-
-        private val appUserLocalSource: AppUserLocalDataSource = local
-        private val appUserRemoteSource: AppUserRemoteDataSource = remote
-
         // Creating the user information both offline and online
         suspend fun create(username: String) {
             appUserLocalSource.create(username)

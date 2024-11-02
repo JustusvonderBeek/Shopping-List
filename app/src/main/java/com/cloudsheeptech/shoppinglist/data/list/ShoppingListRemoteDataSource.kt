@@ -4,6 +4,7 @@ import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
+import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
@@ -38,8 +39,32 @@ class ShoppingListRemoteDataSource
             withContext(Dispatchers.IO) {
                 try {
                     val encodedList = json.encodeToString(list)
+                    var wrongOnlineId = false
                     Log.d("ShoppingListRemoteDataSource", "Encoded List:\n$encodedList")
-                    networking.POST("/v1/lists", encodedList) { response ->
+                    networking.POST(
+                        UrlProviderEnum.BASE_SHOPPING_LIST_URL.url,
+                        encodedList,
+                    ) { response ->
+                        if (response.status == HttpStatusCode.BadRequest) {
+                            wrongOnlineId = true
+                            return@POST
+                        }
+                        if (response.status != HttpStatusCode.Created) {
+                            Log.e("ShoppingListRemoteDataSource", "The list was not created online")
+                            return@POST
+                        }
+                        success = true
+                    }
+                    if (!wrongOnlineId) {
+                        return@withContext
+                    }
+                    val updatedUser = userRepository.read() ?: return@withContext
+                    list.createdBy.onlineId = updatedUser.OnlineID
+                    val updatedEncodedList = json.encodeToString(list)
+                    networking.POST(
+                        UrlProviderEnum.BASE_SHOPPING_LIST_URL.url,
+                        updatedEncodedList,
+                    ) { response ->
                         if (response.status != HttpStatusCode.Created) {
                             Log.e("ShoppingListRemoteDataSource", "The list was not created online")
                             return@POST
@@ -47,7 +72,10 @@ class ShoppingListRemoteDataSource
                         success = true
                     }
                 } catch (ex: SerializationException) {
-                    Log.e("ShoppingListRemoteDataSource", "Cannot serialize the list into a string: $ex")
+                    Log.e(
+                        "ShoppingListRemoteDataSource",
+                        "Cannot serialize the list into a string: $ex",
+                    )
                     return@withContext
                 } catch (ex: IllegalAccessError) {
                     Log.e("ShoppingListRemoteDataSource", "Error: $ex")
@@ -65,9 +93,12 @@ class ShoppingListRemoteDataSource
         ): ApiShoppingList? {
             var retrievedRemoteList: ApiShoppingList? = null
             withContext(Dispatchers.IO) {
-                networking.GET("/v1/lists/$listId?createdBy=$createdBy") { response ->
+                networking.GET("${UrlProviderEnum.SHOPPING_LIST_READ.url}/$listId?createdBy=$createdBy") { response ->
                     if (response.status != HttpStatusCode.OK) {
-                        Log.e("ShoppingListRemoteDataSource", "Failed to read list $listId createdBy $createdBy from remote")
+                        Log.e(
+                            "ShoppingListRemoteDataSource",
+                            "Failed to read list $listId createdBy $createdBy from remote",
+                        )
                         return@GET
                     }
                     val rawBody = response.bodyAsText(Charsets.UTF_8)
@@ -85,7 +116,7 @@ class ShoppingListRemoteDataSource
         suspend fun readAll(): List<ApiShoppingList> {
             val allRemoteLists = mutableListOf<ApiShoppingList>()
             withContext(Dispatchers.IO) {
-                networking.GET("/v1/lists") { response ->
+                networking.GET(UrlProviderEnum.BASE_SHOPPING_LIST_URL.url) { response ->
                     if (response.status != HttpStatusCode.OK) {
                         Log.e("ShoppingListRemoteDataSource", "Failed to read all lists from remote")
                         return@GET
@@ -107,9 +138,39 @@ class ShoppingListRemoteDataSource
             var success = false
             withContext(Dispatchers.IO) {
                 val encodedList = json.encodeToString(updatedList)
-                networking.PUT("/v1/lists/${updatedList.listId}?createdBy=${updatedList.createdBy.onlineId}", encodedList) { response ->
+                var wrongOnlineId = false
+                networking.PUT(
+                    "${UrlProviderEnum.BASE_SHOPPING_LIST_URL.url}/${updatedList.listId}?createdBy=${updatedList.createdBy.onlineId}",
+                    encodedList,
+                ) { response ->
+                    if (response.status == HttpStatusCode.BadRequest) {
+                        wrongOnlineId = true
+                        return@PUT
+                    }
                     if (response.status != HttpStatusCode.OK) {
-                        Log.e("ShoppingListRemoteDataSource", "Remote did not process updating list successfully")
+                        Log.e(
+                            "ShoppingListRemoteDataSource",
+                            "Remote did not process updating list successfully",
+                        )
+                        return@PUT
+                    }
+                    success = true
+                }
+                if (!wrongOnlineId) {
+                    return@withContext
+                }
+                val updatedUser = userRepository.read() ?: return@withContext
+                updatedList.createdBy.onlineId = updatedUser.OnlineID
+                val updatedEncodedList = json.encodeToString(updatedList)
+                networking.PUT(
+                    "${UrlProviderEnum.BASE_SHOPPING_LIST_URL.url}/${updatedList.listId}?createdBy=${updatedList.createdBy.onlineId}",
+                    updatedEncodedList,
+                ) { response ->
+                    if (response.status != HttpStatusCode.OK) {
+                        Log.e(
+                            "ShoppingListRemoteDataSource",
+                            "Remote did not process updating list successfully",
+                        )
                         return@PUT
                     }
                     success = true
@@ -123,7 +184,7 @@ class ShoppingListRemoteDataSource
         suspend fun deleteShoppingList(listId: Long): Boolean {
             var success = false
             withContext(Dispatchers.IO) {
-                networking.DELETE("/v1/lists/$listId") { response ->
+                networking.DELETE("${UrlProviderEnum.BASE_SHOPPING_LIST_URL}/$listId") { response ->
                     if (response.status != HttpStatusCode.OK) {
                         Log.e("ShoppingListRemoteDataSource", "Failed to delete list $listId at remote")
                         return@DELETE

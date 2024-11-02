@@ -9,7 +9,6 @@ import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListLocalDat
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListRepository
 import com.cloudsheeptech.shoppinglist.data.items.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
-import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
@@ -42,7 +41,7 @@ class DbShoppingListLocalDataSourceTest {
             ApiShoppingList(
                 listId = 0L,
                 title = "Default List",
-                createdBy = ListCreator(1234L, "creator"),
+                createdBy = ApiListCreator(1234L, "creator"),
                 createdAt = OffsetDateTime.now(),
                 lastUpdated = OffsetDateTime.now(),
                 items = mutableListOf(),
@@ -101,7 +100,13 @@ class DbShoppingListLocalDataSourceTest {
             val itemRepo = ItemRepository(localItemDs)
             val localItemToListDs = ItemToListLocalDataSource(database)
             val itemToListRepository = ItemToListRepository(localItemToListDs)
-            val localDataSource = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
+            val localDataSource =
+                ShoppingListLocalDataSource(
+                    database,
+                    userRepository,
+                    itemRepo,
+                    itemToListRepository,
+                )
 
             val list = createDefaultList()
             val insertId = localDataSource.create(list)
@@ -138,7 +143,13 @@ class DbShoppingListLocalDataSourceTest {
             val itemRepo = ItemRepository(localItemDs)
             val localItemToListDs = ItemToListLocalDataSource(database)
             val itemToListRepository = ItemToListRepository(localItemToListDs)
-            val dbHandler = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
+            val dbHandler =
+                ShoppingListLocalDataSource(
+                    database,
+                    userRepository,
+                    itemRepo,
+                    itemToListRepository,
+                )
 
             val list = createDefaultList()
             val insertId = dbHandler.create(list)
@@ -183,7 +194,13 @@ class DbShoppingListLocalDataSourceTest {
             val itemRepo = ItemRepository(localItemDs)
             val localItemToListDs = ItemToListLocalDataSource(database)
             val itemToListRepository = ItemToListRepository(localItemToListDs)
-            val dbHandler = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
+            val dbHandler =
+                ShoppingListLocalDataSource(
+                    database,
+                    userRepository,
+                    itemRepo,
+                    itemToListRepository,
+                )
 
             val list = createDefaultList()
             val insertId = dbHandler.create(list)
@@ -216,7 +233,13 @@ class DbShoppingListLocalDataSourceTest {
             val itemRepo = ItemRepository(localItemDs)
             val localItemToListDs = ItemToListLocalDataSource(database)
             val itemToListRepository = ItemToListRepository(localItemToListDs)
-            val dbHandler = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
+            val dbHandler =
+                ShoppingListLocalDataSource(
+                    database,
+                    userRepository,
+                    itemRepo,
+                    itemToListRepository,
+                )
 
             val list = createDefaultList()
             val insertId = dbHandler.create(list)
@@ -254,7 +277,13 @@ class DbShoppingListLocalDataSourceTest {
             val itemRepo = ItemRepository(localItemDs)
             val localItemToListDs = ItemToListLocalDataSource(database)
             val itemToListRepository = ItemToListRepository(localItemToListDs)
-            val dbHandler = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
+            val dbHandler =
+                ShoppingListLocalDataSource(
+                    database,
+                    userRepository,
+                    itemRepo,
+                    itemToListRepository,
+                )
 
             val list = createDefaultList()
             val insertId = dbHandler.create(list)

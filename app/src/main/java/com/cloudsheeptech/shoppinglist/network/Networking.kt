@@ -1,7 +1,6 @@
 package com.cloudsheeptech.shoppinglist.network
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.data.ApiObjectWithOnlineId
 import com.cloudsheeptech.shoppinglist.exception.UserAuthenticationFailedException
 import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
 import io.ktor.client.HttpClient
@@ -22,7 +21,6 @@ import java.net.ConnectException
 import java.time.Duration
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.reflect.full.memberProperties
 
 /*
 * This class captures the authentication logic of the application,
@@ -56,28 +54,6 @@ class Networking
                 }
             }
 
-        /**
-         * This function allows to update all objects fed into the post or delete functions
-         * to contain the new user onlineId in case a user has to be created
-         */
-        private fun updateOnlineId(
-            item: Any,
-            newOnlineId: Long,
-        ) {
-            if (item is ApiObjectWithOnlineId) {
-                item.onlineId = newOnlineId
-            }
-            // The idea is to recursively search for members that are ApiObject interface
-            // and change the contained onlineId to the new one
-            // This is using reflection
-            item::class.memberProperties.forEach { property ->
-                val nestedItem = property.call(item)
-                if (nestedItem is ApiObjectWithOnlineId) {
-                    nestedItem.onlineId = newOnlineId
-                }
-            }
-        }
-
         suspend fun GET(
             requestUrlPath: String,
             responseHandler: suspend (response: HttpResponse) -> Unit,
@@ -91,7 +67,7 @@ class Networking
                     }
                     responseHandler(response)
                 } catch (ex: ConnectException) {
-                    Log.e("Networking", "Failed to send GET request to $finalRequestUrl")
+                    Log.e("Networking", "Failed to send GET request to $finalRequestUrl: $ex")
                 }
             }
         }
@@ -113,7 +89,7 @@ class Networking
                     }
                     responseHandler(response)
                 } catch (ex: ConnectException) {
-                    Log.e("Networking", "failed to send POST request to $finalRequestUrl")
+                    Log.e("Networking", "failed to send POST request to $finalRequestUrl: $ex")
                 }
             }
         }
@@ -174,7 +150,7 @@ class Networking
                 try {
                     val response: HttpResponse = authClient.delete(finalRequestUrl)
                     if (response.status == HttpStatusCode.Unauthorized) {
-                        throw IllegalAccessException("user not authenticated online")
+                        throw UserNotAuthenticatedException("user not authenticated online")
                     }
                     responseHandler(response)
                 } catch (ex: ConnectException) {

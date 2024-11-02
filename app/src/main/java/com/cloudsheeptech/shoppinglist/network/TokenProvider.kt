@@ -93,16 +93,19 @@ class TokenProvider
 
         fun setToken(token: String) {
             this.jwtToken = token
+            storeTokenToDisk("", BearerTokens(this.jwtToken ?: "", this.apiToken ?: ""))
         }
 
         private suspend fun createUserIfNotExists(): Boolean {
             val success =
                 withContext(Dispatchers.IO) {
-                    val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.BASE_USER_URL.url}"
+                    val finalRequestUrl =
+                        "${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.BASE_USER_URL.url}"
                     try {
-                        val payload = payloadProvider.provideUserCreationPayload() ?: return@withContext true
+                        val payload =
+                            payloadProvider.provideUserCreationPayload() ?: return@withContext true
                         val response: HttpResponse =
-                            unauthenticatedClient.post("$finalRequestUrl") {
+                            unauthenticatedClient.post(finalRequestUrl) {
                                 setBody(payload)
                             }
                         if (response.status != HttpStatusCode.Created) {
@@ -126,7 +129,8 @@ class TokenProvider
             Log.d("Networking", "refreshing token...")
             val tokens: BearerTokens? =
                 withContext(Dispatchers.IO) {
-                    val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.BASE_USER_URL.url}"
+                    val finalRequestUrl =
+                        "${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.BASE_USER_URL.url}"
                     try {
                         val successfullyCreated = createUserIfNotExists()
                         if (!successfullyCreated) {
@@ -144,15 +148,20 @@ class TokenProvider
                             }
                         when (response.status) {
                             HttpStatusCode.NotFound -> {
-                                Log.e("TokenProvider", "The user login request was made but the userId not found online")
-                                // TODO: This should only happen during testing, never in a production system
+                                Log.e(
+                                    "TokenProvider",
+                                    "The user login request was made but the userId not found online",
+                                )
+                                // This should only happen during testing, never in a production system
                                 return@withContext null
                             }
+
                             HttpStatusCode.OK -> {
                                 val rawBody = response.bodyAsText(Charsets.UTF_8)
                                 val decodedToken = Json.decodeFromString<Token>(rawBody)
                                 return@withContext BearerTokens(decodedToken.token, decodedToken.token)
                             }
+
                             else -> {
                                 // empty
                             }

@@ -6,24 +6,21 @@ import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
-* This class implements the main handling of app wide shopping lists.
-* This includes the creation of new lists in a displayable format
-* and the deserialization from an API list to into the individual parts
-* that can be stored by the application.
+ * This class implements the main handling of app wide shopping lists.
+ * This includes the creation of new lists in a displayable format
+ * and the deserialization from an API list to into the individual parts
+ * that can be stored by the application.
  */
 @Singleton
 class ShoppingListRepository
@@ -33,16 +30,7 @@ class ShoppingListRepository
         private val remoteApi: ShoppingListRemoteDataSource,
         private val userRepository: AppUserRepository,
     ) {
-        private val json =
-            Json {
-                ignoreUnknownKeys = false
-                encodeDefaults = true
-                serializersModule =
-                    SerializersModule {
-                        contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
-                    }
-            }
-
+        // TODO: This should only ever happen once after the creation of a new user
         init {
             CoroutineScope(Dispatchers.Main + Job()).launch {
                 Log.d("ShoppingListRepository", "Starting updating process")
@@ -56,7 +44,8 @@ class ShoppingListRepository
 
         suspend fun create(title: String): ApiShoppingList {
             val now = OffsetDateTime.now()
-            val user = userRepository.read() ?: throw IllegalStateException("user null after login screen")
+            val user =
+                userRepository.read() ?: throw IllegalStateException("user null after login screen")
             val newList =
                 ApiShoppingList(
                     listId = 0L,
@@ -72,7 +61,6 @@ class ShoppingListRepository
                 remoteApi.create(newList)
             } catch (ex: IllegalAccessException) {
                 Log.w("ShoppingListRepository", "Ex: $ex")
-//            userRepository.createOnline()
             }
             return newList
         }
@@ -98,7 +86,10 @@ class ShoppingListRepository
             allRemoteLists.forEach { remoteList ->
                 // Create if not exists, update if exists
                 val exists = localDataSource.exists(remoteList.listId, remoteList.createdBy.onlineId)
-                Log.d("ShoppingListRepository", "List ${remoteList.listId} from ${remoteList.createdBy.onlineId} exists: $exists")
+                Log.d(
+                    "ShoppingListRepository",
+                    "List ${remoteList.listId} from ${remoteList.createdBy.onlineId} exists: $exists",
+                )
                 if (!exists) {
                     localDataSource.create(remoteList)
                 } else {

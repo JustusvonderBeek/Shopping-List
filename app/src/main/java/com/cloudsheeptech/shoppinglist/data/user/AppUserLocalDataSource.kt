@@ -30,9 +30,6 @@ class AppUserLocalDataSource
     ) {
         private val appUserDao: AppUserDao = database.userDao()
 
-        //    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "userdata")
-
-        //    private const val LETTER_BYTES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?$%&(){}[]"
         private val DEFAULT_PASSWORD_LENGTH = 64
         private val tokenArray = ByteArray(DEFAULT_PASSWORD_LENGTH)
         private var appUser: AppUser? = null

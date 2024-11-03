@@ -103,4 +103,18 @@ class ShoppingListApplication : Application() {
     fun isAppUserRepositoryInitialized() = ::appUserRepository.isInitialized
 
     fun isNetworkingInitialized() = ::networking.isInitialized
+
+    fun isItemLocalDSInitialized() = ::itemLocalDataSource.isInitialized
+
+    fun isItemRepositoryInitialized() = ::itemRepository.isInitialized
+
+    fun isItemToListLocalDSInitialized() = ::itemToListLocalDataSource.isInitialized
+
+    fun isItemToListRepositoryInitialized() = ::itemToListRepository.isInitialized
+
+    fun isShoppingListLocalDSInitialized() = ::shoppingListLocalDataSource.isInitialized
+
+    fun isShoppingListRemoteDSInitialized() = ::shoppingListRemoteDataSource.isInitialized
+
+    fun isShoppingListRepositoryInitialized() = ::shoppingListRepository.isInitialized
 }

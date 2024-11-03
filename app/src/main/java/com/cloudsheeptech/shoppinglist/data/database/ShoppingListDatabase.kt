@@ -14,6 +14,7 @@ import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemDao
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListDao
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserDao
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionDao

@@ -15,7 +15,6 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.max
@@ -90,6 +89,7 @@ class ShoppingListLocalDataSource
                     createdBy = this.createdBy.onlineId,
                     createdByName = this.createdBy.username,
                     lastUpdated = this.lastUpdated,
+                    version = this.version,
                 )
             val dbItems = this.items.map { item -> item.toDbItem() }
             return Pair(dbList, dbItems)
@@ -107,6 +107,7 @@ class ShoppingListLocalDataSource
                     createdAt = this.lastUpdated,
                     lastUpdated = this.lastUpdated,
                     items = mutableListOf(),
+                    version = this.version,
                 )
             return apiList
         }
@@ -296,75 +297,48 @@ class ShoppingListLocalDataSource
          * @throws IllegalArgumentException if the list does not exist
          */
         @Throws(IllegalArgumentException::class)
-        suspend fun update(updatedList: ApiShoppingList) {
+        suspend fun update(updatedList: ApiShoppingList): Long {
             if (updatedList.listId == 0L) {
                 throw IllegalArgumentException("list does not exist in the database")
             }
-            withContext(Dispatchers.IO) {
-                val existingList =
-                    listDao.getShoppingList(updatedList.listId, updatedList.createdBy.onlineId)
-                        ?: throw IllegalArgumentException("list does not exist")
+            val updatedVersion =
+                withContext(Dispatchers.IO) {
+                    val existingList =
+                        listDao.getShoppingList(updatedList.listId, updatedList.createdBy.onlineId)
+                            ?: throw IllegalArgumentException("list does not exist in the database")
 
-                // Fix the createdBy == 0 if the user is already logged in online
-                val user = userRepository.read()
-                if (existingList.createdBy == 0L && user != null && user.OnlineID != 0L) {
-                }
+                    // Fix the createdBy == 0 if the user is already logged in online
+                    val user = userRepository.read() ?: throw IllegalStateException("user null after login")
+                    if (existingList.createdBy == 0L && user.OnlineID != 0L) {
+                        updatedList.createdBy.onlineId = user.OnlineID
+                    }
 
-                // Compare last edited value
-                // TODO: Make this more elaborate and allow to integrate updates when the
-                // remote and locally changed values in the list
-                // Ignore everything below seconds
-                if (existingList.lastUpdated
-                        .truncatedTo(ChronoUnit.SECONDS)
-                        .isAfter(updatedList.lastUpdated.truncatedTo(ChronoUnit.SECONDS))
-                ) {
-                    Log.i(
-                        "ShoppingListLocalDataSource",
-                        "Updating is skipped because the last local list update is newer than the incoming update: ${existingList.lastUpdated} - (updated) ${updatedList.lastUpdated}",
+                    if (updatedList.version <= existingList.version) {
+                        // TODO: For this to work, we need delta information what happened since the last updates
+                        Log.i(
+                            "ShoppingListLocalDataSource",
+                            "Updating is skipped because the last local list update is newer than the incoming update: ${existingList.version} - (updated) ${updatedList.version}",
+                        )
+                        return@withContext -1L
+                    }
+
+                    // FIXME: Instead of saving the update as truth, compare and make more
+                    // detailed comparison
+                    val (dbList, items) = updatedList.toDbList()
+                    dbList.lastUpdated = OffsetDateTime.now()
+                    listDao.updateList(dbList)
+                    itemToListRepository.deleteAllMappingsForList(
+                        updatedList.listId,
+                        updatedList.createdBy.onlineId,
                     )
-                    return@withContext
+                    insertItems(items, updatedList)
+                    Log.d(
+                        "ShoppingListHandler",
+                        "Updated list ${updatedList.listId} with ${items.size} items in database",
+                    )
+                    return@withContext dbList.version.plus(1L)
                 }
-
-                // FIXME: Instead of saving the update as truth, compare and make more
-                // detailed comparison
-                val (dbList, items) = updatedList.toDbList()
-                dbList.lastUpdated = OffsetDateTime.now()
-                listDao.updateList(dbList)
-                itemToListRepository.deleteAllMappingsForList(
-                    updatedList.listId,
-                    updatedList.createdBy.onlineId,
-                )
-                items.forEachIndexed { index, item ->
-                    // Might be a new item
-                    var listMapping: ListMapping
-                    try {
-                        val insertedItemId = itemRepository.create(item)
-                        val apiItem = updatedList.items[index]
-                        listMapping =
-                            apiItem.toListMapping(
-                                insertedItemId,
-                                updatedList.listId,
-                                updatedList.createdBy.onlineId,
-                            )
-                    } catch (ex: IllegalStateException) {
-                        val updatedItemId = itemRepository.update(item)
-                        val apiItem = updatedList.items[index]
-                        listMapping =
-                            apiItem.toListMapping(
-                                updatedItemId,
-                                updatedList.listId,
-                                updatedList.createdBy.onlineId,
-                            )
-                    }
-                    try {
-                        itemToListRepository.create(listMapping)
-                    } catch (ex: IllegalStateException) {
-                        // THIS SHOULD NEVER HAPPENS, SINCE WE DELETED ALL MAPPINGS FOR THIS LIST
-                        itemToListRepository.update(listMapping)
-                    }
-                }
-                Log.d("ShoppingListHandler", "Updated list ${updatedList.listId} in database")
-            }
+            return updatedVersion
         }
 
         suspend fun updateCreatedById(currentUserId: Long) {

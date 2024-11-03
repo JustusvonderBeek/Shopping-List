@@ -133,6 +133,41 @@ class ShoppingListLocalDataSource
             return latestId
         }
 
+        private suspend fun insertItems(
+            items: List<DbItem>,
+            insertedList: ApiShoppingList,
+        ) {
+            items.forEachIndexed { index, item ->
+                var listMapping: ListMapping
+                try {
+                    val insertedItemId = itemRepository.create(item)
+                    val apiItem = insertedList.items[index]
+                    listMapping =
+                        apiItem.toListMapping(
+                            insertedItemId,
+                            insertedList.listId,
+                            insertedList.createdBy.onlineId,
+                        )
+                } catch (ex: IllegalStateException) {
+                    val updatedItemId = itemRepository.update(item)
+                    val apiItem = insertedList.items[index]
+                    listMapping =
+                        apiItem.toListMapping(
+                            updatedItemId,
+                            insertedList.listId,
+                            insertedList.createdBy.onlineId,
+                        )
+                }
+                try {
+                    itemToListRepository.create(listMapping)
+                } catch (ex: IllegalStateException) {
+                    itemToListRepository.update(listMapping)
+                } catch (ex: IllegalArgumentException) {
+                    itemToListRepository.update(listMapping)
+                }
+            }
+        }
+
         /**
          * This function creates a new shopping list in the local database
          * @return The id of the newly created list
@@ -143,8 +178,7 @@ class ShoppingListLocalDataSource
             var insertedListId = list.listId
             withContext(Dispatchers.IO) {
                 // Differentiate between new and existing list
-                val existingList = listDao.getShoppingList(list.listId, list.createdBy.onlineId)
-                if (existingList != null) {
+                if (listDao.exists(list.listId, list.createdBy.onlineId)) {
                     throw IllegalArgumentException("list '${list.title}' already exists")
                 }
                 // Update the id to the latest available ID
@@ -155,53 +189,18 @@ class ShoppingListLocalDataSource
                 // In case the list comes from online, we don't want to change the id
                 if (copiedList.listId == 0L && list.createdBy.onlineId == user.OnlineID) {
                     copiedList.listId = getUniqueShoppingListID(list.createdBy.onlineId)
+                    insertedListId = copiedList.listId
                 }
                 // We split the list from one single object into 2 parts: basic list and items
                 val (dbList, items) = copiedList.toDbList()
-                insertedListId = listDao.insertList(dbList)
-                if (insertedListId != copiedList.listId) {
-                    Log.e(
-                        "ShoppingListLocalDataSource",
-                        "Database assigned a new ID during insertion which should never happen.",
-                    )
-                    return@withContext
-                }
-                list.listId = insertedListId
+                val totalTableRows = listDao.insertList(dbList)
+                Log.d("ShoppingListHandler", "Table contains $totalTableRows list(s) after insertion")
                 // Insert the items in case we received a remote list which is already populated
-                items.forEachIndexed { index, item ->
-                    var listMapping: ListMapping
-                    try {
-                        val insertedItemId = itemRepository.create(item)
-                        val apiItem = copiedList.items[index]
-                        listMapping =
-                            apiItem.toListMapping(
-                                insertedItemId,
-                                list.listId,
-                                list.createdBy.onlineId,
-                            )
-                    } catch (ex: IllegalStateException) {
-                        val updatedItemId = itemRepository.update(item)
-                        val apiItem = copiedList.items[index]
-                        listMapping =
-                            apiItem.toListMapping(
-                                updatedItemId,
-                                list.listId,
-                                list.createdBy.onlineId,
-                            )
-                    }
-                    try {
-                        itemToListRepository.create(listMapping)
-                    } catch (ex: IllegalStateException) {
-                        itemToListRepository.update(listMapping)
-                    } catch (ex: IllegalArgumentException) {
-                        itemToListRepository.update(listMapping)
-                    }
-                }
+                insertItems(items, copiedList)
                 Log.d(
                     "ShoppingListHandler",
-                    "Inserted list $insertedListId with ${items.size} items into database",
+                    "Inserted list $insertedListId from ${list.createdBy.onlineId} with ${items.size} items into database",
                 )
-                return@withContext
             }
             return insertedListId
         }

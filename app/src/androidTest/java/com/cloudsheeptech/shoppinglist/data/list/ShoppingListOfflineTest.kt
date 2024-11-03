@@ -15,6 +15,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -24,6 +25,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.junit.runners.MethodSorters
 import java.time.OffsetDateTime
+import kotlin.time.Duration
 
 @RunWith(JUnit4::class)
 @FixMethodOrder(MethodSorters.DEFAULT)
@@ -70,76 +72,89 @@ class ShoppingListOfflineTest {
         database.clearAllTables()
     }
 
+    private fun createApiShoppingList(
+        title: String = "list title",
+        creatorId: Long = 1234L,
+    ): ApiShoppingList {
+        val newList =
+            ApiShoppingList(
+                0L,
+                title,
+                ListCreator(creatorId, "creator"),
+                OffsetDateTime.now(),
+                OffsetDateTime.now(),
+                mutableListOf(),
+            )
+        return newList
+    }
+
+    private fun createApiItem(
+        num: Int,
+        addedBy: Long = 1234L,
+    ): ApiItem {
+        val item =
+            ApiItem(
+                "item $num",
+                "empty icon",
+                quantity = num.toLong(),
+                checked = num % 2 == 0,
+                addedBy,
+            )
+        return item
+    }
+
     @Test
     fun testCreateList() =
-        runTest {
-            val localDataSource = createLocalSLDataSource()
+        runTest(timeout = Duration.parse("1m")) {
+            TestUtil.initialize()
+            val username = "test user"
+            TestUtil.initializeUser(username)
+            val appUserRepository = TestUtil.shoppingListApplication.appUserRepository
+            val testUser = appUserRepository.read()
+            Assert.assertNotNull(testUser)
+
+            val localShoppingListDataSource =
+                TestUtil.shoppingListApplication.shoppingListLocalDataSource
+
             val newList =
-                ApiShoppingList(
-                    0L,
-                    "title",
-                    ListCreator(1234L, "creator"),
-                    OffsetDateTime.now(),
-                    OffsetDateTime.now(),
-                    mutableListOf(),
-                )
-            val insertedId = localDataSource.create(newList)
+                createApiShoppingList(creatorId = testUser!!.OnlineID)
+            val insertedId = localShoppingListDataSource.create(newList)
             Assert.assertEquals(1L, insertedId)
 
-            val secondList =
-                ApiShoppingList(
-                    0L,
-                    "second title",
-                    ListCreator(1234L, "creator"),
-                    OffsetDateTime.now(),
-                    OffsetDateTime.now(),
-                    mutableListOf(),
-                )
-            val secondInsertedId = localDataSource.create(secondList)
+            val secondList = createApiShoppingList("second title", creatorId = testUser.OnlineID)
+            val secondInsertedId = localShoppingListDataSource.create(secondList)
             Assert.assertEquals(2L, secondInsertedId)
 
             secondList.listId = secondInsertedId
             var exception = false
             try {
-                val retryInsertion = localDataSource.create(secondList)
+                localShoppingListDataSource.create(secondList)
             } catch (ex: IllegalArgumentException) {
                 exception = true
             }
             assert(exception)
 
             // Remote list with all values set according
-            val listWithItems =
-                ApiShoppingList(
-                    3L,
-                    "list with items",
-                    ListCreator(1440L, "remote creator"),
-                    OffsetDateTime.now(),
-                    OffsetDateTime.now(),
-                    mutableListOf(),
-                )
+            val remoteCreatorId = 1440L
+            val listWithItems = createApiShoppingList("list with items", remoteCreatorId)
+            listWithItems.listId = 1L
             for (num in 1..3) {
                 val item =
-                    ApiItem(
-                        "item $num",
-                        "empty icon",
-                        quantity = num.toLong(),
-                        checked = num % 2 == 0,
-                        1234L,
-                    )
+                    createApiItem(num, addedBy = remoteCreatorId)
                 listWithItems.items.add(item)
             }
-            val thirdInsertedId = localDataSource.create(listWithItems)
+            val thirdInsertedId = localShoppingListDataSource.create(listWithItems)
             // remote user and therefore keep the list id
-            Assert.assertEquals(3L, thirdInsertedId)
+            // Also check if the lists with equal ids can be stored side by side
+            Assert.assertEquals(1L, thirdInsertedId)
             // Check if the items are correctly inserted
-            val application = ApplicationProvider.getApplicationContext<Application>()
-            val database = ShoppingListDatabase.getInstance(application)
-            val itemRepo = ItemRepository(ItemLocalDataSource(database))
-            val itemToListRepo = ItemToListRepository(ItemToListLocalDataSource(database))
-            val mappings = itemToListRepo.read(thirdInsertedId, listWithItems.createdBy.onlineId)
+            val itemRepository = TestUtil.shoppingListApplication.itemRepository
+            val itemToListRepository = TestUtil.shoppingListApplication.itemToListRepository
+            val mappings =
+                itemToListRepository.read(thirdInsertedId, listWithItems.createdBy.onlineId)
             Assert.assertEquals(listWithItems.items.size, mappings.size)
             listWithItems.items.forEach { item ->
-                val items = itemRepo.readByName(item.name)
+                val items = itemRepository.readByName(item.name)
                 Assert.assertEquals(1, items.size)
                 Assert.assertEquals(item.name, items[0].name)
                 Assert.assertEquals(item.icon, items[0].icon)
@@ -165,13 +180,7 @@ class ShoppingListOfflineTest {
                 )
             for (num in 1..3) {
                 val item =
-                    ApiItem(
-                        "item $num",
-                        "empty icon",
-                        quantity = num.toLong(),
-                        checked = num % 2 == 0,
-                        1234L,
-                    )
+                    createApiItem(num)
                 listWithItems.items.add(item)
             }
 //        Log.d("ShoppingListOfflineTest", "List: $listWithItems")
@@ -214,13 +223,7 @@ class ShoppingListOfflineTest {
                 )
             for (num in 1..3) {
                 val item =
-                    ApiItem(
-                        "item $num",
-                        "empty icon",
-                        quantity = num.toLong(),
-                        checked = num % 2 == 0,
-                        1234L,
-                    )
+                    createApiItem(num)
                 listWithItems.items.add(item)
             }
             val insertedId = localDataSource.create(listWithItems)
@@ -320,13 +323,7 @@ class ShoppingListOfflineTest {
             val items = mutableListOf<ApiItem>()
             for (num in 1..3) {
                 val item =
-                    ApiItem(
-                        "item $num",
-                        "empty icon",
-                        quantity = num.toLong(),
-                        checked = num % 2 == 0,
-                        1234L,
-                    )
+                    createApiItem(num)
                 items.add(item)
             }
             listWithItems.items.addAll(items)
@@ -364,13 +361,7 @@ class ShoppingListOfflineTest {
                 )
             for (num in 1..3) {
                 val item =
-                    ApiItem(
-                        "item $num",
-                        "empty icon",
-                        quantity = num.toLong(),
-                        checked = num % 2 == 0,
-                        1234L,
-                    )
+                    createApiItem(num)
                 listWithItems.items.add(item)
             }
             val insertedId = localDataSource.create(listWithItems)

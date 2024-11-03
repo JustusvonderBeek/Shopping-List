@@ -32,7 +32,7 @@ class AppUserOnlineTest {
         val appUserLocalDataSource = AppUserLocalDataSource(database)
         val userCreationPayloadProvider = UserCreationDataProvider(appUserLocalDataSource)
         val tokenProvider = TokenProvider(userCreationPayloadProvider)
-        val remoteApi = Networking(tokenFile, tokenProvider)
+        val remoteApi = Networking(tokenProvider)
         val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
         appUserLocalDataSource.create("test user")
         return Triple(appUserLocalDataSource, appUserRemoteDataSource, remoteApi)
@@ -55,13 +55,17 @@ class AppUserOnlineTest {
             val newOnlineUser = TestUtil.shoppingListApplication.appUserLocalDataSource.getUser()!!
             newOnlineUser.Username += " changed for test"
 
-            val success = TestUtil.shoppingListApplication.appUserRemoteDataSource.update(newOnlineUser)
+            val success =
+                TestUtil.shoppingListApplication.appUserRemoteDataSource.update(newOnlineUser)
             assert(success)
             Thread.sleep(10)
             val updatedLocalUser = TestUtil.shoppingListApplication.appUserLocalDataSource.getUser()
             Assert.assertNotNull(updatedLocalUser)
             assert(0L != updatedLocalUser!!.OnlineID)
-            Log.d("AppUserOnlineTest", "Now: ${OffsetDateTime.now()} / Created: ${updatedLocalUser.Created}")
+            Log.d(
+                "AppUserOnlineTest",
+                "Now: ${OffsetDateTime.now()} / Created: ${updatedLocalUser.Created}",
+            )
             // TODO: Fix the server and the UTC offset
 //        assert(now.isEqual(remoteUser.Created!!) || now.isAfter(remoteUser.Created!!))
         }

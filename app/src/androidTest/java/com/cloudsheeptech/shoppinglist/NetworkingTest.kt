@@ -5,7 +5,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
-import com.cloudsheeptech.shoppinglist.data.list.ApiShoppingList
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
@@ -15,7 +14,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import java.time.OffsetDateTime
-import kotlin.reflect.full.memberProperties
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -165,39 +163,5 @@ class NetworkingTest {
             println("Testing if we can post resources authenticated")
             val success = postTestPathAuth()
             assert(success)
-        }
-
-    private fun updateOnlineId(
-        item: Any,
-        newOnlineId: Long,
-    ) {
-        if (item is ApiObjectWithOnlineId) {
-            item.onlineId = newOnlineId
-        }
-        // The idea is to recursively search for objects with the ApiObject interface
-        // and change the ID to the supplied one
-        item::class.memberProperties.forEach { property ->
-            val nestedItem = property.call(item)
-            if (nestedItem is ApiObjectWithOnlineId) {
-                nestedItem.onlineId = newOnlineId
-            }
-        }
-    }
-
-    @Test
-    fun testUpdatingApiObject() =
-        runTest {
-            var item =
-                ApiShoppingList(
-                    1L,
-                    "listTitle",
-                    ApiListCreator(0L, "username"),
-                    OffsetDateTime.now(),
-                    OffsetDateTime.now(),
-                    mutableListOf(),
-                )
-            val newOnlineId = 1234L
-            updateOnlineId(item, newOnlineId)
-            assertEquals(newOnlineId, item.createdBy.onlineId)
         }
 }

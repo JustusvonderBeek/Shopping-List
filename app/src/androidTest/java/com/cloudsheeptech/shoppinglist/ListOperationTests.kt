@@ -4,9 +4,8 @@ import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
+import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
@@ -15,8 +14,7 @@ import java.time.OffsetDateTime
 
 @RunWith(AndroidJUnit4::class)
 class ListOperationTests {
-
-    private fun createList() : Boolean {
+    private fun createList(): Boolean {
 //        val listTitle = "New List"
         val application = ApplicationProvider.getApplicationContext<Application>()
 //        AppUserLocalDataSource.loadUser(application)
@@ -54,18 +52,26 @@ class ListOperationTests {
     // - Check if the list is correctly stored in the database
     // - Check if the request online is made correctly
     @Test
-    fun testCreateList() = runTest {
-        Log.i("ListOperationTest", "Testing creating new list")
-        val success = createList()
-        assert(success)
-    }
-
+    fun testCreateList() =
+        runTest {
+            Log.i("ListOperationTest", "Testing creating new list")
+            val success = createList()
+            assert(success)
+        }
 
     private fun updateNonExistingList() {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
         val sl = database.shoppingListDao()
-        val list = DbShoppingList(listId=0, title = "1", createdBy = 12, createdByName = "", lastUpdated = OffsetDateTime.now())
+        val list =
+            DbShoppingList(
+                listId = 0,
+                title = "1",
+                createdBy = 12,
+                createdByName = "",
+                lastUpdated = OffsetDateTime.now(),
+                version = 1L,
+            )
         sl.updateList(list)
         val lists = sl.getShoppingLists()
         for (list in lists) {
@@ -77,8 +83,24 @@ class ListOperationTests {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
         val sl = database.shoppingListDao()
-        val list = DbShoppingList(listId=0, title = "1", createdBy = 12, createdByName = "", lastUpdated = OffsetDateTime.now())
-        val list2 = DbShoppingList(listId=0, title = "2", createdBy = 12, createdByName = "", lastUpdated = OffsetDateTime.now())
+        val list =
+            DbShoppingList(
+                listId = 0,
+                title = "1",
+                createdBy = 12,
+                createdByName = "",
+                lastUpdated = OffsetDateTime.now(),
+                version = 1L,
+            )
+        val list2 =
+            DbShoppingList(
+                listId = 0,
+                title = "2",
+                createdBy = 12,
+                createdByName = "",
+                lastUpdated = OffsetDateTime.now(),
+                version = 1L,
+            )
         sl.insertList(list)
         sl.insertList(list)
         val testId = sl.insertList(list2)
@@ -93,7 +115,15 @@ class ListOperationTests {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = ShoppingListDatabase.getInstance(application)
         val sl = database.shoppingListDao()
-        val list = DbShoppingList(listId=0, title = "1", createdBy = 12, createdByName = "", lastUpdated = OffsetDateTime.now())
+        val list =
+            DbShoppingList(
+                listId = 0,
+                title = "1",
+                createdBy = 12,
+                createdByName = "",
+                lastUpdated = OffsetDateTime.now(),
+                version = 1L,
+            )
         sl.insertList(list)
         var lists = sl.getShoppingLists()
         for (list in lists) {
@@ -114,22 +144,21 @@ class ListOperationTests {
     }
 
     @Test
-    fun AuxiliaryTest() = runTest {
+    fun AuxiliaryTest() =
+        runTest {
 //        createEntryInDb()
 //        updateNonExistingList()
 //        insertExistingList()
-        Assert.fail("Not implemented")
-    }
+            Assert.fail("Not implemented")
+        }
 
     fun testShareList() {
-
     }
 
     fun testRemoveList() {
-
     }
 
-    private suspend fun loadList() : Boolean {
+    private suspend fun loadList(): Boolean {
         val application = ApplicationProvider.getApplicationContext<Application>()
 //        AppUserLocalDataSource.loadUser(application)
 //        AppUserLocalDataSource.getUser()!!.OnlineID = 12
@@ -141,13 +170,14 @@ class ListOperationTests {
         return true
     }
 
-    fun testLoadList() = runTest {
-        Log.i("ListOperationTest", "Testing obtaining list from online")
-        val success = loadList()
-        assert(success)
-    }
- 
-    suspend fun testAddItemToList() : Boolean {
+    fun testLoadList() =
+        runTest {
+            Log.i("ListOperationTest", "Testing obtaining list from online")
+            val success = loadList()
+            assert(success)
+        }
+
+    suspend fun testAddItemToList(): Boolean {
         // Dont require to push the item to the server first
         // Simply add the item via the list (self-explanatory)
         val application = ApplicationProvider.getApplicationContext<Application>()
@@ -175,18 +205,20 @@ class ListOperationTests {
     }
 
     @Test
-    fun testAddItem() = runTest {
-        val success = testAddItemToList()
-        Assert.assertTrue(success)
-    }
+    fun testAddItem() =
+        runTest {
+            val success = testAddItemToList()
+            Assert.assertTrue(success)
+        }
 
     @Test
-    fun testAddItemsOnline() = runTest {
+    fun testAddItemsOnline() =
+        runTest {
 //        val success = test
-        Assert.fail()
-    }
+            Assert.fail()
+        }
 
-    suspend fun createListOffline() : Pair<Boolean, Application> {
+    suspend fun createListOffline(): Pair<Boolean, Application> {
         val application = ApplicationProvider.getApplicationContext<Application>()
 //        AppUser.loadUser(application)
 //        AppUserLocalDataSource.new("Franz")
@@ -210,7 +242,7 @@ class ListOperationTests {
         return Pair(true, application)
     }
 
-    suspend fun createUser(application: Application) : Boolean {
+    suspend fun createUser(application: Application): Boolean {
 //        Assert.assertEquals(0, AppUserLocalDataSource.getUser()!!.OnlineID)
 //        AppUserLocalDataSource.PostUserOnline(application.applicationContext)
 //        AppUserLocalDataSource.getUser()!!.OnlineID = 12345L
@@ -231,10 +263,11 @@ class ListOperationTests {
     }
 
     @Test
-    fun testCreatingListOfflineAndPushOnline() = runTest {
-        var (success, app) = createListOffline()
-        Assert.assertTrue(success)
-        success = createUser(app)
-        Assert.assertTrue(success)
-    }
+    fun testCreatingListOfflineAndPushOnline() =
+        runTest {
+            var (success, app) = createListOffline()
+            Assert.assertTrue(success)
+            success = createUser(app)
+            Assert.assertTrue(success)
+        }
 }

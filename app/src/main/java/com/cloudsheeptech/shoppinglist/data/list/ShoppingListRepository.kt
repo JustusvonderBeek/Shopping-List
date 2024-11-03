@@ -54,6 +54,7 @@ class ShoppingListRepository
                     createdAt = now,
                     lastUpdated = now,
                     items = mutableListOf(),
+                    1L,
                 )
             val newListId = localDataSource.create(newList)
             newList.listId = newListId

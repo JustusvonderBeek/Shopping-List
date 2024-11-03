@@ -30,7 +30,7 @@ class ListShareOfflineTest {
         val localUserDs = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserDs)
         val tokenProvider = TokenProvider(payloadProvider)
-        val networking = Networking(application.filesDir.path + "/token.txt", tokenProvider)
+        val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)
         // Creating the user for all following tests
@@ -39,7 +39,8 @@ class ListShareOfflineTest {
         val itemRepo = ItemRepository(localItemDs)
         val localItemToListDs = ItemToListLocalDataSource(database)
         val itemToListRepository = ItemToListRepository(localItemToListDs)
-        val localDataSource = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
+        val localDataSource =
+            ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
         val remoteDataSource = ShoppingListRemoteDataSource(networking, userRepository)
         val slRepo = ShoppingListRepository(localDataSource, remoteDataSource, userRepository)
         val listShareDS = ListShareLocalDataSource(database, userRepository, slRepo)

@@ -47,7 +47,7 @@ class OnlineUserOnlineTest {
         val localUserDs = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserDs)
         val tokenProvider = TokenProvider(payloadProvider)
-        val networking = Networking(application.filesDir.path + "/token.txt", tokenProvider)
+        val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)
         userRepository.create("test user")
@@ -59,14 +59,15 @@ class OnlineUserOnlineTest {
         var newId = 0L
         var username = ""
         withContext(Dispatchers.IO) {
-            val newUser = ApiUser(0L, "distinct", "ignore", OffsetDateTime.now(), OffsetDateTime.now())
+            val newUser =
+                ApiUser(0L, "distinct", "ignore", OffsetDateTime.now(), OffsetDateTime.now())
             val encodedUser = json.encodeToString(newUser)
             val application = ApplicationProvider.getApplicationContext<Application>()
             val database = ShoppingListDatabase.getInstance(application)
             val localUserDs = AppUserLocalDataSource(database)
             val payloadProvider = UserCreationDataProvider(localUserDs)
             val tokenProvider = TokenProvider(payloadProvider)
-            val networking = Networking(application.filesDir.path + "/token.txt", tokenProvider)
+            val networking = Networking(tokenProvider)
             networking.POST("/v1/users", encodedUser) { resp ->
                 // Authentication already handled by the networking object
                 if (resp.status != HttpStatusCode.Created) {

@@ -24,12 +24,13 @@ class RecipeOfflineTest {
         val localUserRepository = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserRepository)
         val tokenProvider = TokenProvider(payloadProvider)
-        val networking = Networking(context.filesDir.path + "/token.txt", tokenProvider)
+        val networking = Networking(tokenProvider)
         val remoteUserRepository = AppUserRemoteDataSource(networking)
         val appUserRepository = AppUserRepository(localUserRepository, remoteUserRepository)
         val itemLocalDataSource = ItemLocalDataSource(database)
         val itemRepository = ItemRepository(itemLocalDataSource)
-        val recipeLocalDataSource = RecipeLocalDataSource(database, appUserRepository, itemRepository)
+        val recipeLocalDataSource =
+            RecipeLocalDataSource(database, appUserRepository, itemRepository)
         return recipeLocalDataSource
     }
 

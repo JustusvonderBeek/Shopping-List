@@ -84,6 +84,7 @@ class ShoppingListOfflineTest {
                 OffsetDateTime.now(),
                 OffsetDateTime.now(),
                 mutableListOf(),
+                1L,
             )
         return newList
     }
@@ -168,90 +169,156 @@ class ShoppingListOfflineTest {
     @Test
     fun testGetList() =
         runTest {
-            val localDataSource = createLocalSLDataSource()
-            val listWithItems =
-                ApiShoppingList(
-                    0L,
-                    "list with items",
-                    ListCreator(1234L, "local creator"),
-                    OffsetDateTime.now(),
-                    OffsetDateTime.now(),
-                    mutableListOf(),
-                )
+            TestUtil.initialize()
+            val username = "test user"
+            TestUtil.initializeUser(username)
+            val appUserRepository = TestUtil.shoppingListApplication.appUserRepository
+            val testUser = appUserRepository.read()
+            Assert.assertNotNull(testUser)
+
+            val localShoppingListDataSource =
+                TestUtil.shoppingListApplication.shoppingListLocalDataSource
+
+            val listWithItems = createApiShoppingList("list with items", testUser!!.OnlineID)
+            listWithItems.listId = 1L
             for (num in 1..3) {
                 val item =
-                    createApiItem(num)
+                    createApiItem(num, addedBy = testUser.OnlineID)
                 listWithItems.items.add(item)
             }
-//        Log.d("ShoppingListOfflineTest", "List: $listWithItems")
-            val insertedId = localDataSource.create(listWithItems)
+
+            val insertedId = localShoppingListDataSource.create(listWithItems)
             Assert.assertEquals(1L, insertedId)
             listWithItems.listId = insertedId
 
-            // DEBUG
-//        val application = ApplicationProvider.getApplicationContext<Application>()
-//        val database = ShoppingListDatabase.getInstance(application)
-//        val itemToList = database.mappingDao()
-//        val mappingsDirect = itemToList.getMappingsForList(insertedId, 1234L)
-//        Log.d("ShoppingListOfflineTest", "$mappingsDirect")
-
             val retrievedList =
-                localDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
-//        Log.d("ShoppingListOfflineTest", "RetrievedList: $retrievedList")
+                localShoppingListDataSource.read(
+                    listWithItems.listId,
+                    listWithItems.createdBy.onlineId,
+                )
             Assert.assertNotNull(retrievedList)
             Assert.assertEquals(3, retrievedList!!.items.size)
             Assert.assertEquals(listWithItems, retrievedList)
 
-            val failedIncorrectId = localDataSource.read(222L, 1234L)
+            val failedIncorrectId = localShoppingListDataSource.read(222L, testUser.OnlineID)
             Assert.assertNull(failedIncorrectId)
-            val failedIncorrectCreated = localDataSource.read(1L, 4444L)
+            val failedIncorrectCreated = localShoppingListDataSource.read(1L, 4444L)
             Assert.assertNull(failedIncorrectCreated)
         }
 
     @Test
     fun testUpdateList() =
         runTest {
-            val localDataSource = createLocalSLDataSource()
-            val listWithItems =
-                ApiShoppingList(
-                    0L,
-                    "list with items",
-                    ListCreator(1234L, "local creator"),
-                    OffsetDateTime.now(),
-                    OffsetDateTime.now(),
-                    mutableListOf(),
-                )
+            TestUtil.initialize()
+            val username = "test user"
+            TestUtil.initializeUser(username)
+            val appUserRepository = TestUtil.shoppingListApplication.appUserRepository
+            val testUser = appUserRepository.read()
+            Assert.assertNotNull(testUser)
+
+            val localShoppingListDataSource =
+                TestUtil.shoppingListApplication.shoppingListLocalDataSource
+
+            val listWithItems = createApiShoppingList("list with items", testUser!!.OnlineID)
+            listWithItems.listId = 1L
             for (num in 1..3) {
                 val item =
-                    createApiItem(num)
+                    createApiItem(num, addedBy = testUser.OnlineID)
                 listWithItems.items.add(item)
             }
-            val insertedId = localDataSource.create(listWithItems)
+
+            val insertedId = localShoppingListDataSource.create(listWithItems)
             Assert.assertEquals(1L, insertedId)
             listWithItems.listId = insertedId
+
+            // Add a new item
+            val newItem = createApiItem(4, addedBy = testUser.OnlineID)
+            listWithItems.items.add(newItem)
+            listWithItems.lastUpdated = OffsetDateTime.now()
+            localShoppingListDataSource.update(listWithItems)
+
             val retrievedList =
-                localDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
+                localShoppingListDataSource.read(
+                    listWithItems.listId,
+                    listWithItems.createdBy.onlineId,
+                )
             Assert.assertNotNull(retrievedList)
-            Assert.assertEquals(3, retrievedList!!.items.size)
+            Assert.assertEquals(4, retrievedList!!.items.size)
             Assert.assertEquals(listWithItems, retrievedList)
 
             // Update the base
             listWithItems.title = "new title"
-            localDataSource.update(listWithItems)
+            localShoppingListDataSource.update(listWithItems)
             val updatedRetrievedList =
-                localDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
+                localShoppingListDataSource.read(
+                    listWithItems.listId,
+                    listWithItems.createdBy.onlineId,
+                )
             Assert.assertNotNull(updatedRetrievedList)
             Assert.assertEquals(listWithItems.title, updatedRetrievedList!!.title)
 
             // Remove the last item
             listWithItems.items.removeAt(2)
             listWithItems.lastUpdated = OffsetDateTime.now()
-            localDataSource.update(listWithItems)
+            localShoppingListDataSource.update(listWithItems)
             val updatedItemsRetrievedList =
-                localDataSource.read(listWithItems.listId, listWithItems.createdBy.onlineId)
+                localShoppingListDataSource.read(
+                    listWithItems.listId,
+                    listWithItems.createdBy.onlineId,
+                )
             Assert.assertNotNull(updatedItemsRetrievedList)
-            Assert.assertEquals(2, updatedItemsRetrievedList!!.items.size)
+            Assert.assertEquals(3, updatedItemsRetrievedList!!.items.size)
             Assert.assertEquals(listWithItems, updatedItemsRetrievedList)
+        }
+
+    @Test
+    fun testUpdateSharedListWithRemoteItems() =
+        runTest {
+            TestUtil.initialize()
+            val username = "test user"
+            TestUtil.initializeUser(username)
+            val appUserRepository = TestUtil.shoppingListApplication.appUserRepository
+            val testUser = appUserRepository.read()
+            Assert.assertNotNull(testUser)
+
+            val localShoppingListDataSource =
+                TestUtil.shoppingListApplication.shoppingListLocalDataSource
+
+            val listWithItems = createApiShoppingList("list with items", testUser!!.OnlineID)
+            listWithItems.listId = 1L
+            for (num in 1..3) {
+                val item = createApiItem(num, addedBy = testUser.OnlineID)
+                listWithItems.items.add(item)
+            }
+
+            val insertedId = localShoppingListDataSource.create(listWithItems)
+            Assert.assertEquals(1L, insertedId)
+            listWithItems.listId = insertedId
+
+            // Remote user adds another item
+            val locallyChangedList = listWithItems.copy()
+            val remoteUserId = 123456L
+            val newItem = createApiItem(42, addedBy = remoteUserId)
+            listWithItems.items.add(newItem)
+            listWithItems.lastUpdated = OffsetDateTime.now()
+            listWithItems.version = 2
+            localShoppingListDataSource.update(listWithItems)
+
+            val newLocalItem = createApiItem(55, testUser.OnlineID)
+            newLocalItem.quantity = 12
+            locallyChangedList.items.add(newLocalItem)
+            locallyChangedList.lastUpdated = OffsetDateTime.now()
+            locallyChangedList.version = 2
+            localShoppingListDataSource.update(locallyChangedList)
+
+            val retrievedList =
+                localShoppingListDataSource.read(
+                    listWithItems.listId,
+                    listWithItems.createdBy.onlineId,
+                )
+            Assert.assertNotNull(retrievedList)
+            Assert.assertEquals(4, retrievedList!!.items.size)
+            Assert.assertEquals(listWithItems, retrievedList)
         }
 
     @Test
@@ -266,6 +333,7 @@ class ShoppingListOfflineTest {
                     OffsetDateTime.now(),
                     OffsetDateTime.now(),
                     mutableListOf(),
+                    1L,
                 )
             val items = mutableListOf<ApiItem>()
             for (num in 1..3) {
@@ -319,6 +387,7 @@ class ShoppingListOfflineTest {
                     OffsetDateTime.now(),
                     OffsetDateTime.now(),
                     mutableListOf(),
+                    1L,
                 )
             val items = mutableListOf<ApiItem>()
             for (num in 1..3) {
@@ -358,6 +427,7 @@ class ShoppingListOfflineTest {
                     OffsetDateTime.now(),
                     OffsetDateTime.now(),
                     mutableListOf(),
+                    1L,
                 )
             for (num in 1..3) {
                 val item =

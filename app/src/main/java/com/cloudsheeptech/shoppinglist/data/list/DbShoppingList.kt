@@ -6,12 +6,13 @@ import java.time.OffsetDateTime
 
 @Entity(tableName = "list_table", primaryKeys = ["listId", "createdBy"])
 data class DbShoppingList(
-    var listId : Long,
-    var title : String,
+    var listId: Long,
+    var title: String,
     // Flatten list creator to allow direct ID access
-    var createdBy : Long,
+    var createdBy: Long,
     // FIXME: This column is deprecated and should be removed / updated to createdAt
-    var createdByName : String,
+    var createdByName: String,
     @ColumnInfo(defaultValue = "CURRENT_TIMESTAMP")
-    var lastUpdated : OffsetDateTime
+    var lastUpdated: OffsetDateTime,
+    var version: Long, // Replaces the lastUpdated timestamp, allows for easier version comparison
 )

@@ -35,7 +35,7 @@ import javax.inject.Singleton
 
 @Singleton
 @Database(
-    version = 24,
+    version = 25,
     entities = [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class, ReceiptDescriptionMapping::class, ReceiptItemMapping::class],
     exportSchema = true,
     autoMigrations = [
@@ -67,7 +67,7 @@ abstract class ShoppingListDatabase : RoomDatabase() {
     abstract fun receiptItemDao(): ReceiptItemDao
 
     companion object {
-        const val LATEST_VERSION = 24
+        const val LATEST_VERSION = 25
 
         @Volatile
         private var INSTANCE: ShoppingListDatabase? = null

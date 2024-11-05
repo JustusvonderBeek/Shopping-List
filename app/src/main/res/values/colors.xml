@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="shopping_green">#4CAF50</color>
+    <color name="shopping_green">#50A02C</color>
+    <color name="highlight_green">#84BF38</color>
     <color name="shopping_gray">#dddddd</color>
     <color name="decrease_orange">#FF5722</color>
     <color name="shopping_red">#F52D1E</color>

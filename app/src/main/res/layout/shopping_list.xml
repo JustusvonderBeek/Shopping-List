@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="list"
             type="com.cloudsheeptech.shoppinglist.data.list.DbShoppingList" />
+
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.fragments.list_overview.ShoppingListAdapter.ListClickListener" />
@@ -16,13 +17,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="@{() -> clickListener.onClick(list)}"
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         android:elevation="3dp"
         android:shadowColor="@color/shopping_gray"
-        app:cardCornerRadius="5dp"
-        >
+        app:cardCornerRadius="10dp">
 
         <LinearLayout
             android:id="@+id/itemWrapper"
@@ -35,8 +35,7 @@
             <ImageView
                 android:layout_width="60dp"
                 android:layout_height="match_parent"
-                android:src="@drawable/ic_shop_cart"
-                />
+                android:src="@drawable/ic_shop_cart" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -48,15 +47,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%s", list.title)}'
-                    style="@style/WordListItemVocabStyle"
-                    />
+                    style="@style/WordListItemVocabStyle" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%s", list.createdByName)}'
-                    style="@style/WordListItemTransStyle"
-                    />
+                    style="@style/WordListItemTransStyle" />
 
             </LinearLayout>
 
@@ -65,8 +62,7 @@
                 android:layout_height="40dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_check"
-                android:visibility="gone"
-                />
+                android:visibility="gone" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

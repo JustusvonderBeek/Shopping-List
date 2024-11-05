@@ -1,24 +1,12 @@
 package com.cloudsheeptech.shoppinglist.fragments.list_overview
 
-import android.app.Application
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.CreationExtras
-import com.cloudsheeptech.shoppinglist.ShoppingListApplication
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
-import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
-import com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel
-import com.cloudsheeptech.shoppinglist.network.Networking
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,7 +14,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
-import javax.inject.Singleton
 
 /*
 * This class is the main HUB of the application, taking care of user initialization etc.
@@ -44,22 +31,22 @@ class ListOverviewViewModel @Inject constructor(
     // -----------------------------------------------
     // Navigation variables
 
-    private  val _createList = MutableLiveData<Boolean>(false)
-    val createList : LiveData<Boolean> get() = _createList
+    private val _createList = MutableLiveData<Boolean>(false)
+    val createList: LiveData<Boolean> get() = _createList
 
-    private val _navigateList = MutableLiveData<Pair<Long, Long>>(Pair(-1, -1))
-    val navigateList : LiveData<Pair<Long, Long>> get() = _navigateList
+    private val _navigateList = MutableLiveData<Triple<Long, Long, String>>(Triple(-1, -1, ""))
+    val navigateList: LiveData<Triple<Long, Long, String>> get() = _navigateList
 
     private val _navigateUser = MutableLiveData<Boolean>(false)
-    val navigateUser : LiveData<Boolean> get() = _navigateUser
+    val navigateUser: LiveData<Boolean> get() = _navigateUser
     private val _refreshing = MutableLiveData<Boolean>(false)
 
     private val _navigateConfig = MutableLiveData<Boolean>(false)
-    val navigateConfig : LiveData<Boolean> get() = _navigateConfig
+    val navigateConfig: LiveData<Boolean> get() = _navigateConfig
 
     // UI State changes
 
-    val refreshing : LiveData<Boolean> get() = _refreshing
+    val refreshing: LiveData<Boolean> get() = _refreshing
 
     // Data
 
@@ -130,12 +117,12 @@ class ListOverviewViewModel @Inject constructor(
 
     // -----------------------------------------------
 
-    fun navigateToShoppingList(id : Long, from : Long) {
-        _navigateList.value = Pair(id, from)
+    fun navigateToShoppingList(id: Long, from: Long, title: String) {
+        _navigateList.value = Triple(id, from, title)
     }
 
     fun onShoppingListNavigated() {
-        _navigateList.value = Pair(-1, -1)
+        _navigateList.value = Triple(-1, -1, "")
     }
 
     private fun navigateToCreateList() {

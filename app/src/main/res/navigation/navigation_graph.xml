@@ -9,7 +9,7 @@
         android:id="@+id/usernameSelection"
         android:name="com.cloudsheeptech.shoppinglist.fragments.create.user.StartFragment"
         android:label="Create a User"
-        tools:layout="@layout/fragment_start"/>
+        tools:layout="@layout/fragment_start" />
     <fragment
         android:id="@+id/overview"
         android:name="com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewFragment"
@@ -55,7 +55,7 @@
     <fragment
         android:id="@+id/shoppinglist"
         android:name="com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistFragment"
-        android:label="@string/nav_list_title" >
+        android:label="@string/nav_list_title">
         <argument
             android:name="ListID"
             app:argType="long"
@@ -67,6 +67,10 @@
             android:name="CreatedBy"
             app:argType="long"
             android:defaultValue="-1L" />
+        <argument
+            android:name="Title"
+            app:argType="string"
+            android:defaultValue='""' />
     </fragment>
 
     <fragment
@@ -121,7 +125,7 @@
         android:id="@+id/listPickerFragment"
         android:name="com.cloudsheeptech.shoppinglist.fragments.list_picker.ListPickerFragment"
         android:label="@string/fragment_list_picker_title"
-        tools:layout="@layout/fragment_list_picker" >
+        tools:layout="@layout/fragment_list_picker">
         <action
             android:id="@+id/action_listPickerFragment_to_createShoppinglistFragment"
             app:destination="@id/createShoppinglistFragment" />

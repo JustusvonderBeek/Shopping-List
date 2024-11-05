@@ -8,11 +8,9 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.addCallback
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
@@ -26,8 +24,8 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class ListOverviewFragment : Fragment(), MenuProvider {
 
-    private lateinit var binding : FragmentListOverviewBinding
-    private val viewModel : ListOverviewViewModel by viewModels() // Injected by hilt
+    private lateinit var binding: FragmentListOverviewBinding
+    private val viewModel: ListOverviewViewModel by viewModels() // Injected by hilt
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.overview_drop_down_menu, menu)
@@ -39,14 +37,17 @@ class ListOverviewFragment : Fragment(), MenuProvider {
                 viewModel.createNewList()
                 return true
             }
+
             R.id.delete_user -> {
                 viewModel.removeUser()
                 return true
             }
+
             R.id.config -> {
                 viewModel.navigateConfig()
                 return true
             }
+
             R.id.clear_all_lists -> {
                 viewModel.clearDatabase()
                 return true
@@ -55,24 +56,21 @@ class ListOverviewFragment : Fragment(), MenuProvider {
         return false
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_list_overview, container, false)
+        binding =
+            DataBindingUtil.inflate(inflater, R.layout.fragment_list_overview, container, false)
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
-        val adapter = ShoppingListAdapter(ShoppingListAdapter.ListClickListener { id, from ->
-            Log.d("ListOverviewFragment", "Got ID $id from $from")
-            viewModel.navigateToShoppingList(id, from)
+        val adapter = ShoppingListAdapter(ShoppingListAdapter.ListClickListener { id, from, title ->
+            Log.d("ListOverviewFragment", "Got ID $id from $from called $title")
+            viewModel.navigateToShoppingList(id, from, title)
         })
         binding.listOverviewList.adapter = adapter
 
@@ -90,11 +88,14 @@ class ListOverviewFragment : Fragment(), MenuProvider {
             }
         })
 
-        viewModel.navigateList.observe(viewLifecycleOwner, Observer { idAndFrom ->
-            val id = idAndFrom.first
-            val from = idAndFrom.second
+        viewModel.navigateList.observe(viewLifecycleOwner, Observer { idAndFromAndTitle ->
+            val id = idAndFromAndTitle.first
+            val from = idAndFromAndTitle.second
+            val title = idAndFromAndTitle.third
             if (id > 0L) {
-                findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToShoppinglist(id, from))
+                findNavController().navigate(
+                    ListOverviewFragmentDirections.actionOverviewToShoppinglist(id, from, title)
+                )
                 viewModel.onShoppingListNavigated()
             }
         })
@@ -117,7 +118,7 @@ class ListOverviewFragment : Fragment(), MenuProvider {
             viewModel.updateAllLists()
         }
 
-        viewModel.refreshing.observe(viewLifecycleOwner, Observer {  refresh ->
+        viewModel.refreshing.observe(viewLifecycleOwner, Observer { refresh ->
             if (!refresh) {
                 binding.listOverviewRefresher.isRefreshing = false
             }

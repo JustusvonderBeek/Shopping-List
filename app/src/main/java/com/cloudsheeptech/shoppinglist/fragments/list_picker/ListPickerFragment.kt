@@ -1,8 +1,6 @@
 package com.cloudsheeptech.shoppinglist.fragments.list_picker
 
-import androidx.fragment.app.viewModels
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -11,13 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListPickerBinding
 import com.cloudsheeptech.shoppinglist.fragments.list_overview.ShoppingListAdapter
-import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeFragmentDirections
 import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -42,10 +41,6 @@ class ListPickerFragment : Fragment(), MenuProvider {
     }
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -57,9 +52,10 @@ class ListPickerFragment : Fragment(), MenuProvider {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val adapter = ShoppingListAdapter(ShoppingListAdapter.ListClickListener { listId, createdBy ->
-            viewModel.selectList(listId, createdBy)
-        })
+        val adapter =
+            ShoppingListAdapter(ShoppingListAdapter.ListClickListener { listId, createdBy, title ->
+                viewModel.selectList(listId, createdBy)
+            })
 
         binding.listPickerRecyclerView.adapter = adapter
 

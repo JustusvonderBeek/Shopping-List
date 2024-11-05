@@ -1,6 +1,5 @@
 package com.cloudsheeptech.shoppinglist.fragments.list_overview
 
-import android.content.res.Resources
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -10,11 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingListBinding
 
-class ShoppingListAdapter(val clickListener: ListClickListener) : ListAdapter<DbShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
-    ItemDiffCallback()
-) {
+class ShoppingListAdapter(val clickListener: ListClickListener) :
+    ListAdapter<DbShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
+        ItemDiffCallback()
+    ) {
 
-    suspend fun deleteItemAt(position : Int) {
+    suspend fun deleteItemAt(position: Int) {
         Log.i("WordListItemAdapter", "Remove item at $position")
 //        vocabulary.removeVocabularyItem(position)
     }
@@ -27,15 +27,16 @@ class ShoppingListAdapter(val clickListener: ListClickListener) : ListAdapter<Db
         holder.bind(clickListener, getItem(position))
     }
 
-    class ShoppingListViewHolder private constructor(val binding : ShoppingListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(clickListener: ListClickListener, list : DbShoppingList) {
+    class ShoppingListViewHolder private constructor(val binding: ShoppingListBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(clickListener: ListClickListener, list: DbShoppingList) {
             binding.list = list
             binding.clickListener = clickListener
             binding.executePendingBindings()
         }
 
         companion object {
-            fun from(parent : ViewGroup) : ShoppingListViewHolder {
+            fun from(parent: ViewGroup): ShoppingListViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val binding = ShoppingListBinding.inflate(layoutInflater, parent, false)
                 return ShoppingListViewHolder(binding)
@@ -43,8 +44,8 @@ class ShoppingListAdapter(val clickListener: ListClickListener) : ListAdapter<Db
         }
     }
 
-    class ListClickListener(val clickListener: (id: Long, from : Long) -> Unit) {
-        fun onClick(list: DbShoppingList) = clickListener(list.listId, list.createdBy)
+    class ListClickListener(val clickListener: (id: Long, from: Long, title: String) -> Unit) {
+        fun onClick(list: DbShoppingList) = clickListener(list.listId, list.createdBy, list.title)
     }
 
     class ItemDiffCallback : DiffUtil.ItemCallback<DbShoppingList>() {

@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -14,13 +13,13 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -28,17 +27,16 @@ import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListBinding
-import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelectedListener {
 
-    private lateinit var binding : FragmentListBinding
-    private val viewModel : ShoppinglistViewModel by viewModels()
+    private lateinit var binding: FragmentListBinding
+    private val viewModel: ShoppinglistViewModel by viewModels()
 //    private val learningViewModel : RecipeViewModel by activityViewModels()
 
-    val args : ShoppinglistFragmentArgs by navArgs()
+    val args: ShoppinglistFragmentArgs by navArgs()
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.list_drop_down_menu, menu)
@@ -50,10 +48,12 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
                 viewModel.shareThisList()
                 return true
             }
+
             R.id.delete_list -> {
                 viewModel.deleteThisList()
                 return true
             }
+
             R.id.clear_items_list -> {
                 viewModel.clearAllCheckedItems()
                 return true
@@ -74,15 +74,15 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
         viewModel.resetOrdering()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (activity as AppCompatActivity).supportActionBar?.title = viewModel.title
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_list, container, false)
 
@@ -104,22 +104,24 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
         binding.viewModel = viewModel
         binding.lifecycleOwner = requireActivity()
 
-        val adapter = ShoppingListItemAdapter(ShoppingListItemAdapter.ShoppingItemClickListener { itemId, count ->
-            Log.i("ShoppinglistFragment", "Tapped on item $itemId to increase count")
-            if (count > 0)
-                viewModel.increaseItemCount(itemId)
-            else if (count < 0)
-                viewModel.decreaseItemCount(itemId)
-        }, ShoppingListItemAdapter.ShoppingItemCheckboxClickListener { itemId ->
-            Log.d("ShoppinglistFragment", "Tapped on item $itemId to toggle checkbox")
-            viewModel.toggleItem(itemId.toLong())
-        }, resources, database.mappingDao(), shoppingListId)
+        val adapter =
+            ShoppingListItemAdapter(ShoppingListItemAdapter.ShoppingItemClickListener { itemId, count ->
+                Log.i("ShoppinglistFragment", "Tapped on item $itemId to increase count")
+                if (count > 0)
+                    viewModel.increaseItemCount(itemId)
+                else if (count < 0)
+                    viewModel.decreaseItemCount(itemId)
+            }, ShoppingListItemAdapter.ShoppingItemCheckboxClickListener { itemId ->
+                Log.d("ShoppinglistFragment", "Tapped on item $itemId to toggle checkbox")
+                viewModel.toggleItem(itemId.toLong())
+            }, resources, database.mappingDao(), shoppingListId)
         // The adapter for the preview items
-        val previewAdapter = ItemPreviewAdapter(ItemPreviewAdapter.ItemPreviewClickListener { itemId ->
-            Log.d("ShoppinglistFragment", "Got preview ID $itemId")
-            viewModel.AddTappedItem(itemId)
-            viewModel.clearItemPreview()
-        })
+        val previewAdapter =
+            ItemPreviewAdapter(ItemPreviewAdapter.ItemPreviewClickListener { itemId ->
+                Log.d("ShoppinglistFragment", "Got preview ID $itemId")
+                viewModel.AddTappedItem(itemId)
+                viewModel.clearItemPreview()
+            })
         binding.itemList.adapter = adapter
         binding.shoppingItemSelectView.adapter = previewAdapter
 
@@ -129,7 +131,11 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
 
         // Populate the ordering spinner with the pre-defined orderings
         val spinner = binding.orderSelectionSpinner
-        ArrayAdapter.createFromResource(requireContext(), R.array.list_ordering_array, R.layout.ordering_spinner_item).also {
+        ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.list_ordering_array,
+            R.layout.ordering_spinner_item
+        ).also {
             it.setDropDownViewResource(R.layout.ordering_spinner_dropdown_item)
             spinner.adapter = it
         }
@@ -201,22 +207,20 @@ class ShoppinglistFragment : Fragment(), MenuProvider, AdapterView.OnItemSelecte
 
         viewModel.hideKeyboard.observe(viewLifecycleOwner, Observer { hide ->
             if (hide) {
-                val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                val imm =
+                    requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(requireView().windowToken, 0)
                 viewModel.keyboardHidden()
             }
         })
 
-        viewModel.title.observe(viewLifecycleOwner, Observer { title ->
-            title?.let {
-                Log.d("ShoppingListFragment", "Setting the title name on ${requireActivity().actionBar}")
-                // TOOD: This must probably be set in the main activity
-            }
-        })
-
         viewModel.navigateShare.observe(viewLifecycleOwner, Observer { listId ->
             if (listId > 0) {
-                findNavController().navigate(ShoppinglistFragmentDirections.actionShoppinglistToShareFragment(listId))
+                findNavController().navigate(
+                    ShoppinglistFragmentDirections.actionShoppinglistToShareFragment(
+                        listId
+                    )
+                )
                 viewModel.onShareNavigated()
             }
         })

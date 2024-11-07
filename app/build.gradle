@@ -157,6 +157,8 @@ dependencies {
 
     implementation 'org.jetbrains.kotlin:kotlin-reflect:1.9.25'
 
+    implementation 'androidx.core:core-splashscreen:1.0.1'
+
     androidTestImplementation 'junit:junit:4.13.2'
     androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.2"
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

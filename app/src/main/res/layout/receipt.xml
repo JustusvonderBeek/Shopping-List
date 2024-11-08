@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+
         <variable
             name="receipt"
             type="com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe" />
+
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.fragments.recipes_overview.RecipesListAdapter.ReceiptClickListener" />
@@ -16,13 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="@{() -> clickListener.onClick(receipt)}"
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:elevation="3dp"
-        android:shadowColor="@color/shopping_gray"
-        app:cardCornerRadius="5dp"
-        >
+        style="@style/ShoppingListItemStyle">
 
         <LinearLayout
             android:id="@+id/itemWrapper"
@@ -36,8 +30,7 @@
                 android:layout_width="60dp"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="20dp"
-                android:src="@drawable/ic_recipe"
-                />
+                android:src="@drawable/ic_recipe" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -49,15 +42,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%s", receipt.name)}'
-                    style="@style/WordListItemVocabStyle"
-                    />
+                    style="@style/WordListItemVocabStyle" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%d", receipt.createdBy)}'
-                    style="@style/WordListItemTransStyle"
-                    />
+                    style="@style/WordListItemTransStyle" />
 
             </LinearLayout>
 
@@ -66,8 +57,7 @@
                 android:layout_height="40dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_check"
-                android:visibility="gone"
-                />
+                android:visibility="gone" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

@@ -119,7 +119,7 @@
         android:id="@+id/receiptEditFragment"
         android:name="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.ReceiptEditFragment"
         android:label="@string/receipt_edit_title"
-        tools:layout="@layout/fragment_receipt_edit">
+        tools:layout="@layout/fragment_recipe_edit">
         <argument
             android:name="receiptId"
             app:argType="long" />

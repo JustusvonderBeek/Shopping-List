@@ -40,8 +40,10 @@ class MainActivity : AppCompatActivity() {
 
         val botNav: BottomNavigationView = binding.bottomNavigation
         val navController = findNavController(R.id.navHostFragment)
-        val navIds = navController.graph
-        val appBarConfig = AppBarConfiguration.Builder(navIds).build()
+        // Create a custom backstack for reach top-level destination.
+        val appBarConfig =
+            AppBarConfiguration.Builder(setOf(R.id.fragment_overview, R.id.receiptsOverview))
+                .build()
         setupActionBarWithNavController(navController, appBarConfig)
         botNav.setupWithNavController(navController)
 
@@ -51,17 +53,22 @@ class MainActivity : AppCompatActivity() {
             Log.i("MainActivity", "Coming from a notification!")
             // Navigate to the fragment
 //            recapViewModel.navigateToApp()
-            navController.navigate(R.id.overview)
+            navController.navigate(R.id.fragment_overview)
         }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id == R.id.usernameSelection) {
-                // Prevent the bottom nav in the start screen, otherwise user can skip
-                // the registration which would be BAD
-                botNav.visibility = View.GONE
-            } else {
-                botNav.visibility = View.VISIBLE
+            when (destination.id) {
+                R.id.usernameSelection -> {
+                    // Prevent the bottom nav in the start screen, otherwise user can skip
+                    // the registration which would be BAD
+                    botNav.visibility = View.GONE
+                }
+
+                else -> {
+                    botNav.visibility = View.VISIBLE
+                }
             }
+
         }
 
         // Dirty hack to avoid storing application context in this object class

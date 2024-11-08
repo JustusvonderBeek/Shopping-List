@@ -6,22 +6,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:title="@string/nav_btn_overview"
-        android:icon="@drawable/ic_shopping_list"
-        />
+        android:icon="@drawable/ic_shopping_list" />
 
-<!--    <item-->
-<!--        android:id="@+id/shoppinglist"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:icon="@drawable/ic_shopping_list"-->
-<!--        android:title="@string/nav_btn_list" />-->
+    <!--    <item-->
+    <!--        android:id="@+id/shoppinglist"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:icon="@drawable/ic_shopping_list"-->
+    <!--        android:title="@string/nav_btn_list" />-->
 
     <item
         android:id="@+id/receiptsOverview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:title="@string/nav_btn_receipt"
-        android:icon="@drawable/ic_recipe"
-        />
+        android:icon="@drawable/ic_recipe" />
 
 </menu>

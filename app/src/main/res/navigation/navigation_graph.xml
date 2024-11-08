@@ -5,29 +5,73 @@
     android:id="@+id/navigation_graph"
     app:startDestination="@id/overview">
 
-    <fragment
-        android:id="@+id/usernameSelection"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.create.user.StartFragment"
-        android:label="Create a User"
-        tools:layout="@layout/fragment_start" />
-    <fragment
+    <navigation
         android:id="@+id/overview"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewFragment"
-        android:label="@string/nav_start_overview_title"
-        tools:layout="@layout/fragment_list_overview">
-        <action
-            android:id="@+id/action_overview_to_createShoppinglistFragment"
-            app:destination="@id/createShoppinglistFragment" />
-        <action
-            android:id="@+id/action_overview_to_shoppinglist"
-            app:destination="@id/shoppinglist" />
-        <action
-            android:id="@+id/action_overview_to_usernameSelection"
-            app:destination="@id/usernameSelection" />
-        <action
-            android:id="@+id/action_overview_to_configFragment"
-            app:destination="@id/configFragment" />
-    </fragment>
+        app:startDestination="@id/fragment_overview">
+        <fragment
+            android:id="@+id/usernameSelection"
+            android:name="com.cloudsheeptech.shoppinglist.fragments.create.user.StartFragment"
+            android:label="Create a User"
+            tools:layout="@layout/fragment_start" />
+        <fragment
+            android:id="@+id/fragment_overview"
+            android:name="com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewFragment"
+            android:label="@string/nav_start_overview_title"
+            tools:layout="@layout/fragment_list_overview">
+            <action
+                android:id="@+id/action_overview_to_createShoppinglistFragment"
+                app:destination="@id/createShoppinglistFragment" />
+            <action
+                android:id="@+id/action_overview_to_shoppinglist"
+                app:destination="@id/shoppinglist" />
+            <action
+                android:id="@+id/action_overview_to_usernameSelection"
+                app:destination="@id/usernameSelection" />
+            <action
+                android:id="@+id/action_overview_to_configFragment"
+                app:destination="@id/configFragment" />
+        </fragment>
+        <fragment
+            android:id="@+id/shoppinglist"
+            android:name="com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistFragment"
+            android:label="@string/nav_list_title">
+            <argument
+                android:name="ListID"
+                app:argType="long"
+                android:defaultValue="-1L" />
+            <action
+                android:id="@+id/action_shoppinglist_to_shareFragment"
+                app:destination="@id/shareFragment" />
+            <argument
+                android:name="CreatedBy"
+                app:argType="long"
+                android:defaultValue="-1L" />
+            <argument
+                android:name="Title"
+                app:argType="string"
+                android:defaultValue='""' />
+        </fragment>
+        <fragment
+            android:id="@+id/createShoppinglistFragment"
+            android:name="com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistFragment"
+            android:label="@string/nav_create_list_title"
+            tools:layout="@layout/fragment_create_shoppinglist">
+            <action
+                android:id="@+id/action_createShoppinglistFragment_to_shoppinglist"
+                app:destination="@id/shoppinglist" />
+        </fragment>
+        <fragment
+            android:id="@+id/shareFragment"
+            android:name="com.cloudsheeptech.shoppinglist.fragments.share.ShareFragment"
+            android:label="@string/share_fragment_name">
+            <argument
+                android:name="listId"
+                android:defaultValue="-1L"
+                app:argType="long" />
+        </fragment>
+    </navigation>
+
+
     <fragment
         android:id="@+id/receipt"
         android:name="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeFragment"
@@ -52,45 +96,8 @@
             android:id="@+id/action_receipt_to_listPickerFragment"
             app:destination="@id/listPickerFragment" />
     </fragment>
-    <fragment
-        android:id="@+id/shoppinglist"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistFragment"
-        android:label="@string/nav_list_title">
-        <argument
-            android:name="ListID"
-            app:argType="long"
-            android:defaultValue="-1L" />
-        <action
-            android:id="@+id/action_shoppinglist_to_shareFragment"
-            app:destination="@id/shareFragment" />
-        <argument
-            android:name="CreatedBy"
-            app:argType="long"
-            android:defaultValue="-1L" />
-        <argument
-            android:name="Title"
-            app:argType="string"
-            android:defaultValue='""' />
-    </fragment>
 
-    <fragment
-        android:id="@+id/createShoppinglistFragment"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistFragment"
-        android:label="@string/nav_create_list_title"
-        tools:layout="@layout/fragment_create_shoppinglist">
-        <action
-            android:id="@+id/action_createShoppinglistFragment_to_shoppinglist"
-            app:destination="@id/shoppinglist" />
-    </fragment>
-    <fragment
-        android:id="@+id/shareFragment"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.share.ShareFragment"
-        android:label="@string/share_fragment_name">
-        <argument
-            android:name="listId"
-            android:defaultValue="-1L"
-            app:argType="long" />
-    </fragment>
+
     <fragment
         android:id="@+id/configFragment"
         android:name="com.cloudsheeptech.shoppinglist.fragments.config.ConfigFragment"

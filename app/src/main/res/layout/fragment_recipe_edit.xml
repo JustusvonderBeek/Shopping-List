@@ -5,6 +5,7 @@
     tools:context=".fragments.edit.receipt.ReceiptEditFragment">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.ReceiptEditViewModel" />
@@ -21,24 +22,22 @@
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:orientation="vertical"
-            >
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="250dp"
                 android:layout_marginTop="16dp"
-                android:src="@drawable/receipt_stock"
-                />
+                android:src="@drawable/receipt_stock" />
 
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@={viewModel.title}"
+                android:hint="@string/edit_title"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
-                android:textAlignment="center"
-                />
+                android:textAlignment="center" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/addItems"
@@ -48,22 +47,20 @@
                 app:icon="@drawable/ic_item"
                 app:iconGravity="textStart"
                 android:onClick="@{() -> viewModel.addItem()}"
-                />
+                style="@style/ShoppingListAppButton" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/itemRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 tools:listitem="@layout/receipt_item_edit_text"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             <LinearLayout
                 android:id="@+id/itemWrapper"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                />
+                android:orientation="vertical" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/addDescriptions"
@@ -74,7 +71,7 @@
                 app:iconGravity="textStart"
                 android:layout_marginTop="16dp"
                 android:onClick="@{() -> viewModel.addDescription()}"
-                />
+                style="@style/ShoppingListAppButton" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/descriptionRecyclerView"
@@ -82,15 +79,14 @@
                 android:layout_height="wrap_content"
                 tools:itemCount="5"
                 tools:listitem="@layout/receipt_description_edit_text"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-<!--            <LinearLayout-->
-<!--                android:id="@+id/descriptionWrapper"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:orientation="vertical"-->
-<!--                />-->
+            <!--            <LinearLayout-->
+            <!--                android:id="@+id/descriptionWrapper"-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:orientation="vertical"-->
+            <!--                />-->
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/finishEditingButton"
@@ -101,7 +97,7 @@
                 app:iconGravity="textStart"
                 android:layout_marginTop="16dp"
                 android:onClick="@{() -> viewModel.storeUpdate()}"
-                />
+                style="@style/ShoppingListAppButton" />
 
         </LinearLayout>
     </ScrollView>

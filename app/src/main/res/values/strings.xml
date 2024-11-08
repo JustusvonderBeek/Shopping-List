@@ -52,4 +52,7 @@
     <string name="receipt_title">Recipe</string>
     <string name="receipt_edit_title">Edit Recipe</string>
     <string name="fragment_list_picker_title">Choose a list</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="edit_title">Edit Title</string>
 </resources>

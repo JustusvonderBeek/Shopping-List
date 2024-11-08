@@ -49,4 +49,5 @@
     <string name="receipt_title">Rezept</string>
     <string name="receipt_edit_title">Bearbeiten</string>
     <string name="fragment_list_picker_title">Choose a list</string>
+    <string name="edit_title">Liste bearbeiten</string>
 </resources>

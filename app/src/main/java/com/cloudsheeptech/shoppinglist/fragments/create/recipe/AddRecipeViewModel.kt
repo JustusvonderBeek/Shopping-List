@@ -8,7 +8,7 @@ import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
-import com.cloudsheeptech.shoppinglist.datastructures.ItemListWithName
+import com.cloudsheeptech.shoppinglist.dataHandling.ItemListWithName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,11 +32,13 @@ class AddRecipeViewModel @Inject constructor(
     val receiptDescription = MutableLiveData<String>()
 
     private val handledToast = MutableLiveData<SingleEvent<String>>()
-    val toast : LiveData<SingleEvent<String>>
+    val toast: LiveData<SingleEvent<String>>
         get() = handledToast
 
+    private val _selectImage = MutableLiveData<Boolean>(false)
+    val selectImage: LiveData<Boolean> get() = _selectImage
     private val _navigateUp = MutableLiveData<Boolean>(false)
-    val navigateUp : LiveData<Boolean> get() = _navigateUp
+    val navigateUp: LiveData<Boolean> get() = _navigateUp
 
     fun create() {
         val currentTitle = receiptName.value ?: return
@@ -53,6 +55,14 @@ class AddRecipeViewModel @Inject constructor(
                 navigateUp()
             }
         }
+    }
+
+    fun selectImage() {
+        this._selectImage.value = true
+    }
+
+    fun onImageSelected() {
+        this._selectImage.value = false
     }
 
     private fun navigateUp() {

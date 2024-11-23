@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.fragments.edit.receipt
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -28,24 +29,28 @@ class ReceiptEditViewModel @Inject constructor(
     private val job = Job()
     private val vmScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val receiptId : Long = savedStateHandle["receiptId"]!!
-    private val createdBy : Long = savedStateHandle["createdBy"]!!
+    private val receiptId: Long = savedStateHandle["receiptId"]!!
+    private val createdBy: Long = savedStateHandle["createdBy"]!!
 
+    private val _takeImage = MutableLiveData<Boolean>(false)
+    val takeImage: LiveData<Boolean> get() = _takeImage
     private val _navigateUp = MutableLiveData<Boolean>(false)
-    val navigateUp : LiveData<Boolean> get() = _navigateUp
+    val navigateUp: LiveData<Boolean> get() = _navigateUp
 
     private val _store = MutableLiveData<Boolean>(false)
-    val store : LiveData<Boolean> get() = _store
+    val store: LiveData<Boolean> get() = _store
 
     private val receipt = recipeRepository.readLive(receiptId, createdBy)
 
     val title = MutableLiveData<String>("")
+    private val _images = MutableLiveData<List<Uri>>(emptyList())
+    val images: LiveData<List<Uri>> get() = _images
 
     val receiptDescription = MutableLiveData<List<ApiDescription>>(emptyList())
 //    val receiptDescription : LiveData<List<ReceiptDescription>> get() = _receiptDescriptionList
 
     private val _receiptIngredientList = MutableLiveData<List<ApiIngredient>>(emptyList())
-    val receiptIngredients : LiveData<List<ApiIngredient>> get() = _receiptIngredientList
+    val receiptIngredients: LiveData<List<ApiIngredient>> get() = _receiptIngredientList
 
     init {
         // The user should be able to modify the existing receipt, therefore load ingredients
@@ -65,8 +70,9 @@ class ReceiptEditViewModel @Inject constructor(
         }
     }
 
-    fun setImages() {
-
+    fun setImages(uris: List<Uri>) {
+        Log.d("Got images", "$uris")
+        _images.value = uris
     }
 
     fun addItem() {
@@ -86,7 +92,7 @@ class ReceiptEditViewModel @Inject constructor(
             step = "",
         )
         receiptDescription.value = receiptDescription.value!! + emptyDescription
-    //        descriptions += 1
+        //        descriptions += 1
 //        _addDescriptionView.value = descriptions
 //        vmScope.launch {
 //            descriptions = receipt.value?.description?.size ?: 1
@@ -125,8 +131,10 @@ class ReceiptEditViewModel @Inject constructor(
         if (receiptId == -1L && createdBy == -1L) {
             vmScope.launch {
                 val newReceipt = recipeRepository.create(title.value!!, "")
-                newReceipt.ingredients = _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
-                newReceipt.description = receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
+                newReceipt.ingredients =
+                    _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
+                newReceipt.description =
+                    receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
                 recipeRepository.update(newReceipt)
                 withContext(Dispatchers.Main) {
                     navigateUp()
@@ -136,14 +144,24 @@ class ReceiptEditViewModel @Inject constructor(
             vmScope.launch {
                 val updatedReceipt = recipeRepository.read(receiptId, createdBy) ?: return@launch
                 updatedReceipt.name = title.value ?: "Title"
-                updatedReceipt.ingredients = _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
-                updatedReceipt.description = receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
+                updatedReceipt.ingredients =
+                    _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
+                updatedReceipt.description =
+                    receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
                 recipeRepository.update(updatedReceipt)
                 withContext(Dispatchers.Main) {
                     navigateUp()
                 }
             }
         }
+    }
+
+    fun selectImages() {
+        _takeImage.value = true
+    }
+
+    fun onImageSelected() {
+        _takeImage.value = false
     }
 
     fun navigateUp() {

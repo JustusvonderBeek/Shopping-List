@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.datastructures
+package com.cloudsheeptech.shoppinglist.dataHandling
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -13,13 +13,13 @@ import java.io.File
 class ItemListWithName<T : Comparable<T>> {
 
     @Serializable
-    private data class ItemList<T> (
-        var title : String,
-        var list : List<T>,
+    private data class ItemList<T>(
+        var title: String,
+        var list: List<T>,
     )
 
     companion object {
-        fun <T : Comparable<T>> createFromFile(file : File) : ItemListWithName<T>? {
+        fun <T : Comparable<T>> createFromFile(file: File): ItemListWithName<T>? {
             val reader = file.reader(Charsets.UTF_8)
             val content = reader.readText()
             if (content == "")
@@ -42,13 +42,13 @@ class ItemListWithName<T : Comparable<T>> {
     }
 
     private var _title = MutableLiveData<String>("Title")
-    val title : LiveData<String>
+    val title: LiveData<String>
         get() = _title
 
     private var _list = MutableLiveData<MutableList<T>>()
-    val list : LiveData<MutableList<T>> get() = _list
+    val list: LiveData<MutableList<T>> get() = _list
 
-    fun addItem(item : T) {
+    fun addItem(item: T) {
         Log.d("Shoppinglist", "Adding new item")
         if (_list.value == null) {
             Log.d("Shoppinglist", "List initialized")
@@ -59,21 +59,21 @@ class ItemListWithName<T : Comparable<T>> {
         Log.d("ItemListWithName", "Added element. Length now: ${size()}")
     }
 
-    fun removeItem(item : T) {
+    fun removeItem(item: T) {
         if (_list.value == null) {
             return
         }
         _list.value!!.remove(item)
     }
 
-    fun remoteAt(index : Int) {
+    fun remoteAt(index: Int) {
         if (_list.value == null)
             return
         _list.value!!.removeAt(index)
         _list.value = _list.value
     }
 
-    suspend fun storeToDisk(file : String) {
+    suspend fun storeToDisk(file: String) {
         if (_list.value == null && (_title.value == null || _title.value!! == "")) {
             Log.w("ItemListWithName", "Does not store empty list")
             return
@@ -85,19 +85,19 @@ class ItemListWithName<T : Comparable<T>> {
                 val info = ItemList<T>(_title.value!!, _list.value!!)
                 val encoded = jsonHandler.encodeToString(info)
                 writer.write(encoded)
-            } catch (ex : Exception) {
+            } catch (ex: Exception) {
                 Log.w("ItemListWithName", "Cannot store list to disk: $ex")
             }
         }
     }
 
-    fun size() : Int {
+    fun size(): Int {
         if (_list.value == null)
             return 0
         return _list.value!!.size
     }
 
-    fun isEmpty() : Boolean {
+    fun isEmpty(): Boolean {
         if (_list.value == null)
             return true
         return _list.value!!.isEmpty()

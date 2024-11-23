@@ -111,6 +111,10 @@ dependencies {
     implementation 'com.google.dagger:hilt-android:2.52'
     kapt 'com.google.dagger:hilt-compiler:2.52'
 
+    // Image Carousel
+    implementation 'me.relex:circleindicator:2.1.6'
+    implementation 'org.imaginativeworld.whynotimagecarousel:whynotimagecarousel:2.1.0'
+
     // Database
     kapt 'androidx.room:room-compiler:2.5.2'
     implementation 'androidx.room:room-ktx:2.5.2'

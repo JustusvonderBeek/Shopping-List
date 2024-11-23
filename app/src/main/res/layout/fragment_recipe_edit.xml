@@ -2,13 +2,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".fragments.edit.receipt.ReceiptEditFragment">
+    tools:context=".fragments.edit.receipt.RecipeEditFragment">
 
     <data>
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.ReceiptEditViewModel" />
+            type="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.RecipeEditViewModel" />
     </data>
 
     <ScrollView
@@ -23,15 +23,12 @@
             android:layout_marginEnd="16dp"
             android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/recipeImage"
+            <org.imaginativeworld.whynotimagecarousel.ImageCarousel
+                android:id="@+id/imageCarousel"
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
-                android:layout_marginTop="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="@{() -> viewModel.selectImages()}"
-                android:src="@drawable/receipt_stock" />
+                android:layout_height="300dp"
+                app:imagePlaceholder="@drawable/receipt_stock"
+                />
 
             <EditText
                 android:layout_width="match_parent"

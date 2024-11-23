@@ -8,7 +8,7 @@
             type="com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient" />
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.ReceiptIngredientEditAdapter.ReceiptIngredientEditClickListener" />
+            type="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.RecipeIngredientEditAdapter.ReceiptIngredientEditClickListener" />
     </data>
     
     <LinearLayout

@@ -1,6 +1,8 @@
 package com.cloudsheeptech.shoppinglist.repository
 
+import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -10,35 +12,20 @@ import org.junit.runners.MethodSorters
 @RunWith(JUnit4::class)
 @FixMethodOrder(MethodSorters.DEFAULT)
 class ShoppingListRepositoryTest {
-    //    private suspend fun createAppRepo() : Pair<ShoppingListRepository, AppUserRepository> {
-//        val application = ApplicationProvider.getApplicationContext<Application>()
-//        val database = ShoppingListDatabase.getInstance(application)
-//        val localUserDs = AppUserLocalDataSource(database)
-//        val networking = Networking(application.filesDir.path + "/token.txt")
-//        val remoteUserDs = AppUserRemoteDataSource(networking)
-//        val userRepository = AppUserRepository(localUserDs, remoteUserDs)
-//        // Creating the user for all following tests
-//        userRepository.create("test user")
-//        val localItemDs = ItemLocalDataSource(database)
-//        val itemRepo = ItemRepository(localItemDs)
-//        val localItemToListDs = ItemToListLocalDataSource(database)
-//        val itemToListRepository = ItemToListRepository(localItemToListDs)
-//        val localDataSource = ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
-//        val remoteDataSource = ShoppingListRemoteDataSource(networking)
-//        val slRepo = ShoppingListRepository(localDataSource, remoteDataSource, userRepository)
-//        return Pair(slRepo, userRepository)
-//    }
-
     @Test
     fun testCreateList() =
         runTest {
-//            val (listRepo, userRepo) = createAppRepo()
-//            val newList = listRepo.create("new list")
-//
-//            val emptyReadList = listRepo.read(newList.listId, newList.createdBy.onlineId)
-//            Assert.assertNotNull(emptyReadList)
-//            Assert.assertEquals(newList, emptyReadList)
-//
+            TestUtil.initialize(clearDatabase = false)
+            val shoppingListApplication = TestUtil.shoppingListApplication
+
+            val shoppingListRepository = shoppingListApplication.shoppingListRepository
+            val newShoppingList = shoppingListRepository.create("new list")
+            Assert.assertNotNull(newShoppingList)
+
+            val emptyReadList = shoppingListRepository.read(newShoppingList.listId, newShoppingList.createdBy.onlineId)
+            Assert.assertNotNull(emptyReadList)
+            Assert.assertEquals(newShoppingList, emptyReadList)
+
 //            // Testing the same with items
 //            val newListWithItems = listRepo.create("new list with items")
 //            val user = userRepo.read()

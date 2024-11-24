@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -41,6 +42,9 @@ class RecipeViewModel
         val shoppingLists: LiveData<List<DbShoppingList>> get() = _shoppingLists
 
         val receipt = recipeRepository.readLive(receiptId, createdBy)
+
+        private val _images = MutableLiveData<List<CarouselItem>>(emptyList())
+        val images: LiveData<List<CarouselItem>> get() = _images
 
         private val _portions = MutableLiveData<Int>(2)
         val portions: LiveData<Int> get() = _portions

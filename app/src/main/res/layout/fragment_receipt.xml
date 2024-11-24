@@ -24,12 +24,11 @@
             android:paddingBottom="8dp"
             >
 
-            <ImageView
-                android:id="@+id/recipeImage"
+            <org.imaginativeworld.whynotimagecarousel.ImageCarousel
+                android:id="@+id/imageCarousel"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
-                android:layout_marginBottom="8dp"
-                android:src="@drawable/receipt_stock"
+                app:imagePlaceholder="@drawable/receipt_stock"
                 />
 
             <TextView

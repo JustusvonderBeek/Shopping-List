@@ -7,6 +7,7 @@ import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -50,6 +51,7 @@ class ShoppingListRepository
                 userRepository.read() ?: throw IllegalStateException("user null after login screen")
             list.createdBy.onlineId = user.OnlineID
             list.createdBy.username = user.Username
+            list.items.map { item -> item.addedBy = user.OnlineID }
         }
 
         suspend fun create(title: String): ApiShoppingList {
@@ -80,6 +82,8 @@ class ShoppingListRepository
                 }
             } catch (ex: IllegalAccessException) {
                 Log.w("ShoppingListRepository", "Ex: $ex")
+            } catch (ex: UserNotAuthenticatedException) {
+                Log.w("ShoppingListRepository", "User not authenticated: $ex")
             }
             return newList
         }
@@ -92,7 +96,13 @@ class ShoppingListRepository
             storedList = localDataSource.read(listId, createdBy)
             // Only update the list when we have nothing stored locally
             if (storedList == null) {
-                storedList = remoteApi.read(listId, createdBy)
+                try {
+                    storedList = remoteApi.read(listId, createdBy)
+                } catch (ex: IllegalAccessException) {
+                    Log.w("ShoppingListRepository", "Ex: $ex")
+                } catch (ex: UserNotAuthenticatedException) {
+                    Log.w("ShoppingListRepository", "User not authenticated: $ex")
+                }
             }
             return storedList
         }
@@ -132,14 +142,19 @@ class ShoppingListRepository
         }
 
         suspend fun update(list: ApiShoppingList) {
+            val onlineIdBeforeUpdate = list.createdBy.onlineId
             localDataSource.update(list)
             try {
                 updateListOnlineAndRetryOnFailure(list)
+                if (list.createdBy.onlineId != onlineIdBeforeUpdate) {
+                    // TODO: Fix the NPE when deleting
+                    localDataSource.delete(list.listId, onlineIdBeforeUpdate)
+                    localDataSource.create(list)
+                }
             } catch (ex: IllegalStateException) {
-                val user = userRepository.read()
-                list.createdBy.onlineId = user!!.OnlineID
-                localDataSource.update(list)
-                remoteApi.update(list)
+                Log.w("ShoppingListRepository", "Ex: $ex")
+            } catch (ex: UserNotAuthenticatedException) {
+                Log.w("ShoppingListRepository", "User not authenticated: $ex")
             }
         }
 
@@ -150,7 +165,12 @@ class ShoppingListRepository
                 success = remoteApi.update(list)
             }
             if (!success) {
-                remoteApi.create(list)
+                success = remoteApi.create(list)
+            }
+            if (success) {
+                Log.i("ShoppingListRepository", "The list ${list.listId} was updated online")
+            } else {
+                Log.i("ShoppingListRepository", "Updating the list ${list.listId} online failed")
             }
         }
 
@@ -178,7 +198,7 @@ class ShoppingListRepository
             item: AppItem,
         ) {
             val updatedLocalList = localDataSource.insertItem(listId, createdBy, item)
-            remoteApi.update(updatedLocalList)
+            update(updatedLocalList)
         }
 
         suspend fun insertExistingItem(
@@ -187,7 +207,7 @@ class ShoppingListRepository
             itemId: Long,
         ) {
             val updatedLocalList = localDataSource.insertExistingItem(listId, createdBy, itemId)
-            remoteApi.update(updatedLocalList)
+            update(updatedLocalList)
         }
 
         // TODO: Fix the signature of this function (ApiIngredients -> DbItems ??? )
@@ -197,7 +217,7 @@ class ShoppingListRepository
             ingredients: List<ApiIngredient>,
         ) {
             val updatedLocalList = localDataSource.addAll(listId, createdBy, ingredients)
-            remoteApi.update(updatedLocalList)
+            update(updatedLocalList)
         }
 
         suspend fun toggleItem(
@@ -206,7 +226,7 @@ class ShoppingListRepository
             itemId: Long,
         ) {
             val updatedLocalList = localDataSource.toggleItem(listId, createdBy, itemId)
-            remoteApi.update(updatedLocalList)
+            update(updatedLocalList)
         }
 
         suspend fun updateItemCount(
@@ -216,14 +236,7 @@ class ShoppingListRepository
             quantity: Long,
         ) {
             val updatedLocalList = localDataSource.updateItemCount(listId, createdBy, itemId, quantity)
-            try {
-                updateListOnlineAndRetryOnFailure(updatedLocalList)
-            } catch (ex: IllegalAccessError) {
-                val user = userRepository.read()
-                updatedLocalList.createdBy.onlineId = user!!.OnlineID
-                localDataSource.update(updatedLocalList)
-                remoteApi.update(updatedLocalList)
-            }
+            update(updatedLocalList)
         }
 
         suspend fun delete(

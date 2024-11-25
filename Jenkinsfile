@@ -1,6 +1,9 @@
 pipeline {
     agent any
 
+    environment {
+        ANDROID_HOME = "${env.JENKINS_HOME}/tools/android-sdk"
+    }
     stages {
         stage('Build') {
             steps {

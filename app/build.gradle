@@ -56,6 +56,14 @@ android {
             }
         }
     }
+//    signingConfigs {
+//        release {
+//            storeFile file(System.getenv("STORE_FILE"))
+//            storePassword System.getenv("STORE_PASSWORD")
+//            keyAlias System.getenv("KEY_ALIAS")
+//            keyPassword System.getenv("KEY_PASSWORD")
+//        }
+//    }
 
     buildTypes {
         release {
@@ -64,8 +72,10 @@ android {
             debuggable false
             jniDebuggable false
             renderscriptDebuggable false
+//            signingConfig signingConfig: 'release'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17

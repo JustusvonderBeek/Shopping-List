@@ -9,14 +9,19 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-                withCredentials([file(credentialsId: '1b0afdc2-8003-4798-908e-094593079784', variable: 'certificate')]) {
+                withCredentials([file(credentialsId: 'shopping-list-certificate', variable: 'certificate')]) {
                     sh 'cp $certificate "${WORKSPACE}/${APP_CERTIFICATE_PATH}"'
                 }
-                sh './gradlew assembleRelease'
-//                 echo 'Signing the release...'
-//                 withCredentials([usernamePassword(credentialsId: 'cd37cd00-a4d7-4499-a943-7344f7d1ab85', passwordVariable: 'STORE_PASSWORD', usernameVariable: 'storePassword'), usernamePassword(credentialsId: 'cd37cd00-a4d7-4499-a943-7344f7d1ab85', passwordVariable: 'TEST123', usernameVariable: 'KEY_PASSWORD')]) {
-//                     sh './gradlew bundleRelease'
-//                 }
+                echo 'Bundling APK into AAB for uploading...'
+                withCredentials([usernamePassword(credentialsId: 'shopping-list-app-keystore-password', passwordVariable: 'keystorePassword'),
+                usernamePassword(credentialsId: 'shopping-list-app-signing-key', passwordVariable: 'signingKeyAlias'),
+                usernamePassword(credentialsId: 'shopping-list-app-signing-key-password', passwordVariable: 'signingKeyPassword')]) {
+                    sh 'echo "storeFile=${APP_KEYSTORE_FILE}" > ${WORKSPACE}/keystore.properties'
+                    sh 'echo "storePassword=${keystorePassword}" >> ${WORKSPACE}/keystore.properties'
+                    sh 'echo "keyAlias=${signingKeyAlias}" >> ${WORKSPACE}/keystore.properties'
+                    sh 'echo "keyPassword=${signingKeyPassword}" >> ${WORKSPACE}/keystore.properties'
+                    sh './gradlew bundleRelease'
+                }
             }
         }
         stage('Test') {

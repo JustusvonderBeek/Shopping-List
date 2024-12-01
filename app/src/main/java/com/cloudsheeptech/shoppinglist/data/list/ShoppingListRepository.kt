@@ -143,6 +143,7 @@ class ShoppingListRepository
 
         suspend fun update(list: ApiShoppingList) {
             val onlineIdBeforeUpdate = list.createdBy.onlineId
+            list.version++
             localDataSource.update(list)
             try {
                 updateListOnlineAndRetryOnFailure(list)

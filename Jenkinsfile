@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        APP_BUILD_FILE = 'app/build/outputs/apk/release/app-release-unsigned.apk'
+        APP_BUILD_FILE = 'app/build/outputs/apk/release/app-release.apk'
         APP_CERTIFICATE_PATH = 'app/src/main/res/raw/shoppinglist.crt'
     }
     stages {
@@ -13,9 +13,10 @@ pipeline {
                     sh 'cp $certificate "${WORKSPACE}/${APP_CERTIFICATE_PATH}"'
                 }
                 echo 'Bundling APK into AAB for uploading...'
-                withCredentials([usernamePassword(credentialsId: 'shopping-list-app-keystore-password', passwordVariable: 'keystorePassword'),
-                usernamePassword(credentialsId: 'shopping-list-app-signing-key', passwordVariable: 'signingKeyAlias'),
-                usernamePassword(credentialsId: 'shopping-list-app-signing-key-password', passwordVariable: 'signingKeyPassword')]) {
+                sh 'echo "sdk.dir=${ANDROID_HOME}" > ${WORKSPACE}/local.properties'
+                withCredentials([usernamePassword(credentialsId: 'shopping-list-app-keystore-password', passwordVariable: 'keystorePassword', usernameVariable: ''),
+                usernamePassword(credentialsId: 'shopping-list-app-signing-key', passwordVariable: 'signingKeyAlias', usernameVariable: ''),
+                usernamePassword(credentialsId: 'shopping-list-app-signing-key-password', passwordVariable: 'signingKeyPassword', usernameVariable: '')]) {
                     sh 'echo "storeFile=${APP_KEYSTORE_FILE}" > ${WORKSPACE}/keystore.properties'
                     sh 'echo "storePassword=${keystorePassword}" >> ${WORKSPACE}/keystore.properties'
                     sh 'echo "keyAlias=${signingKeyAlias}" >> ${WORKSPACE}/keystore.properties'
@@ -58,9 +59,8 @@ pipeline {
         failure {
             echo 'Pipeline failed!'
             script {
-                def certificateLocation = "${WORKSPACE}/${APP_CERTIFICATE_PATH}"
-                if (fileExists(certificateLocation)) {
-                    sh 'rm certificateLocation'
+                if (fileExists("${WORKSPACE}/${APP_CERTIFICATE_PATH}")) {
+                    sh 'rm "${WORKSPACE}/${APP_CERTIFICATE_PATH}"'
                 }
             }
         }

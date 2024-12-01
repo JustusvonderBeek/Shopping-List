@@ -39,8 +39,8 @@ data class ApiShoppingList
             if (listId != other.listId) return false
             if (title != other.title) return false
             if (createdBy != other.createdBy) return false
-            if (!OffsetDateTimeUtil.areDateTimesEqual(createdAt, other.createdAt)) return false
-            if (!OffsetDateTimeUtil.areDateTimesEqual(createdAt, other.createdAt)) return false
+//            if (!OffsetDateTimeUtil.areDateTimesEqual(createdAt, other.createdAt)) return false
+            if (!OffsetDateTimeUtil.areDateTimesEqual(lastUpdated, other.lastUpdated)) return false
             if (items != other.items) return false
             if (version != other.version) return false
 

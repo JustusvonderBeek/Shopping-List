@@ -20,138 +20,145 @@ import javax.inject.Inject
 * When no user is found, navigate to the user creation and only allow navigating back if a user is found
  */
 @HiltViewModel
-class ListOverviewViewModel @Inject constructor(
-    private val listRepo: ShoppingListRepository,
-    private val userRepo: AppUserRepository
-) : ViewModel() {
+class ListOverviewViewModel
+    @Inject
+    constructor(
+        private val listRepo: ShoppingListRepository,
+        private val userRepo: AppUserRepository,
+    ) : ViewModel() {
+        private val job = Job()
+        private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
 
-    private val job = Job()
-    private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
+        // -----------------------------------------------
+        // Navigation variables
 
-    // -----------------------------------------------
-    // Navigation variables
+        private val _createList = MutableLiveData<Boolean>(false)
+        val createList: LiveData<Boolean> get() = _createList
 
-    private val _createList = MutableLiveData<Boolean>(false)
-    val createList: LiveData<Boolean> get() = _createList
+        private val _navigateList = MutableLiveData<Triple<Long, Long, String>>(Triple(-1, -1, ""))
+        val navigateList: LiveData<Triple<Long, Long, String>> get() = _navigateList
 
-    private val _navigateList = MutableLiveData<Triple<Long, Long, String>>(Triple(-1, -1, ""))
-    val navigateList: LiveData<Triple<Long, Long, String>> get() = _navigateList
+        private val _navigateUser = MutableLiveData<Boolean>(false)
+        val navigateUser: LiveData<Boolean> get() = _navigateUser
+        private val _refreshing = MutableLiveData<Boolean>(false)
 
-    private val _navigateUser = MutableLiveData<Boolean>(false)
-    val navigateUser: LiveData<Boolean> get() = _navigateUser
-    private val _refreshing = MutableLiveData<Boolean>(false)
+        private val _navigateConfig = MutableLiveData<Boolean>(false)
+        val navigateConfig: LiveData<Boolean> get() = _navigateConfig
 
-    private val _navigateConfig = MutableLiveData<Boolean>(false)
-    val navigateConfig: LiveData<Boolean> get() = _navigateConfig
+        // UI State changes
 
-    // UI State changes
+        val refreshing: LiveData<Boolean> get() = _refreshing
 
-    val refreshing: LiveData<Boolean> get() = _refreshing
+        // Data
 
-    // Data
+        val jsonSerializer =
+            Json {
+                encodeDefaults = true
+                ignoreUnknownKeys = false
+            }
+        val user = userRepo.readLive()
+        val shoppingList = listRepo.readAllLive() // We only require the name and creator name
 
-    val jsonSerializer = Json {
-        encodeDefaults = true
-        ignoreUnknownKeys = false
-    }
-    val user = userRepo.readLive()
-    val shoppingList = listRepo.readAllLive()   // We only require the name and creator name
+        // -----------------------------------------------
 
-    // -----------------------------------------------
-
-    init {
-        checkInitialized()
-    }
-
-    private fun checkInitialized() {
-        if (user.value == null) {
-            Log.d("ListOverviewViewModel", "User is not initialized. Creating user")
-            navigateToCreateUser()
+        init {
+            checkInitialized()
         }
-    }
 
-    fun createNewList() {
+        private fun checkInitialized() {
+            if (user.value == null) {
+                Log.d("ListOverviewViewModel", "User is not initialized. Creating user")
+                navigateToCreateUser()
+            }
+        }
+
+        fun createNewList() {
 //        Log.d("ListOverviewViewModel", "Creating new list")
 //        val list = Item((shoppingList.size() + 1).toLong(), "New List", "")
 //        shoppingList.addItem(list)
-        navigateToCreateList()
-    }
-
-    fun removeUser() {
-        vmCoroutine.launch {
-            userRepo.delete()
+            navigateToCreateList()
         }
-    }
 
-    private suspend fun removeItemsAndListsFromDatabase() {
-        withContext(Dispatchers.IO) {
+        fun removeUser() {
+            vmCoroutine.launch {
+                listRepo.resetCreatedByForOwnLists()
+                listRepo.resetAddedByForOwnLists()
+                userRepo.delete()
+            }
+        }
+
+        private suspend fun removeItemsAndListsFromDatabase() {
+            withContext(Dispatchers.IO) {
 //            shoppingListDao.reset()
 //            itemDao.deleteAll()
 //            itemMappingDao.clearAll()
+            }
         }
-    }
 
-    fun clearDatabase() {
-        vmCoroutine.launch {
-            removeItemsAndListsFromDatabase()
+        fun clearDatabase() {
+            vmCoroutine.launch {
+                removeItemsAndListsFromDatabase()
+            }
         }
-    }
 
-    fun updateAllLists() {
-        Log.d("ListOverviewViewModel", "Updating all list for this user")
-        _refreshing.value = true
-        vmCoroutine.launch {
-            // Launch the update for the own lists
-            updateListOverview()
+        fun updateAllLists() {
+            Log.d("ListOverviewViewModel", "Updating all list for this user")
+            _refreshing.value = true
+            vmCoroutine.launch {
+                // Launch the update for the own lists
+                updateListOverview()
+            }
         }
-    }
 
-    private suspend fun updateListOverview() {
-        withContext(Dispatchers.IO) {
-            listRepo.readAllRemote()
+        private suspend fun updateListOverview() {
+            withContext(Dispatchers.IO) {
+                listRepo.readAllRemote()
+            }
+            withContext(Dispatchers.Main) {
+                _refreshing.value = false
+            }
         }
-        withContext(Dispatchers.Main) {
-            _refreshing.value = false
+
+        // -----------------------------------------------
+
+        fun navigateToShoppingList(
+            id: Long,
+            from: Long,
+            title: String,
+        ) {
+            _navigateList.value = Triple(id, from, title)
         }
-    }
 
-    // -----------------------------------------------
+        fun onShoppingListNavigated() {
+            _navigateList.value = Triple(-1, -1, "")
+        }
 
-    fun navigateToShoppingList(id: Long, from: Long, title: String) {
-        _navigateList.value = Triple(id, from, title)
-    }
+        private fun navigateToCreateList() {
+            _createList.value = true
+        }
 
-    fun onShoppingListNavigated() {
-        _navigateList.value = Triple(-1, -1, "")
-    }
+        fun onCreateListNavigated() {
+            _createList.value = false
+        }
 
-    private fun navigateToCreateList() {
-        _createList.value = true
-    }
+        private fun navigateToCreateUser() {
+            _navigateUser.value = true
+        }
 
-    fun onCreateListNavigated() {
-        _createList.value = false
-    }
-
-    private fun navigateToCreateUser() {
-        _navigateUser.value = true
-    }
-
-    fun onCreateUserNavigated() {
-        _navigateUser.value = false
+        fun onCreateUserNavigated() {
+            _navigateUser.value = false
 //        if (user.value != null) {
 //
 //        } else {
 //            Log.d("ListOverviewViewModel", "User is still null")
 //        }
-    }
+        }
 
-    fun navigateConfig() {
-        _navigateConfig.value = true
-    }
+        fun navigateConfig() {
+            _navigateConfig.value = true
+        }
 
-    fun onConfigNavigated() {
-        _navigateConfig.value = false
+        fun onConfigNavigated() {
+            _navigateConfig.value = false
+        }
     }
-
-}

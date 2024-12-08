@@ -141,22 +141,23 @@ class ShoppingListRepository
             return exists
         }
 
-        suspend fun update(list: ApiShoppingList) {
+        suspend fun update(list: ApiShoppingList): Boolean {
             val onlineIdBeforeUpdate = list.createdBy.onlineId
             list.version++
             localDataSource.update(list)
+            var migratedListToNewId = false
             try {
                 updateListOnlineAndRetryOnFailure(list)
                 if (list.createdBy.onlineId != onlineIdBeforeUpdate) {
-                    // TODO: Fix the NPE when deleting
-                    localDataSource.delete(list.listId, onlineIdBeforeUpdate)
-                    localDataSource.create(list)
+                    migratedListToNewId = true
+                    localDataSource.updateCreatedByForList(list.listId, list.createdBy.onlineId)
                 }
             } catch (ex: IllegalStateException) {
                 Log.w("ShoppingListRepository", "Ex: $ex")
             } catch (ex: UserNotAuthenticatedException) {
                 Log.w("ShoppingListRepository", "User not authenticated: $ex")
             }
+            return migratedListToNewId
         }
 
         private suspend fun updateListOnlineAndRetryOnFailure(list: ApiShoppingList) {
@@ -193,6 +194,19 @@ class ShoppingListRepository
             allLists.forEach { list -> remoteApi.create(list) }
         }
 
+        suspend fun resetCreatedByForOwnLists() {
+            localDataSource.resetCreatedBy()
+        }
+
+        suspend fun resetAddedByForOwnLists() {
+            val currUser = userRepository.read() ?: return
+            if (currUser.OnlineID == 0L) {
+                Log.d("ShoppingListRepository", "OnlineID is 0")
+                return
+            }
+            localDataSource.resetAddedBy(currUser.OnlineID)
+        }
+
         suspend fun insertItem(
             listId: Long,
             createdBy: Long,
@@ -225,9 +239,10 @@ class ShoppingListRepository
             listId: Long,
             createdBy: Long,
             itemId: Long,
-        ) {
+        ): Boolean {
             val updatedLocalList = localDataSource.toggleItem(listId, createdBy, itemId)
-            update(updatedLocalList)
+            val migratedToNewId = update(updatedLocalList)
+            return migratedToNewId
         }
 
         suspend fun updateItemCount(
@@ -235,9 +250,10 @@ class ShoppingListRepository
             createdBy: Long,
             itemId: Long,
             quantity: Long,
-        ) {
+        ): Boolean {
             val updatedLocalList = localDataSource.updateItemCount(listId, createdBy, itemId, quantity)
-            update(updatedLocalList)
+            val migratedToNewId = update(updatedLocalList)
+            return migratedToNewId
         }
 
         suspend fun delete(

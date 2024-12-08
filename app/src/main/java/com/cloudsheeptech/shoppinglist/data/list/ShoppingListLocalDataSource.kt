@@ -342,6 +342,17 @@ class ShoppingListLocalDataSource
             return updatedVersion
         }
 
+        suspend fun updateCreatedByForList(
+            listId: Long,
+            createdBy: Long,
+        ) {
+            withContext(Dispatchers.IO) {
+                listDao.setListWithOfflineCreatorToOnlineId(createdBy)
+                itemToListRepository.setCreatorIdForAllItems(createdBy)
+                itemToListRepository.setAddedByForAllItems(createdBy)
+            }
+        }
+
         suspend fun updateCreatedById(currentUserId: Long) {
             val user = userRepository.read() ?: return
             if (user.OnlineID == 0L) {
@@ -357,7 +368,18 @@ class ShoppingListLocalDataSource
                 Log.d("ShoppingListLocalDataSource", "User not registered online")
                 return
             }
-            resetAllListCreatedBy(user.OnlineID, 0L)
+            withContext(Dispatchers.IO) {
+                listDao.resetOwnListsCreatorId(user.OnlineID)
+                itemToListRepository.resetCreatorIdForAllItemsInOwnLists(user.OnlineID)
+                itemToListRepository.resetAddedByForOwnLists(user.OnlineID)
+            }
+//            resetAllListCreatedBy(user.OnlineID, 0L)
+        }
+
+        suspend fun resetAddedBy(addedBy: Long) {
+            withContext(Dispatchers.IO) {
+                itemToListRepository.resetAddedByForOwnLists(addedBy)
+            }
         }
 
         private suspend fun resetAllListCreatedBy(

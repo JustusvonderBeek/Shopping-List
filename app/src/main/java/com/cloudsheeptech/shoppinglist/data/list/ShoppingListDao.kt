@@ -62,4 +62,10 @@ interface ShoppingListDao {
         key: Long,
         keyCreatedBy: Long,
     ): Boolean
+
+    @Query("UPDATE list_table SET createdBy = 0 WHERE createdBy = :createdBy")
+    fun resetOwnListsCreatorId(createdBy: Long)
+
+    @Query("UPDATE list_table SET createdBy = :createdBy WHERE createdBy = 0")
+    fun setListWithOfflineCreatorToOnlineId(createdBy: Long)
 }

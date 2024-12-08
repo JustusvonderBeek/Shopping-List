@@ -13,6 +13,11 @@
         android:title="@string/delete_list_button_text"
         app:showAsAction="ifRoom"/>
     <item
+        android:id="@+id/rename_list"
+        android:icon="@drawable/ic_edit"
+        android:title="Rename List"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/clear_items_list"
         android:icon="@drawable/ic_clear"
         android:title="@string/clear_items_in_list_button_text"

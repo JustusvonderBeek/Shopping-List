@@ -90,6 +90,9 @@ class ShoppinglistViewModel
         private val _confirmClear = MutableLiveData<Boolean>(false)
         val confirmClear: LiveData<Boolean> get() = _confirmClear
 
+        private val _renameList = MutableLiveData<Boolean>(false)
+        val renameList: LiveData<Boolean> get() = _renameList
+
         private val _allItemsChecked = mappingDao.getIsListFinishedLive(shoppingListId, createdBy)
         val allItemsChecked: LiveData<Int> get() = _allItemsChecked
 
@@ -304,7 +307,7 @@ class ShoppinglistViewModel
             }
         }
 
-        fun AddTappedItem(itemId: Long) {
+        fun addTappedItem(itemId: Long) {
             Log.d("ShoppinglistViewModel", "Adding item with ID $itemId")
             localCoroutine.launch {
                 addItemFromPreviewToList(itemId)
@@ -395,6 +398,14 @@ class ShoppinglistViewModel
 
         fun deleteThisList() {
             _confirmDelete.value = true
+        }
+
+        fun renameThisList() {
+            _renameList.value = true
+        }
+
+        fun onListRenamed() {
+            _renameList.value = false
         }
 
         fun onDeleteConfirmed() {

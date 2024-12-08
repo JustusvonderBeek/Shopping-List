@@ -19,11 +19,13 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class StartFragment : Fragment() {
-
     private lateinit var binding: FragmentStartBinding
     private val viewModel: StartViewModel by viewModels()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         (activity as AppCompatActivity).supportActionBar?.hide()
     }
@@ -34,38 +36,43 @@ class StartFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_start, container, false)
 
         requireActivity().actionBar?.setDisplayHomeAsUpEnabled(false)
 
-//        val viewModelFactory = StartViewModelFactory(requireActivity().application)
-//        val viewModel = ViewModelProvider(this, viewModelFactory)[StartViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        viewModel.hideKeyboard.observe(viewLifecycleOwner, Observer { hide ->
-            if (hide) {
-                val imm =
-                    requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(requireView().windowToken, 0)
-                viewModel.keyboardHidden()
-            }
-        })
+        viewModel.hideKeyboard.observe(
+            viewLifecycleOwner,
+            Observer { hide ->
+                if (hide) {
+                    val imm =
+                        requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(requireView().windowToken, 0)
+                    viewModel.keyboardHidden()
+                }
+            },
+        )
 
         viewModel.disableButton.observe(viewLifecycleOwner) { disable ->
             binding.startButton.isClickable = !disable
         }
 
-        viewModel.user.observe(viewLifecycleOwner, Observer { user ->
-            user?.let {
-                Log.d("StartFragment", "Navigating up...")
-                findNavController().navigateUp()
-            }
-        })
+        viewModel.user.observe(
+            viewLifecycleOwner,
+            Observer { user ->
+                user?.let {
+                    Log.d("StartFragment", "Navigating up...")
+                    findNavController().navigateUp()
+                }
+            },
+        )
 
         return binding.root
     }

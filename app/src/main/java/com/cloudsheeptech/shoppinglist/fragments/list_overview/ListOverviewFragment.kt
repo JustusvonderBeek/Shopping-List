@@ -22,12 +22,16 @@ import dagger.hilt.android.AndroidEntryPoint
 // This is required for Hilt to inject the viewModel correctly
 // See: https://developer.android.com/training/dependency-injection/hilt-jetpack
 @AndroidEntryPoint
-class ListOverviewFragment : Fragment(), MenuProvider {
-
+class ListOverviewFragment :
+    Fragment(),
+    MenuProvider {
     private lateinit var binding: FragmentListOverviewBinding
     private val viewModel: ListOverviewViewModel by viewModels() // Injected by hilt
 
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+    override fun onCreateMenu(
+        menu: Menu,
+        menuInflater: MenuInflater,
+    ) {
         menuInflater.inflate(R.menu.overview_drop_down_menu, menu)
     }
 
@@ -57,8 +61,9 @@ class ListOverviewFragment : Fragment(), MenuProvider {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         // Inflate the layout
         binding =
@@ -68,63 +73,83 @@ class ListOverviewFragment : Fragment(), MenuProvider {
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
-        val adapter = ShoppingListAdapter(ShoppingListAdapter.ListClickListener { id, from, title ->
-            Log.d("ListOverviewFragment", "Got ID $id from $from called $title")
-            viewModel.navigateToShoppingList(id, from, title)
-        })
+        val adapter =
+            ShoppingListAdapter(
+                ShoppingListAdapter.ListClickListener { id, from, title ->
+                    Log.d("ListOverviewFragment", "Got ID $id from $from called $title")
+                    viewModel.navigateToShoppingList(id, from, title)
+                },
+            )
         binding.listOverviewList.adapter = adapter
 
-        viewModel.shoppingList.observe(viewLifecycleOwner, Observer {
-            it?.let {
-                adapter.submitList(it)
+        viewModel.shoppingList.observe(
+            viewLifecycleOwner,
+            Observer {
+                it?.let {
+                    adapter.submitList(it)
 //                adapter.notifyDataSetChanged()
-            }
-        })
+                }
+            },
+        )
 
-        viewModel.createList.observe(viewLifecycleOwner, Observer { navigate ->
-            if (navigate) {
-                findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToCreateShoppinglistFragment())
-                viewModel.onCreateListNavigated()
-            }
-        })
+        viewModel.createList.observe(
+            viewLifecycleOwner,
+            Observer { navigate ->
+                if (navigate) {
+                    findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToCreateShoppinglistFragment(null, 0L))
+                    viewModel.onCreateListNavigated()
+                }
+            },
+        )
 
-        viewModel.navigateList.observe(viewLifecycleOwner, Observer { idAndFromAndTitle ->
-            val id = idAndFromAndTitle.first
-            val from = idAndFromAndTitle.second
-            val title = idAndFromAndTitle.third
-            if (id > 0L) {
-                findNavController().navigate(
-                    ListOverviewFragmentDirections.actionOverviewToShoppinglist(id, from, title)
-                )
-                viewModel.onShoppingListNavigated()
-            }
-        })
+        viewModel.navigateList.observe(
+            viewLifecycleOwner,
+            Observer { idAndFromAndTitle ->
+                val id = idAndFromAndTitle.first
+                val from = idAndFromAndTitle.second
+                val title = idAndFromAndTitle.third
+                if (id > 0L) {
+                    findNavController().navigate(
+                        ListOverviewFragmentDirections.actionOverviewToShoppinglist(id, from, title),
+                    )
+                    viewModel.onShoppingListNavigated()
+                }
+            },
+        )
 
-        viewModel.navigateConfig.observe(viewLifecycleOwner, Observer { navigate ->
-            if (navigate) {
-                findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToConfigFragment())
-                viewModel.onConfigNavigated()
-            }
-        })
+        viewModel.navigateConfig.observe(
+            viewLifecycleOwner,
+            Observer { navigate ->
+                if (navigate) {
+                    findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToConfigFragment())
+                    viewModel.onConfigNavigated()
+                }
+            },
+        )
 
-        viewModel.user.observe(viewLifecycleOwner, Observer { user ->
-            if (user == null) {
-                findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToUsernameSelection())
-            }
-        })
+        viewModel.user.observe(
+            viewLifecycleOwner,
+            Observer { user ->
+                if (user == null) {
+                    findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToUsernameSelection())
+                }
+            },
+        )
 
         binding.listOverviewRefresher.setOnRefreshListener {
             Log.d("ListOverviewFragment", "On refresh called")
             viewModel.updateAllLists()
         }
 
-        viewModel.refreshing.observe(viewLifecycleOwner, Observer { refresh ->
-            if (!refresh) {
-                binding.listOverviewRefresher.isRefreshing = false
-            }
-        })
+        viewModel.refreshing.observe(
+            viewLifecycleOwner,
+            Observer { refresh ->
+                if (!refresh) {
+                    binding.listOverviewRefresher.isRefreshing = false
+                }
+            },
+        )
 
         return binding.root
     }
-
 }

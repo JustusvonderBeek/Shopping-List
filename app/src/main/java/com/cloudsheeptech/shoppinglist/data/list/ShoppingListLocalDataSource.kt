@@ -265,6 +265,8 @@ constructor(
 
     fun readAllLive(): LiveData<List<DbShoppingList>> = listDao.getShoppingListsLive()
 
+    fun readAllListItemsLive(listId: Long) = itemRepository.readForListLive(listId)
+    
     /**
      * Function making the insertion and update process more easy.
      * @return true if the list exists, otherwise false

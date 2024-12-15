@@ -1,7 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.items
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.LiveData
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,7 +11,7 @@ class ItemRepository @Inject constructor(private val localDataSource: ItemLocalD
      * Searches for the item stored under this id
      * @return the item if found or null
      */
-    suspend fun read(itemId: Long) : DbItem? {
+    suspend fun read(itemId: Long): DbItem? {
         val itemList = readByIds(listOf(itemId))
         if (itemList.isEmpty())
             return null
@@ -23,7 +22,7 @@ class ItemRepository @Inject constructor(private val localDataSource: ItemLocalD
      * Returns all items queried for that can be found.
      * @return a list of all items that can be found or an empty list
      */
-    suspend fun readByIds(itemIds: List<Long>) : List<DbItem> {
+    suspend fun readByIds(itemIds: List<Long>): List<DbItem> {
         if (itemIds.isEmpty())
             return emptyList()
         val itemsFoundForIds = localDataSource.readByIds(itemIds)
@@ -35,11 +34,15 @@ class ItemRepository @Inject constructor(private val localDataSource: ItemLocalD
      * Requires at least one character to start the query
      * @return a list of all matching items (containing the search pattern)
      */
-    suspend fun readByName(itemName: String) : List<DbItem> {
+    suspend fun readByName(itemName: String): List<DbItem> {
         if (itemName.isEmpty())
             return emptyList()
         val itemsFoundForName = localDataSource.readByName(itemName)
         return itemsFoundForName
+    }
+
+    fun readForListLive(listId: Long): LiveData<List<AppItem>> {
+        return localDataSource.readForListLive(listId)
     }
 
     /**
@@ -48,7 +51,7 @@ class ItemRepository @Inject constructor(private val localDataSource: ItemLocalD
      * @throws IllegalStateException if the item did exist
      * @return the id of the new item
      */
-    suspend fun create(newItem: DbItem) : Long {
+    suspend fun create(newItem: DbItem): Long {
         val createdItem = localDataSource.create(newItem)
         return createdItem
     }
@@ -58,7 +61,7 @@ class ItemRepository @Inject constructor(private val localDataSource: ItemLocalD
      * @throws IllegalStateException if the item did not exist
      * @return the id of the update item
      */
-    suspend fun update(item: DbItem) : Long {
+    suspend fun update(item: DbItem): Long {
         return localDataSource.update(item)
     }
 

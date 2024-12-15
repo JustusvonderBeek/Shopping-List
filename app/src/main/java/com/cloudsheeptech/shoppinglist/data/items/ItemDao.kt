@@ -11,42 +11,45 @@ import kotlinx.coroutines.flow.Flow
 interface ItemDao {
 
     @Insert
-    fun insertItem(dbItem : DbItem) : Long
+    fun insertItem(dbItem: DbItem): Long
 
     @Update
-    fun updateItem(dbItem : DbItem)
+    fun updateItem(dbItem: DbItem)
 
     @Query("DELETE FROM items WHERE id = :key")
-    fun deleteItem(key : Long)
+    fun deleteItem(key: Long)
 
     @Query("DELETE FROM items")
     fun deleteAll()
 
     @Query("SELECT * FROM items WHERE id = :key")
-    fun getItemLive(key : Long) : LiveData<DbItem?>
+    fun getItemLive(key: Long): LiveData<DbItem?>
 
     @Query("SELECT * FROM items WHERE id = :key")
-    fun getItemFlow(key: Long) : Flow<DbItem>
+    fun getItemFlow(key: Long): Flow<DbItem>
 
     @Query("SELECT * FROM items WHERE id = :key")
-    fun getItem(key : Long) : DbItem?
+    fun getItem(key: Long): DbItem?
 
     @Query("SELECT * FROM items WHERE id IN (:keys)")
-    fun getItems(keys : List<Long>) : List<DbItem>
+    fun getItems(keys: List<Long>): List<DbItem>
 
     @Query("SELECT * FROM items WHERE id IN (:keys)")
-    fun getItemsLive(keys : List<Long>) : LiveData<List<DbItem>>
+    fun getItemsLive(keys: List<Long>): LiveData<List<DbItem>>
+
+    @Query("SELECT i.id, i.name, i.icon,m.Quantity as quantity ,m.Checked as checked,m.AddedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.ItemID WHERE m.ListID = :listId")
+    fun getItemsWithQuantityInListLive(listId: Long): LiveData<List<AppItem>>
 
     @Query("SELECT * FROM items WHERE name = :name")
-    fun getItemFromName(name : String) : DbItem?
+    fun getItemFromName(name: String): DbItem?
 
     @Query("SELECT * FROM items WHERE INSTR(name, :name) > 0")
-    fun getItemsFromName(name : String) : List<DbItem>
+    fun getItemsFromName(name: String): List<DbItem>
 
     @Query("SELECT * FROM items")
-    fun getAllItems() : List<DbItem>
+    fun getAllItems(): List<DbItem>
 
     @Query("SELECT COUNT(id) FROM items")
-    fun getCurrentId() : Long
+    fun getCurrentId(): Long
 
 }

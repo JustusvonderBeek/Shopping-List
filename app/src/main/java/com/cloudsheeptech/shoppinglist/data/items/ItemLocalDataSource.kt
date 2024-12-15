@@ -11,8 +11,8 @@ class ItemLocalDataSource @Inject constructor(val database: ShoppingListDatabase
 
     private val itemDao = database.itemDao()
 
-    suspend fun read(itemId: Long) : DbItem? {
-        var dbItem : DbItem? = null
+    suspend fun read(itemId: Long): DbItem? {
+        var dbItem: DbItem? = null
         withContext(Dispatchers.IO) {
             val dbItemList = readByIds(listOf(itemId))
             if (dbItemList.isEmpty())
@@ -22,16 +22,16 @@ class ItemLocalDataSource @Inject constructor(val database: ShoppingListDatabase
         return dbItem
     }
 
-    suspend fun readByIds(itemIds: List<Long>) : List<DbItem> {
+    suspend fun readByIds(itemIds: List<Long>): List<DbItem> {
         val finalList = mutableListOf<DbItem>()
         withContext(Dispatchers.IO) {
-            val dbItems =  itemDao.getItems(itemIds)
+            val dbItems = itemDao.getItems(itemIds)
             finalList.addAll(dbItems)
         }
         return finalList
     }
 
-    suspend fun readByName(itemName: String) : List<DbItem> {
+    suspend fun readByName(itemName: String): List<DbItem> {
         val finalList = mutableListOf<DbItem>()
         withContext(Dispatchers.IO) {
             val matchingDbItems = itemDao.getItemsFromName(itemName)
@@ -39,6 +39,8 @@ class ItemLocalDataSource @Inject constructor(val database: ShoppingListDatabase
         }
         return finalList
     }
+
+    fun readForListLive(listId: Long) = itemDao.getItemsWithQuantityInListLive(listId)
 
     /**
      * Creating a new item in the database.
@@ -48,7 +50,7 @@ class ItemLocalDataSource @Inject constructor(val database: ShoppingListDatabase
      * @return the id of the new item
      */
     @Throws(IllegalStateException::class)
-    suspend fun create(item: DbItem) : Long {
+    suspend fun create(item: DbItem): Long {
         var dbItemId = 0L
         withContext(Dispatchers.IO) {
             val possibleItems = readByName(item.name)
@@ -68,7 +70,7 @@ class ItemLocalDataSource @Inject constructor(val database: ShoppingListDatabase
      * @return the id of the update item
      */
     @Throws(IllegalStateException::class)
-    suspend fun update(item: DbItem) : Long {
+    suspend fun update(item: DbItem): Long {
         var itemId = 0L
         withContext(Dispatchers.IO) {
             val possibleItems = itemDao.getItemsFromName(item.name)

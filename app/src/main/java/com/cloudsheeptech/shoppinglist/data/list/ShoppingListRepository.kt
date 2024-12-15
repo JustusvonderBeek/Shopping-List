@@ -129,6 +129,10 @@ constructor(
     // This is only relevant for the overview, therefore the basic infos (title, creator) suffice
     fun readAllLive(): LiveData<List<DbShoppingList>> = localDataSource.readAllLive()
 
+    fun readAllListItemsLive(listId: Long): LiveData<List<AppItem>> {
+        return localDataSource.readAllListItemsLive(listId)
+    }
+
     suspend fun exist(
         listId: Long,
         createdBy: Long,

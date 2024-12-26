@@ -42,9 +42,9 @@ constructor(
 
     val itemName = MutableLiveData<String>("")
 
-    private val shoppingListId: Long = savedStateHandle["ListID"]!!
-    private val createdBy: Long = savedStateHandle["CreatedBy"]!!
-    val title: String = savedStateHandle["Title"]!!
+        private val shoppingListId: Long = savedStateHandle["ListID"]!!
+        private val createdBy: Long = savedStateHandle["CreatedBy"]!!
+        val title = MutableLiveData<String>(savedStateHandle["Title"]!!)
 
     private val job = Job()
     private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
@@ -86,8 +86,8 @@ constructor(
     private val _confirmClear = MutableLiveData<Boolean>(false)
     val confirmClear: LiveData<Boolean> get() = _confirmClear
 
-    private val _renameList = MutableLiveData<Boolean>(false)
-    val renameList: LiveData<Boolean> get() = _renameList
+        private val _renameList = MutableLiveData<Pair<String, Long>>(Pair("", -1L))
+        val renameList: LiveData<Pair<String, Long>> get() = _renameList
 
     private val _allItemsChecked = mappingDao.getIsListFinishedLive(shoppingListId, createdBy)
     val allItemsChecked: LiveData<Int> get() = _allItemsChecked
@@ -365,13 +365,25 @@ constructor(
         _confirmDelete.value = true
     }
 
-    fun renameThisList() {
-        _renameList.value = true
-    }
+        fun renameThisList() {
+            _renameList.value = Pair(this.title.value!!, this.shoppingListId)
+        }
 
-    fun onListRenamed() {
-        _renameList.value = false
-    }
+        private suspend fun refreshListTitle() {
+            withContext(Dispatchers.IO) {
+                val list = shoppingListRepository.read(shoppingListId, createdBy) ?: return@withContext
+                withContext(Dispatchers.Main) {
+                    title.value = list.title
+                }
+            }
+        }
+
+        fun onListRenamed() {
+            _renameList.value = Pair("", -1L)
+//            localCoroutine.launch {
+//                refreshListTitle()
+//            }
+        }
 
     fun onDeleteConfirmed() {
         _confirmDelete.value = false

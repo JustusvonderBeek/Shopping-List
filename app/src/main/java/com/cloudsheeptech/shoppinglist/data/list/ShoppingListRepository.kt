@@ -259,13 +259,22 @@ constructor(
         return migratedToNewId
     }
 
-    suspend fun delete(
-        listId: Long,
-        createdBy: Long,
-    ) {
-        localDataSource.delete(listId, createdBy)
-        remoteApi.deleteShoppingList(listId)
-    }
+        suspend fun updateTitle(
+            listId: Long,
+            createdBy: Long,
+            title: String,
+        ): Boolean {
+            localDataSource.updateTitle(listId, createdBy, title)
+            return true
+        }
+
+        suspend fun delete(
+            listId: Long,
+            createdBy: Long,
+        ) {
+            localDataSource.delete(listId, createdBy)
+            remoteApi.deleteShoppingList(listId)
+        }
 
     suspend fun deleteAll() {
         localDataSource.deleteAll()

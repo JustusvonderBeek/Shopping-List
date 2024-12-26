@@ -94,7 +94,7 @@ class ShoppinglistFragment :
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as AppCompatActivity).supportActionBar?.title = viewModel.title
+        (activity as AppCompatActivity).supportActionBar?.title = viewModel.title.value
     }
 
     override fun onCreateView(
@@ -125,6 +125,7 @@ class ShoppinglistFragment :
         binding.viewModel = viewModel
         binding.lifecycleOwner = requireActivity()
 
+        // TODO: Clean up this mess...
         val adapter =
             ShoppingListItemAdapter(
                 ShoppingListItemAdapter.ShoppingItemClickListener { itemId, count ->
@@ -347,10 +348,10 @@ class ShoppinglistFragment :
 
         viewModel.renameList.observe(
             viewLifecycleOwner,
-            Observer { rename ->
-                if (rename) {
+            Observer { (rename, listId) ->
+                if (rename.isNotEmpty() && listId > 0L) {
                     findNavController().navigate(
-                        ShoppinglistFragmentDirections.actionShoppinglistToCreateShoppinglistFragment(viewModel.title, 0L),
+                        ShoppinglistFragmentDirections.actionShoppinglistToCreateShoppinglistFragment(rename, listId),
                     )
                     viewModel.onListRenamed()
                 }

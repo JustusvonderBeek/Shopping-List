@@ -266,7 +266,7 @@ constructor(
     fun readAllLive(): LiveData<List<DbShoppingList>> = listDao.getShoppingListsLive()
 
     fun readAllListItemsLive(listId: Long) = itemRepository.readForListLive(listId)
-    
+
     /**
      * Function making the insertion and update process more easy.
      * @return true if the list exists, otherwise false
@@ -534,24 +534,37 @@ constructor(
         return updatedList
     }
 
-    /**
-     * Removes the list from the local data storage.
-     * Returns immediately if the list cannot be found
-     */
-    suspend fun delete(
-        listId: Long,
-        createdBy: Long,
-    ) {
-        withContext(Dispatchers.IO) {
-            listDao.deleteList(listId, createdBy)
-            itemToListRepository.deleteAllMappingsForList(listId, createdBy)
+        suspend fun updateTitle(
+            listId: Long,
+            createdBy: Long,
+            title: String,
+        ) {
+            withContext(Dispatchers.IO) {
+                val existingList =
+                    listDao.getShoppingList(listId, createdBy) ?: throw IllegalArgumentException("list does not exist in the database")
+                existingList.title = title
+                listDao.updateList(existingList)
+            }
         }
-    }
 
-    suspend fun deleteAll() {
-        withContext(Dispatchers.IO) {
-            listDao.reset()
-            itemToListRepository.deleteAllMappings()
+        suspend fun deleteAll() {
+            withContext(Dispatchers.IO) {
+                listDao.reset()
+                itemToListRepository.deleteAllMappings()
+            }
+        }
+
+        /**
+         * Removes the list from the local data storage.
+         * Returns immediately if the list cannot be found
+         */
+        suspend fun delete(
+            listId: Long,
+            createdBy: Long,
+        ) {
+            withContext(Dispatchers.IO) {
+                listDao.deleteList(listId, createdBy)
+                itemToListRepository.deleteAllMappingsForList(listId, createdBy)
+            }
         }
     }
-}

@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "receipt_to_item")
 data class ReceiptItemMapping(
     @PrimaryKey(autoGenerate = true)
-    var id : Long,
-    var receiptId: Long,
+    var id: Long,
+    var recipeId: Long,
     var createdBy: Long,
     var itemId: Long,
     var quantity: Int,

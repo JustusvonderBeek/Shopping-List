@@ -36,6 +36,7 @@ class RecipeViewModel
 
         private val receiptId: Long = savedStateHandle["receiptId"] ?: -1L
         private val createdBy: Long = savedStateHandle["createdBy"] ?: -1L
+        private var selectedIngredients: List<ApiIngredient> = emptyList()
         private var selectedList: Pair<Long, Long> = Pair(-1L, -1L)
 
         private val _shoppingLists = listRepository.readAllLive()
@@ -51,7 +52,10 @@ class RecipeViewModel
 
         private val _ingredients =
             receipt.switchMap { rec ->
-                liveData {
+                liveData<List<ApiIngredient>> {
+                    rec.ingredients.map { ingr ->
+                        ingr.quantity *= _portions.value!!
+                    }
                     emit(rec.ingredients)
                 }
             }
@@ -72,13 +76,11 @@ class RecipeViewModel
         val navigateUp: LiveData<Boolean> get() = _navigateUp
 
         init {
-//        _ingredients.addSource(portions) { portion ->
-//            val mappedIngredients = receipt.value?.ingredients?.map { x ->
-//                x.quantity *= portion
-//                x
-//            } ?: emptyList()
-//            _ingredients.value = mappedIngredients
-//        }
+//            _ingredients.addSource(portions) { portion ->
+//                receipt.value?.ingredients?.map { x ->
+//                    x.quantity *= portion
+//                } ?: emptyList()
+//            }
 //        _portions.value = 2
         }
 
@@ -96,6 +98,7 @@ class RecipeViewModel
             Log.d("RecipeViewModel", "Adding items to viewmodel pressed")
             // First we need to know which list, then we can add the items into the list
             Log.d("RecipeViewModel", "Would add: ${receipt.value?.ingredients}")
+            selectedIngredients = receipt.value?.ingredients ?: emptyList()
             navigateToSelectList()
 //        if (selectedList.first == -1L || selectedList.second == 1L)
 //            return
@@ -129,10 +132,9 @@ class RecipeViewModel
             createdBy: Long,
         ) {
             selectedList = Pair(listId, createdBy)
-            navigateUp()
             vmScope.launch {
                 Log.d("RecipeViewModel", "${receipt.value}")
-                listRepository.addAll(listId, createdBy, receipt.value?.ingredients ?: emptyList())
+                listRepository.addAll(listId, createdBy, selectedIngredients)
                 withContext(Dispatchers.Main) {
                     navigateUp()
                 }

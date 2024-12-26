@@ -10,29 +10,45 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RecipeDao {
-
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(receipt : DbRecipe) : Long
+    fun insert(receipt: DbRecipe): Long
 
     @Update
     fun update(receipt: DbRecipe)
 
     @Query("DELETE FROM receipts WHERE id = :key AND createdBy = :createdBy")
-    fun delete(key : Long, createdBy : Long)
+    fun delete(
+        key: Long,
+        createdBy: Long,
+    )
 
     @Query("DELETE FROM receipts")
     fun reset()
 
     @Query("SELECT * FROM receipts WHERE id = :key AND createdBy = :createdBy")
-    fun get(key: Long, createdBy: Long) : DbRecipe?
+    fun get(
+        key: Long,
+        createdBy: Long,
+    ): DbRecipe?
 
     @Query("SELECT * FROM receipts WHERE id = :key AND createdBy = :createdBy")
-    fun getLive(key: Long, createdBy: Long) : LiveData<DbRecipe>
+    fun getLive(
+        key: Long,
+        createdBy: Long,
+    ): LiveData<DbRecipe>
 
     @Query("SELECT * FROM receipts WHERE id = :key AND createdBy = :createdBy")
-    fun getFlow(key: Long, createdBy: Long) : Flow<DbRecipe>
+    fun getFlow(
+        key: Long,
+        createdBy: Long,
+    ): Flow<DbRecipe>
 
     @Query("SELECT * FROM receipts")
-    fun getAllLive() : LiveData<List<DbRecipe>>
+    fun getAllLive(): LiveData<List<DbRecipe>>
 
+    @Query("UPDATE receipts SET createdBy = 0 WHERE createdBy = :createdBy")
+    fun resetCreatedBy(createdBy: Long)
+
+    @Query("UPDATE receipts SET createdBy = :createdBy WHERE createdBy = 0")
+    fun updateCreatedBy(createdBy: Long)
 }

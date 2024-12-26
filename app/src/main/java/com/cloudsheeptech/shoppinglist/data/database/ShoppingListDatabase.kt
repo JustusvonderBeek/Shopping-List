@@ -33,10 +33,12 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserDao
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
+@Suppress("ktlint:standard:max-line-length")
 @Singleton
 @Database(
-    version = 25,
-    entities = [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class, ReceiptDescriptionMapping::class, ReceiptItemMapping::class],
+    version = 26,
+    entities =
+        [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class, ReceiptDescriptionMapping::class, ReceiptItemMapping::class],
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 18, to = 19),
@@ -67,8 +69,9 @@ abstract class ShoppingListDatabase : RoomDatabase() {
     abstract fun receiptItemDao(): ReceiptItemDao
 
     companion object {
-        const val LATEST_VERSION = 25
+        const val LATEST_VERSION = 26
 
+        @Suppress("ktlint:standard:property-naming")
         @Volatile
         private var INSTANCE: ShoppingListDatabase? = null
 

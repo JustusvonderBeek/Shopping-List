@@ -70,6 +70,16 @@ class RecipeEditViewModel
             } else {
                 Log.d("ReceiptEditViewModel", "Creating new receipt")
             }
+            setupNewRecipe()
+        }
+
+        private fun setupNewRecipe() {
+            if (_receiptIngredientList.value!!.isEmpty()) {
+                addItem()
+            }
+            if (receiptDescription.value!!.isEmpty()) {
+                addDescription()
+            }
         }
 
         fun setImages(uris: List<Uri>) {
@@ -89,7 +99,7 @@ class RecipeEditViewModel
                     id = 0L,
                     name = "",
                     icon = "",
-                    quantity = 0,
+                    quantity = 1,
                     quantityType = "",
                 )
             _receiptIngredientList.value = _receiptIngredientList.value!! + newIngredient
@@ -134,6 +144,18 @@ class RecipeEditViewModel
             Log.d("ReceiptEditViewModel", "Filtering $itemId ingredient")
             _receiptIngredientList.value = receiptIngredients.value?.filter { x -> x.id != itemId }
         }
+
+        private fun checkAddNewIngredientNecessary(): Boolean =
+            _receiptIngredientList.value!!
+                .last()
+                .name
+                .isNotEmpty()
+
+        private fun checkAddNewDescriptionNecessary(): Boolean =
+            receiptDescription.value!!
+                .last()
+                .step
+                .isNotEmpty()
 
         fun storeUpdate() {
             if (title.value == null || title.value!!.isEmpty()) {

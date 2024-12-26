@@ -63,7 +63,7 @@
                 android:id="@+id/action_createShoppinglistFragment_to_shoppinglist"
                 app:destination="@id/shoppinglist" />
             <argument
-                android:name="titleToChange"
+                android:name="titleToEdit"
                 app:argType="string"
                 app:nullable="true" />
             <argument

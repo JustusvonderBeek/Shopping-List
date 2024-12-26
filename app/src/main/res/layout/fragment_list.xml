@@ -131,13 +131,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="5dp"
                     android:hint="@string/item_name_input_hint"
                     android:layout_weight="6"
-                    android:text="@={viewModel.itemName}" />
+                    android:text="@={viewModel.itemName}"
+                    style="@style/EditTextWithoutUnderline" />
 
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="0dp"

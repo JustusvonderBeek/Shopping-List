@@ -40,6 +40,7 @@ class RecipeFragment :
                 viewModel.removeRecipe()
                 return true
             }
+
             R.id.edit_receipt -> {
                 viewModel.editReceipt()
                 return true
@@ -72,7 +73,12 @@ class RecipeFragment :
                 val receiptId = receiptIdAndCreatedBy.first
                 val createdBy = receiptIdAndCreatedBy.second
                 if (receiptId > 0 && createdBy > 0) {
-                    findNavController().navigate(RecipeFragmentDirections.actionReceiptToReceiptEditFragment(receiptId, createdBy))
+                    findNavController().navigate(
+                        RecipeFragmentDirections.actionReceiptToReceiptEditFragment(
+                            receiptId,
+                            createdBy
+                        )
+                    )
                     viewModel.navigatedToEditWord()
                 }
             },
@@ -88,12 +94,11 @@ class RecipeFragment :
             },
         )
 
-        viewModel.ingredients.observe(
+        viewModel.ingredientWithPortionsApplied.observe(
             viewLifecycleOwner,
             Observer { x ->
                 Log.d("RecipeFragment", "Ingredients: $x")
                 ingredientAdapter.submitList(x)
-                ingredientAdapter.notifyDataSetChanged()
             },
         )
 

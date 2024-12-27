@@ -70,4 +70,5 @@
     <string name="recipe_item_name_hint">Insert item here</string>
     <string name="recipe_edit_description_hint">Insert description here</string>
     <string name="list_item_amount_name">Amount</string>
+    <string name="recipe_portions_text">Portions</string>
 </resources>

@@ -65,4 +65,5 @@
     <string name="recipe_item_name_hint">Zutat eingeben</string>
     <string name="recipe_edit_description_hint">Zubereitungsschritt eingeben</string>
     <string name="list_item_amount_name">Menge</string>
+    <string name="recipe_portions_text">Portionen</string>
 </resources>

@@ -51,14 +51,6 @@
                     style="@style/WordListItemTransStyle" />
 
             </LinearLayout>
-
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_check"
-                android:visibility="gone" />
-
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

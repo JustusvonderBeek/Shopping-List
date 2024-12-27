@@ -74,6 +74,8 @@ class RecipeFragment : Fragment(), MenuProvider {
         // into the state to be able to load the correct recipe
         viewModel.setRecipeIds(args.receiptId, args.createdBy)
         viewModel.setTitle(args.title)
+        val portionsText = getString(R.string.recipe_portions_text)
+        viewModel.setPortionsText(portionsText)
 
         val descriptionAdapter = RecipeDescriptionAdapter()
         binding.receiptDescriptionListView.adapter = descriptionAdapter

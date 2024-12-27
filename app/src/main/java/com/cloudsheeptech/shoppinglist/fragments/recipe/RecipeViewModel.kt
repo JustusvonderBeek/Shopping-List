@@ -38,6 +38,7 @@ constructor(
     private var createdBy: Long = savedStateHandle["createdBy"] ?: -1L
     private val listPickerRecipeId: Long = savedStateHandle["recipeIdForSelectedList"] ?: -1L
     val title = MutableLiveData<String>("Rezept")
+    val portionsText = MutableLiveData("Portions")
 
     private var selectedIngredients: List<ApiIngredient> = emptyList()
     private var selectedList: Pair<Long, Long> = Pair(-1L, -1L)
@@ -104,6 +105,10 @@ constructor(
 
     fun setTitle(title: String) {
         this.title.value = title
+    }
+
+    fun setPortionsText(text: String) {
+        this.portionsText.value = text
     }
 
     // TODO: Include a question if the receipt should really be deleted

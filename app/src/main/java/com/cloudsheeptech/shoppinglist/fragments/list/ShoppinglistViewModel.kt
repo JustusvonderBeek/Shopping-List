@@ -31,7 +31,7 @@ class ShoppinglistViewModel
 @Inject
 constructor(
     val database: ShoppingListDatabase,
-    private val shoppingListRepository: ShoppingListRepository,
+    val shoppingListRepository: ShoppingListRepository,
     private val appUserRepository: AppUserRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -42,9 +42,9 @@ constructor(
 
     val itemName = MutableLiveData<String>("")
 
-        private val shoppingListId: Long = savedStateHandle["ListID"]!!
-        private val createdBy: Long = savedStateHandle["CreatedBy"]!!
-        val title = MutableLiveData<String>(savedStateHandle["Title"]!!)
+    private val shoppingListId: Long = savedStateHandle["ListID"]!!
+    private val createdBy: Long = savedStateHandle["CreatedBy"]!!
+    val title = MutableLiveData<String>(savedStateHandle["Title"]!!)
 
     private val job = Job()
     private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
@@ -86,14 +86,17 @@ constructor(
     private val _confirmClear = MutableLiveData<Boolean>(false)
     val confirmClear: LiveData<Boolean> get() = _confirmClear
 
-        private val _renameList = MutableLiveData<Pair<String, Long>>(Pair("", -1L))
-        val renameList: LiveData<Pair<String, Long>> get() = _renameList
+    private val _renameList = MutableLiveData<Pair<String, Long>>(Pair("", -1L))
+    val renameList: LiveData<Pair<String, Long>> get() = _renameList
 
     private val _allItemsChecked = mappingDao.getIsListFinishedLive(shoppingListId, createdBy)
     val allItemsChecked: LiveData<Int> get() = _allItemsChecked
 
     private val _finished = MutableLiveData<Boolean>(false)
     val finished: LiveData<Boolean> get() = _finished
+
+    private val _scrollDown = MutableLiveData<Int>(-1)
+    val scrollDown: LiveData<Int> get() = _scrollDown
 
     // ---
 
@@ -177,9 +180,11 @@ constructor(
         localCoroutine.launch {
             val item = createNewItemWithName(itemName.value!!)
             shoppingListRepository.insertItem(shoppingListId, createdBy, item)
+            val lastPosition = itemsInList.value?.size ?: -1
             withContext(Dispatchers.Main) {
                 hideKeyboard()
                 clearItemNameInput()
+                scrollDown(lastPosition - 1)
             }
         }
     }
@@ -269,6 +274,10 @@ constructor(
 //            Log.d("ShoppinglistViewModel", "Found item to add")
 //            listHandler.AddItemToShoppingList(item, shoppingListId, createdBy)
             shoppingListRepository.insertExistingItem(shoppingListId, createdBy, itemId)
+            val lastPosition = itemsInList.value?.size ?: -1
+            withContext(Dispatchers.Main) {
+                scrollDown(lastPosition - 1)
+            }
         }
     }
 
@@ -365,25 +374,13 @@ constructor(
         _confirmDelete.value = true
     }
 
-        fun renameThisList() {
-            _renameList.value = Pair(this.title.value!!, this.shoppingListId)
-        }
+    fun renameThisList() {
+        _renameList.value = Pair(this.title.value!!, this.shoppingListId)
+    }
 
-        private suspend fun refreshListTitle() {
-            withContext(Dispatchers.IO) {
-                val list = shoppingListRepository.read(shoppingListId, createdBy) ?: return@withContext
-                withContext(Dispatchers.Main) {
-                    title.value = list.title
-                }
-            }
-        }
-
-        fun onListRenamed() {
-            _renameList.value = Pair("", -1L)
-//            localCoroutine.launch {
-//                refreshListTitle()
-//            }
-        }
+    fun onListRenamed() {
+        _renameList.value = Pair("", -1L)
+    }
 
     fun onDeleteConfirmed() {
         _confirmDelete.value = false
@@ -393,10 +390,6 @@ constructor(
                 navigateUp()
             }
         }
-        // TODO: Difference between own and shared list:
-        // Shared list -> delete offline and sharing
-        // Own list -> delete list offline and online + sharing
-//        listHandler.DeleteShoppingList(shoppingListId, createdBy)
     }
 
     fun onDeleteCanceled() {
@@ -410,7 +403,6 @@ constructor(
 
     fun onClearAllItemsPositiv() {
         _confirmClear.value = false
-//        listHandler.ClearCheckedItemsInList(shoppingListId)
     }
 
     fun onClearAllItemsNegative() {
@@ -443,5 +435,13 @@ constructor(
 
     fun keyboardHidden() {
         _hideKeyboard.value = false
+    }
+
+    private fun scrollDown(position: Int) {
+        _scrollDown.value = position
+    }
+
+    fun onViewScrolledDown() {
+        _scrollDown.value = -1
     }
 }

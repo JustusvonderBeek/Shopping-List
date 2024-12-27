@@ -64,4 +64,5 @@
     <string name="recipe_drow_down_add_items_btn">Zutaten zu Liste hinzufügen</string>
     <string name="recipe_item_name_hint">Zutat eingeben</string>
     <string name="recipe_edit_description_hint">Zubereitungsschritt eingeben</string>
+    <string name="list_item_amount_name">Menge</string>
 </resources>

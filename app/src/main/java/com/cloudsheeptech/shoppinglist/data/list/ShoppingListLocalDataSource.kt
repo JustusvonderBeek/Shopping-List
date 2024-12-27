@@ -443,6 +443,24 @@ constructor(
         return updatedList
     }
 
+    suspend fun removeItem(
+        listId: Long,
+        createdBy: Long,
+        itemId: Long,
+    ): ApiShoppingList {
+        val updatedList: ApiShoppingList
+        withContext(Dispatchers.IO) {
+            itemToListRepository.delete(itemId, listId, createdBy)
+            val existingList =
+                read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
+            existingList.lastUpdated = OffsetDateTime.now()
+            existingList.version++
+            update(existingList)
+            updatedList = existingList
+        }
+        return updatedList
+    }
+
     suspend fun addAll(
         listId: Long,
         createdBy: Long,
@@ -534,37 +552,38 @@ constructor(
         return updatedList
     }
 
-        suspend fun updateTitle(
-            listId: Long,
-            createdBy: Long,
-            title: String,
-        ) {
-            withContext(Dispatchers.IO) {
-                val existingList =
-                    listDao.getShoppingList(listId, createdBy) ?: throw IllegalArgumentException("list does not exist in the database")
-                existingList.title = title
-                listDao.updateList(existingList)
-            }
-        }
-
-        suspend fun deleteAll() {
-            withContext(Dispatchers.IO) {
-                listDao.reset()
-                itemToListRepository.deleteAllMappings()
-            }
-        }
-
-        /**
-         * Removes the list from the local data storage.
-         * Returns immediately if the list cannot be found
-         */
-        suspend fun delete(
-            listId: Long,
-            createdBy: Long,
-        ) {
-            withContext(Dispatchers.IO) {
-                listDao.deleteList(listId, createdBy)
-                itemToListRepository.deleteAllMappingsForList(listId, createdBy)
-            }
+    suspend fun updateTitle(
+        listId: Long,
+        createdBy: Long,
+        title: String,
+    ) {
+        withContext(Dispatchers.IO) {
+            val existingList =
+                listDao.getShoppingList(listId, createdBy)
+                    ?: throw IllegalArgumentException("list does not exist in the database")
+            existingList.title = title
+            listDao.updateList(existingList)
         }
     }
+
+    suspend fun deleteAll() {
+        withContext(Dispatchers.IO) {
+            listDao.reset()
+            itemToListRepository.deleteAllMappings()
+        }
+    }
+
+    /**
+     * Removes the list from the local data storage.
+     * Returns immediately if the list cannot be found
+     */
+    suspend fun delete(
+        listId: Long,
+        createdBy: Long,
+    ) {
+        withContext(Dispatchers.IO) {
+            listDao.deleteList(listId, createdBy)
+            itemToListRepository.deleteAllMappingsForList(listId, createdBy)
+        }
+    }
+}

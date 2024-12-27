@@ -228,6 +228,15 @@ constructor(
         update(updatedLocalList)
     }
 
+    suspend fun removeItem(
+        listId: Long,
+        createdBy: Long,
+        itemId: Long,
+    ) {
+        val updatedLocalList = localDataSource.removeItem(listId, createdBy, itemId)
+        update(updatedLocalList)
+    }
+
     // TODO: Fix the signature of this function (ApiIngredients -> DbItems ??? )
     suspend fun addAll(
         listId: Long,
@@ -259,22 +268,22 @@ constructor(
         return migratedToNewId
     }
 
-        suspend fun updateTitle(
-            listId: Long,
-            createdBy: Long,
-            title: String,
-        ): Boolean {
-            localDataSource.updateTitle(listId, createdBy, title)
-            return true
-        }
+    suspend fun updateTitle(
+        listId: Long,
+        createdBy: Long,
+        title: String,
+    ): Boolean {
+        localDataSource.updateTitle(listId, createdBy, title)
+        return true
+    }
 
-        suspend fun delete(
-            listId: Long,
-            createdBy: Long,
-        ) {
-            localDataSource.delete(listId, createdBy)
-            remoteApi.deleteShoppingList(listId)
-        }
+    suspend fun delete(
+        listId: Long,
+        createdBy: Long,
+    ) {
+        localDataSource.delete(listId, createdBy)
+        remoteApi.deleteShoppingList(listId)
+    }
 
     suspend fun deleteAll() {
         localDataSource.deleteAll()

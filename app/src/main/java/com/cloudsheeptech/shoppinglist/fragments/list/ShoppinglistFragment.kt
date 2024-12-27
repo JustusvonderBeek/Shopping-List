@@ -126,6 +126,7 @@ class ShoppinglistFragment :
         binding.lifecycleOwner = requireActivity()
 
         // TODO: Clean up this mess...
+        val amountName = getString(R.string.list_item_amount_name)
         val adapter =
             ShoppingListItemAdapter(
                 ShoppingListItemAdapter.ShoppingItemClickListener { itemId, count ->
@@ -140,9 +141,9 @@ class ShoppinglistFragment :
                     Log.d("ShoppinglistFragment", "Tapped on item $itemId to toggle checkbox")
                     viewModel.toggleItem(itemId.toLong())
                 },
-                resources,
-                database.mappingDao(),
-                shoppingListId,
+                amountName,
+                Pair(shoppingListId, createdBy),
+                viewModel.shoppingListRepository,
             )
         // The adapter for the preview items
         val previewAdapter =
@@ -306,6 +307,13 @@ class ShoppinglistFragment :
                 }
             },
         )
+
+        viewModel.scrollDown.observe(viewLifecycleOwner, Observer { position ->
+            if (position > 0) {
+                binding.itemList.scrollToPosition(position)
+                viewModel.onViewScrolledDown()
+            }
+        })
 
         val confirmClearDialog =
             AlertDialog

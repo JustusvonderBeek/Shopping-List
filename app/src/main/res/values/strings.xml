@@ -69,4 +69,5 @@
     <string name="recipe_drow_down_add_items_btn">Add items to list</string>
     <string name="recipe_item_name_hint">Insert item here</string>
     <string name="recipe_edit_description_hint">Insert description here</string>
+    <string name="list_item_amount_name">Amount</string>
 </resources>

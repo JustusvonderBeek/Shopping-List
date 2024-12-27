@@ -9,7 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class SwipeToDeleteHandler(private val adapter: ShoppingListItemAdapter) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+class SwipeToDeleteHandler(private val adapter: ShoppingListItemAdapter) :
+    ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
     private val job = Job()
     private val swipeHandlerScope = CoroutineScope(Dispatchers.Main + job)
@@ -24,11 +25,10 @@ class SwipeToDeleteHandler(private val adapter: ShoppingListItemAdapter) : ItemT
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 //        adapter.deleteItemAt(viewHolder.adapterPosition)
-        Log.i("SwipeToDeleteHandler", "Position is ${viewHolder.adapterPosition}")
-        val position = viewHolder.adapterPosition
+        Log.i("SwipeToDeleteHandler", "Position is ${viewHolder.bindingAdapterPosition}")
+        val position = viewHolder.bindingAdapterPosition
         swipeHandlerScope.launch {
             adapter.deleteItemAt(position)
-            adapter.notifyItemRemoved(position)
         }
     }
 

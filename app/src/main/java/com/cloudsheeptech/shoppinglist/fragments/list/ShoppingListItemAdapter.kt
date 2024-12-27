@@ -1,14 +1,13 @@
 package com.cloudsheeptech.shoppinglist.fragments.list
 
-import android.content.res.Resources
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemListMappingDao
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,9 +15,9 @@ import kotlinx.coroutines.withContext
 class ShoppingListItemAdapter(
     val clickListener: ShoppingItemClickListener,
     val checkboxClickListener: ShoppingItemCheckboxClickListener,
-    private val resource: Resources,
-    private val mappingDao: ItemListMappingDao,
-    private val listId: Long
+    private val amountName: String,
+    private val listPK: Pair<Long, Long>,
+    private val shoppingListRepository: ShoppingListRepository,
 ) : ListAdapter<AppItem, ShoppingListItemAdapter.WordListItemViewHolder>(
     WordDiffCallback()
 ) {
@@ -27,10 +26,13 @@ class ShoppingListItemAdapter(
         Log.i("WordListItemAdapter", "Remove item at $position")
         withContext(Dispatchers.IO) {
             val item = currentList[position]
-            // TODO: Replace with list handler
-            mappingDao.deleteMappingItemListId(item.id, listId, item.addedBy)
+            Log.d("ShoppingListItemAdapter", "Removing item ${item.name}")
+            shoppingListRepository.removeItem(listPK.first, listPK.second, item.id)
         }
-        notifyItemRemoved(position)
+    }
+
+    override fun getItemId(position: Int): Long {
+        return currentList[position].id
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordListItemViewHolder {
@@ -38,7 +40,7 @@ class ShoppingListItemAdapter(
     }
 
     override fun onBindViewHolder(holder: WordListItemViewHolder, position: Int) {
-        holder.bind(clickListener, checkboxClickListener, getItem(position), resource)
+        holder.bind(clickListener, checkboxClickListener, getItem(position), amountName)
     }
 
     class WordListItemViewHolder private constructor(val binding: ShoppingItemBinding) :
@@ -47,9 +49,10 @@ class ShoppingListItemAdapter(
             clickListener: ShoppingItemClickListener,
             checkClickListener: ShoppingItemCheckboxClickListener,
             item: AppItem,
-            resource: Resources
+            amountName: String
         ) {
             binding.item = item
+            binding.amountName = amountName
             binding.clickListener = clickListener
             binding.checkClickListener = checkClickListener
             // When pressing the checkbox itself also update

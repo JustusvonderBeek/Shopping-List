@@ -9,6 +9,10 @@
             type="com.cloudsheeptech.shoppinglist.data.items.AppItem" />
 
         <variable
+            name="amountName"
+            type="java.lang.String" />
+
+        <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.fragments.list.ShoppingListItemAdapter.ShoppingItemClickListener" />
 
@@ -70,7 +74,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text='@{String.format("Menge: %d", item.quantity)}'
+                    android:text='@{String.format("%s: %d", amountName, item.quantity)}'
                     style="@style/WordListItemTransStyle" />
 
             </LinearLayout>

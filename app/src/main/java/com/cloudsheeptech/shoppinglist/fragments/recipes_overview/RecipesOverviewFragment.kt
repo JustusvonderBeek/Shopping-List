@@ -54,7 +54,7 @@ class RecipesOverviewFragment : Fragment(), MenuProvider {
             RecipesListAdapter(RecipesListAdapter.ReceiptClickListener { id, from, title ->
                 Log.d("ReceiptsOverviewFragment", "Got receipt $id from $from")
                 viewModel.navigateToReceipt(id, from, title)
-            }, requireActivity().resources)
+            })
         binding.receiptOverviewList.adapter = adapter
 
         viewModel.receipts.observe(viewLifecycleOwner, Observer { list ->

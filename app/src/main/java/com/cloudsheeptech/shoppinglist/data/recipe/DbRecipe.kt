@@ -8,9 +8,10 @@ import java.time.OffsetDateTime
 @Entity(tableName = "receipts")
 data class DbRecipe(
     @PrimaryKey(autoGenerate = true)
-    var id : Long,
+    var id: Long,
     var name: String,
     var createdBy: Long,
+    var createdByName: String,
     @ColumnInfo(defaultValue = "CURRENT_TIMESTAMP")
     var createdAt: OffsetDateTime,
     @ColumnInfo(defaultValue = "CURRENT_TIMESTAMP")

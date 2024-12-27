@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.recipe
 
+import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
@@ -8,7 +9,7 @@ import java.time.OffsetDateTime
 data class ApiRecipe(
     var onlineId: Long,
     var name: String,
-    var createdBy: Long,
+    var createdBy: ListCreator,
     @Contextual
     var createdAt: OffsetDateTime,
     @Contextual

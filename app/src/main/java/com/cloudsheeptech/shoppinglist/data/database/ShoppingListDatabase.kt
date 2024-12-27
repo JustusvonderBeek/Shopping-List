@@ -36,9 +36,9 @@ import javax.inject.Singleton
 @Suppress("ktlint:standard:max-line-length")
 @Singleton
 @Database(
-    version = 26,
+    version = 27,
     entities =
-        [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class, ReceiptDescriptionMapping::class, ReceiptItemMapping::class],
+    [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class, ReceiptDescriptionMapping::class, ReceiptItemMapping::class],
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 18, to = 19),

@@ -48,6 +48,18 @@
     <string name="receipt_overview_title">Rezepte</string>
     <string name="receipt_title">Rezept</string>
     <string name="receipt_edit_title">Bearbeiten</string>
-    <string name="fragment_list_picker_title">Choose a list</string>
+    <string name="fragment_list_picker_title">Liste auswählen</string>
     <string name="edit_title">Liste bearbeiten</string>
+    <string name="ingredients_header">Zutaten:</string>
+    <string name="steps_header">Zubereitungsschritte:</string>
+    <string name="recipe_edit_add_item_btn">Neue Zutat</string>
+    <string name="recipe_edit_add_desc_btn">Neuer Zubereitungsschritt</string>
+    <string name="edit_recipe_finish_btn">Bearbeiten beenden</string>
+    <string name="recipe_add_items_finish_toast">%1$d Zutat(en) zur Liste \'%2$s\' hinzugefügt</string>
+    <string name="list_drop_down_rename_btn">Liste umbenennen</string>
+    <string name="list_overview_drop_down_add_btn">Neue Liste</string>
+    <string name="list_overview_drop_down_delete_btn">Akt. Benutzer löschen</string>
+    <string name="list_overview_drop_down_config_btn">Einstellungen</string>
+    <string name="list_overview_drop_down_clear_btn">Alle Listen entfernen</string>
+    <string name="recipe_drow_down_add_items_btn">Zutaten zu Liste hinzufügen</string>
 </resources>

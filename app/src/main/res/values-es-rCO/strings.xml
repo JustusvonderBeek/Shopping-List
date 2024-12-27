@@ -49,4 +49,9 @@
     <string name="receipt_edit_title">Edit Receipt</string>
     <string name="fragment_list_picker_title">Choose a list</string>
     <string name="edit_title">Editar Listo</string>
+    <string name="ingredients_header">Ingredientes:</string>
+    <string name="steps_header">Cocinar:</string>
+    <string name="recipe_edit_add_item_btn">Nueva Ingredient</string>
+    <string name="recipe_edit_add_desc_btn">Nueva ...</string>
+    <string name="edit_recipe_finish_btn">Salir editar</string>
 </resources>

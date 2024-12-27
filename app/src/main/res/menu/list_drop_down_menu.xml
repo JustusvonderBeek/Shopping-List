@@ -6,17 +6,17 @@
         android:id="@+id/share_list"
         android:icon="@drawable/ic_share"
         android:title="@string/share_btn_text"
-        app:showAsAction="never"/>
+        app:showAsAction="never" />
     <item
         android:id="@+id/delete_list"
         android:icon="@drawable/ic_trash"
         android:title="@string/delete_list_button_text"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/rename_list"
         android:icon="@drawable/ic_edit"
-        android:title="Rename List"
-        app:showAsAction="never"/>
+        android:title="@string/list_drop_down_rename_btn"
+        app:showAsAction="never" />
     <item
         android:id="@+id/clear_items_list"
         android:icon="@drawable/ic_clear"

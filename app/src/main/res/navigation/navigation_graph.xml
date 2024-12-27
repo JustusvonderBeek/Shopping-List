@@ -105,6 +105,9 @@
         <action
             android:id="@+id/action_receipt_to_listPickerFragment"
             app:destination="@id/listPickerFragment" />
+        <argument
+            android:name="title"
+            app:argType="string" />
     </fragment>
 
 

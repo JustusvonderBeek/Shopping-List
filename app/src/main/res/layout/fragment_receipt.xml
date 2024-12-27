@@ -94,7 +94,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Ingredients:"
+                    android:text="@string/ingredients_header"
                     style="@style/TextAppearance.AppCompat.Title" />
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -123,7 +123,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Steps:"
+                    android:text="@string/steps_header"
                     style="@style/TextAppearance.AppCompat.Title" />
 
                 <androidx.recyclerview.widget.RecyclerView

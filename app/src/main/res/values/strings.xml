@@ -55,4 +55,16 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="edit_title">Edit Title</string>
+    <string name="ingredients_header">Ingredients:</string>
+    <string name="steps_header">Steps:</string>
+    <string name="recipe_edit_add_item_btn">Add new item</string>
+    <string name="recipe_edit_add_desc_btn">Add new description</string>
+    <string name="edit_recipe_finish_btn">Finish editing</string>
+    <string name="recipe_add_items_finish_toast">Added %1$d item(s) to list \'%2$s\'</string>
+    <string name="list_drop_down_rename_btn">Rename List</string>
+    <string name="list_overview_drop_down_add_btn">Add</string>
+    <string name="list_overview_drop_down_delete_btn">Delete User</string>
+    <string name="list_overview_drop_down_config_btn">Config</string>
+    <string name="list_overview_drop_down_clear_btn">Clear All Lists</string>
+    <string name="recipe_drow_down_add_items_btn">Add items to list</string>
 </resources>

@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/delete_receipt"
         android:icon="@drawable/ic_trash"
         android:title="Delete"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/edit_receipt"
         android:icon="@drawable/ic_edit"
         android:title="Edit"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/add_recipe_items"
+        android:icon="@color/add_green"
+        android:title="@string/recipe_drow_down_add_items_btn"
+        app:showAsAction="never" />
 
 </menu>

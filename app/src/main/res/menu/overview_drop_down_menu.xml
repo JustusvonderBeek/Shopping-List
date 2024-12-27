@@ -7,31 +7,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:icon="@drawable/ic_plus"
-        android:title="Add"
-        app:showAsAction="always"
-        />
+        android:title="@string/list_overview_drop_down_add_btn"
+        app:showAsAction="always" />
     <item
         android:id="@+id/delete_user"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:icon="@drawable/ic_minus"
-        android:title="Delete User"
-        app:showAsAction="withText"
-        />
+        android:title="@string/list_overview_drop_down_delete_btn"
+        app:showAsAction="withText" />
     <item
         android:id="@+id/config"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:icon="@drawable/ic_check"
-        android:title="Config"
-        app:showAsAction="withText"
-        />
+        android:title="@string/list_overview_drop_down_config_btn"
+        app:showAsAction="withText" />
     <item
         android:id="@+id/clear_all_lists"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:icon="@drawable/ic_trash"
-        android:title="Clear All Lists"
-        app:showAsAction="withText"
-        />
+        android:title="@string/list_overview_drop_down_clear_btn"
+        app:showAsAction="withText" />
 </menu>

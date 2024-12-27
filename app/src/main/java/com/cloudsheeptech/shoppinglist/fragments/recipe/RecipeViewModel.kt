@@ -34,15 +34,17 @@ constructor(
     private val job = Job()
     private val vmScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val receiptId: Long = savedStateHandle["receiptId"] ?: -1L
-    private val createdBy: Long = savedStateHandle["createdBy"] ?: -1L
+    private var receiptId: Long = savedStateHandle["receiptId"] ?: -1L
+    private var createdBy: Long = savedStateHandle["createdBy"] ?: -1L
+    private val listPickerRecipeId: Long = savedStateHandle["recipeIdForSelectedList"] ?: -1L
+
     private var selectedIngredients: List<ApiIngredient> = emptyList()
     private var selectedList: Pair<Long, Long> = Pair(-1L, -1L)
 
     private val _shoppingLists = listRepository.readAllLive()
     val shoppingLists: LiveData<List<DbShoppingList>> get() = _shoppingLists
 
-    val receipt = recipeRepository.readLive(receiptId, createdBy)
+    var receipt = recipeRepository.readLive(receiptId, createdBy)
 
     private val _images = MutableLiveData<List<CarouselItem>>(emptyList())
     val images: LiveData<List<CarouselItem>> get() = _images
@@ -50,7 +52,7 @@ constructor(
     private val _portions = MutableLiveData<Int>(2)
     val portions: LiveData<Int> get() = _portions
 
-    private val _ingredients: LiveData<List<ApiIngredient>> =
+    private var _ingredients: LiveData<List<ApiIngredient>> =
         receipt.map { recipe -> recipe.ingredients }
     val ingredientWithPortionsApplied = MediatorLiveData<List<ApiIngredient>>().apply {
         addSource(_ingredients) { ingredients ->
@@ -63,7 +65,7 @@ constructor(
         }
         addSource(_portions) { portion ->
             val mappedIngredients =
-                _ingredients.value?.map { ingredient -> return@map ingredient.copy(quantity = ingredient.quantity * portion) }
+                receipt.value?.ingredients?.map { ingredient -> return@map ingredient.copy(quantity = ingredient.quantity * portion) }
             value = mappedIngredients
         }
     }
@@ -80,13 +82,20 @@ constructor(
     private val _navigateUp = MutableLiveData<Boolean>(false)
     val navigateUp: LiveData<Boolean> get() = _navigateUp
 
-    init {
-//            _ingredients.addSource(portions) { portion ->
-//                receipt.value?.ingredients?.map { x ->
-//                    x.quantity *= portion
-//                } ?: emptyList()
-//            }
-//        _portions.value = 2
+    fun setRecipeIds(recipeId: Long, createdBy: Long) {
+        this.receiptId = recipeId
+        this.createdBy = createdBy
+        this.ingredientWithPortionsApplied.removeSource(this._ingredients)
+        this.receipt = recipeRepository.readLive(receiptId, createdBy)
+        this._ingredients = this.receipt.map { recipe -> recipe.ingredients }
+        this.ingredientWithPortionsApplied.addSource(this._ingredients) { ingredients ->
+            val mappedIngredients = ingredients.map { ingredient ->
+                return@map ingredient.copy(
+                    quantity = ingredient.quantity * (portions.value ?: 1)
+                )
+            }
+            this.ingredientWithPortionsApplied.value = mappedIngredients
+        }
     }
 
     // TODO: Include a question if the receipt should really be deleted
@@ -103,17 +112,8 @@ constructor(
         Log.d("RecipeViewModel", "Adding items to viewmodel pressed")
         // First we need to know which list, then we can add the items into the list
         Log.d("RecipeViewModel", "Would add: ${receipt.value?.ingredients}")
-        selectedIngredients = receipt.value?.ingredients ?: emptyList()
+        selectedIngredients = ingredientWithPortionsApplied.value ?: emptyList()
         navigateToSelectList()
-//        if (selectedList.first == -1L || selectedList.second == 1L)
-//            return
-//        vmScope.launch {
-//            // TODO: Ask the user which list he wants to use, or create a new one
-//            listRepository.addAll(1, 7259303, receipt!!.value!!.ingredients)
-//            withContext(Dispatchers.Main) {
-//                navigateUp()
-//            }
-//        }
     }
 
     fun increasePortions() {
@@ -138,7 +138,10 @@ constructor(
     ) {
         selectedList = Pair(listId, createdBy)
         vmScope.launch {
-            Log.d("RecipeViewModel", "${receipt.value}")
+            Log.d(
+                "RecipeViewModel",
+                "Adding ${selectedIngredients.size} items from $receiptId by $createdBy to list $listId"
+            )
             listRepository.addAll(listId, createdBy, selectedIngredients)
             withContext(Dispatchers.Main) {
                 navigateUp()

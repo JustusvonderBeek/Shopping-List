@@ -11,21 +11,22 @@ import android.view.ViewGroup
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentReceiptBinding
 import dagger.hilt.android.AndroidEntryPoint
 import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 @AndroidEntryPoint
-class RecipeFragment :
-    Fragment(),
-    MenuProvider {
-    private val viewModel: RecipeViewModel by viewModels()
+class RecipeFragment : Fragment(), MenuProvider {
+    private val viewModel: RecipeViewModel by activityViewModels<RecipeViewModel>()
     private lateinit var binding: FragmentReceiptBinding
+
+    private val args: RecipeFragmentArgs by navArgs<RecipeFragmentArgs>()
 
     override fun onCreateMenu(
         menu: Menu,
@@ -61,6 +62,11 @@ class RecipeFragment :
         binding.recipeVM = viewModel
         binding.lifecycleOwner = this
 
+        // In this case, we scope the viewModel differently because we need to share
+        // data between two fragments. Therefore, we need to manually inject the args
+        // into the state to be able to load the correct recipe
+        viewModel.setRecipeIds(args.receiptId, args.createdBy)
+
         val descriptionAdapter = RecipeDescriptionAdapter()
         binding.receiptDescriptionListView.adapter = descriptionAdapter
         val ingredientAdapter = RecipeIngredientAdapter()
@@ -72,7 +78,7 @@ class RecipeFragment :
             Observer { receiptIdAndCreatedBy ->
                 val receiptId = receiptIdAndCreatedBy.first
                 val createdBy = receiptIdAndCreatedBy.second
-                if (receiptId > 0 && createdBy > 0) {
+                if (receiptId > 0 && createdBy >= 0) {
                     findNavController().navigate(
                         RecipeFragmentDirections.actionReceiptToReceiptEditFragment(
                             receiptId,

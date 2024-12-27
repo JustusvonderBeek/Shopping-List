@@ -21,10 +21,9 @@ import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ListPickerFragment :
-    Fragment(),
-    MenuProvider {
-    private val viewModel: RecipeViewModel by activityViewModels()
+class ListPickerFragment : Fragment(), MenuProvider {
+
+    private val viewModel: RecipeViewModel by activityViewModels<RecipeViewModel>()
     private lateinit var binding: FragmentListPickerBinding
 
     override fun onCreateMenu(

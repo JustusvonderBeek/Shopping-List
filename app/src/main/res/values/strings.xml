@@ -67,4 +67,6 @@
     <string name="list_overview_drop_down_config_btn">Config</string>
     <string name="list_overview_drop_down_clear_btn">Clear All Lists</string>
     <string name="recipe_drow_down_add_items_btn">Add items to list</string>
+    <string name="recipe_item_name_hint">Insert item here</string>
+    <string name="recipe_edit_description_hint">Insert description here</string>
 </resources>

@@ -3,30 +3,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="ingredient"
             type="com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient" />
+
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.RecipeIngredientEditAdapter.ReceiptIngredientEditClickListener" />
     </data>
-    
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="3"
-        >
+        android:weightSum="3">
 
         <EditText
             android:id="@+id/itemNameEditText"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:hint="Insert Item here"
+            android:hint="@string/recipe_item_name_hint"
             android:text="@={ingredient.name}"
             android:layout_gravity="center"
-            android:layout_weight="3"
-            />
+            android:layout_weight="3" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -36,8 +36,7 @@
             android:layout_weight="0"
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
-            android:textSize="18sp"
-            />
+            android:textSize="18sp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -51,8 +50,7 @@
                 app:elevation="0dp"
                 android:onClick="@{() -> clickListener.onClick(ingredient, -1)}"
                 android:src="@drawable/ic_minus"
-                app:backgroundTint="@color/decrease_orange"
-                />
+                app:backgroundTint="@color/decrease_orange" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_width="wrap_content"
@@ -61,8 +59,7 @@
                 app:elevation="0dp"
                 android:onClick="@{() -> clickListener.onClick(ingredient, 1)}"
                 android:src="@drawable/ic_plus"
-                app:backgroundTint="@color/add_green"
-                />
+                app:backgroundTint="@color/add_green" />
 
         </LinearLayout>
     </LinearLayout>

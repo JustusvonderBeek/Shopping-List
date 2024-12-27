@@ -27,8 +27,7 @@
                 android:id="@+id/imageCarousel"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
-                app:imagePlaceholder="@drawable/receipt_stock"
-                />
+                app:imagePlaceholder="@drawable/receipt_stock" />
 
             <EditText
                 android:layout_width="match_parent"
@@ -43,7 +42,7 @@
                 android:id="@+id/addItems"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Add Item(s)"
+                android:text="@string/recipe_edit_add_item_btn"
                 app:icon="@drawable/ic_item"
                 app:iconGravity="textStart"
                 android:onClick="@{() -> viewModel.addItem()}"
@@ -66,7 +65,7 @@
                 android:id="@+id/addDescriptions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Add Description(s)"
+                android:text="@string/recipe_edit_add_desc_btn"
                 app:icon="@drawable/ic_recipe"
                 app:iconGravity="textStart"
                 android:layout_marginTop="16dp"
@@ -92,7 +91,7 @@
                 android:id="@+id/finishEditingButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Finish editing"
+                android:text="@string/edit_recipe_finish_btn"
                 app:icon="@drawable/ic_check"
                 app:iconGravity="textStart"
                 android:layout_marginTop="16dp"

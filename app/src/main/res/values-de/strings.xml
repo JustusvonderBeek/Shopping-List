@@ -49,7 +49,7 @@
     <string name="receipt_title">Rezept</string>
     <string name="receipt_edit_title">Bearbeiten</string>
     <string name="fragment_list_picker_title">Liste auswählen</string>
-    <string name="edit_title">Liste bearbeiten</string>
+    <string name="edit_title">Name bearbeiten</string>
     <string name="ingredients_header">Zutaten:</string>
     <string name="steps_header">Zubereitungsschritte:</string>
     <string name="recipe_edit_add_item_btn">Neue Zutat</string>
@@ -62,4 +62,6 @@
     <string name="list_overview_drop_down_config_btn">Einstellungen</string>
     <string name="list_overview_drop_down_clear_btn">Alle Listen entfernen</string>
     <string name="recipe_drow_down_add_items_btn">Zutaten zu Liste hinzufügen</string>
+    <string name="recipe_item_name_hint">Zutat eingeben</string>
+    <string name="recipe_edit_description_hint">Zubereitungsschritt eingeben</string>
 </resources>

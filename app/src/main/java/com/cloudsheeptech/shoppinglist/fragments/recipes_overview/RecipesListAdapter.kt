@@ -13,8 +13,8 @@ class RecipesListAdapter(
     val clickListener: ReceiptClickListener,
     private val resource: Resources,
 ) : ListAdapter<DbRecipe, RecipesListAdapter.ReceiptListViewHolder>(
-        ItemDiffCallback(),
-    ) {
+    ItemDiffCallback(),
+) {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -50,9 +50,9 @@ class RecipesListAdapter(
     }
 
     class ReceiptClickListener(
-        val clickListener: (id: Long, from: Long) -> Unit,
+        val clickListener: (id: Long, from: Long, title: String) -> Unit,
     ) {
-        fun onClick(item: DbRecipe) = clickListener(item.id, item.createdBy)
+        fun onClick(item: DbRecipe) = clickListener(item.id, item.createdBy, item.name)
     }
 
     class ItemDiffCallback : DiffUtil.ItemCallback<DbRecipe>() {

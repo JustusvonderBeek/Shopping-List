@@ -8,6 +8,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -46,6 +48,11 @@ class RecipeFragment : Fragment(), MenuProvider {
                 viewModel.editReceipt()
                 return true
             }
+
+            R.id.add_recipe_items -> {
+                viewModel.addRecipeToShoppingList()
+                return true
+            }
         }
         return false
     }
@@ -66,6 +73,7 @@ class RecipeFragment : Fragment(), MenuProvider {
         // data between two fragments. Therefore, we need to manually inject the args
         // into the state to be able to load the correct recipe
         viewModel.setRecipeIds(args.receiptId, args.createdBy)
+        viewModel.setTitle(args.title)
 
         val descriptionAdapter = RecipeDescriptionAdapter()
         binding.receiptDescriptionListView.adapter = descriptionAdapter
@@ -136,6 +144,23 @@ class RecipeFragment : Fragment(), MenuProvider {
             },
         )
 
+        viewModel.toastMessage.observe(viewLifecycleOwner, Observer { listAndItems ->
+            val list = listAndItems.first
+            val items = listAndItems.second
+            if (list.isNotEmpty() && items > 0) {
+                val toastString = resources.getString(R.string.recipe_add_items_finish_toast)
+                val formattedString = String.format(toastString, items, list)
+                Toast.makeText(context, formattedString, Toast.LENGTH_LONG).show()
+                viewModel.onToastMessageShown()
+            }
+        })
+
         return binding.root
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (activity as AppCompatActivity).supportActionBar?.title = viewModel.title.value
+    }
+
 }

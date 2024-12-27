@@ -37,6 +37,7 @@ constructor(
     private var receiptId: Long = savedStateHandle["receiptId"] ?: -1L
     private var createdBy: Long = savedStateHandle["createdBy"] ?: -1L
     private val listPickerRecipeId: Long = savedStateHandle["recipeIdForSelectedList"] ?: -1L
+    val title = MutableLiveData<String>("Rezept")
 
     private var selectedIngredients: List<ApiIngredient> = emptyList()
     private var selectedList: Pair<Long, Long> = Pair(-1L, -1L)
@@ -82,6 +83,9 @@ constructor(
     private val _navigateUp = MutableLiveData<Boolean>(false)
     val navigateUp: LiveData<Boolean> get() = _navigateUp
 
+    private val _toastMessage = MutableLiveData(Pair("", -1))
+    val toastMessage: LiveData<Pair<String, Int>> get() = _toastMessage
+
     fun setRecipeIds(recipeId: Long, createdBy: Long) {
         this.receiptId = recipeId
         this.createdBy = createdBy
@@ -96,6 +100,10 @@ constructor(
             }
             this.ingredientWithPortionsApplied.value = mappedIngredients
         }
+    }
+
+    fun setTitle(title: String) {
+        this.title.value = title
     }
 
     // TODO: Include a question if the receipt should really be deleted
@@ -143,6 +151,8 @@ constructor(
                 "Adding ${selectedIngredients.size} items from $receiptId by $createdBy to list $listId"
             )
             listRepository.addAll(listId, createdBy, selectedIngredients)
+            val list = listRepository.read(listId, createdBy) ?: return@launch
+            makeToast(selectedIngredients.size, list.title)
             withContext(Dispatchers.Main) {
                 navigateUp()
             }
@@ -175,5 +185,13 @@ constructor(
 
     fun onUpNavigated() {
         _navigateUp.value = false
+    }
+
+    private fun makeToast(items: Int, list: String) {
+        _toastMessage.value = Pair(list, items)
+    }
+
+    fun onToastMessageShown() {
+        _toastMessage.value = Pair("", -1)
     }
 }

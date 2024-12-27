@@ -24,18 +24,18 @@ class RecipesOverviewViewModel @Inject constructor(
     private val _navigateToCreateReceipt = MutableLiveData<Boolean>(false)
     val navigateToCreateReceipt : LiveData<Boolean> get() = _navigateToCreateReceipt
 
-    private val _navigateToReceipt = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
-    val navigateToReceipt : LiveData<Pair<Long, Long>> get() = _navigateToReceipt
+    private val _navigateToReceipt = MutableLiveData(Triple(-1L, -1L, ""))
+    val navigateToReceipt : LiveData<Triple<Long, Long, String>> get() = _navigateToReceipt
 
     private val _receipts = recipeRepository.readAllLive()
     val receipts : LiveData<List<DbRecipe>> get() = _receipts
 
-    fun navigateToReceipt(id: Long, createdBy: Long) {
-        _navigateToReceipt.value = Pair(id, createdBy)
+    fun navigateToReceipt(id: Long, createdBy: Long, title: String) {
+        _navigateToReceipt.value = Triple(id, createdBy, title)
     }
 
     fun onReceiptNavigated() {
-        _navigateToReceipt.value = Pair(-1, -1)
+        _navigateToReceipt.value = Triple(-1, -1, "")
     }
 
     fun createReceipt() {

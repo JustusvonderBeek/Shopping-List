@@ -179,7 +179,8 @@ class ShoppinglistFragment :
                 Log.d("ShoppingListFragment", "List changed")
                 it?.let {
                     adapter.submitList(it)
-//                adapter.notifyDataSetChanged()
+                    // Necessary to apply the ordering directly
+//                    adapter.notifyDataSetChanged()
                 }
             },
         )
@@ -351,7 +352,10 @@ class ShoppinglistFragment :
             Observer { (rename, listId) ->
                 if (rename.isNotEmpty() && listId > 0L) {
                     findNavController().navigate(
-                        ShoppinglistFragmentDirections.actionShoppinglistToCreateShoppinglistFragment(rename, listId),
+                        ShoppinglistFragmentDirections.actionShoppinglistToCreateShoppinglistFragment(
+                            rename,
+                            listId
+                        ),
                     )
                     viewModel.onListRenamed()
                 }

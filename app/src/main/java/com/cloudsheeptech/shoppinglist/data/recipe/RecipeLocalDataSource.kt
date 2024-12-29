@@ -208,8 +208,11 @@ constructor(
             receiptItemDao.deleteAllForReceipt(receipt.onlineId, receipt.createdBy.onlineId)
             receipt.ingredients.forEach { ingredient ->
                 // Check if we might need to create the item first
-                val itemExists = itemDao.getItem(ingredient.id)
+                var itemExists = itemDao.getItem(ingredient.id)
                 if (ingredient.id == 0L || itemExists == null) {
+                    itemExists = itemDao.getItemFromName(ingredient.name)
+                }
+                if (itemExists == null) {
                     val item =
                         DbItem(
                             id = 0L,
@@ -218,6 +221,8 @@ constructor(
                         )
                     val itemId = itemRepository.create(item)
                     ingredient.id = itemId
+                } else {
+                    ingredient.id = itemExists.id
                 }
                 val convertedIngredient =
                     ReceiptItemMapping(

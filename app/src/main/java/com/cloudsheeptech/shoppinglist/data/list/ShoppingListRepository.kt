@@ -215,8 +215,15 @@ constructor(
         createdBy: Long,
         item: AppItem,
     ) {
-        val updatedLocalList = localDataSource.insertItem(listId, createdBy, item)
-        update(updatedLocalList)
+        try {
+            val updatedLocalList = localDataSource.insertItem(listId, createdBy, item)
+            update(updatedLocalList)
+        } catch (ex: IllegalArgumentException) {
+            Log.e("ShoppingListRepository", "List $listId from $createdBy not found")
+        } catch (ex: IllegalStateException) {
+            Log.e("ShoppingListRepository", "User null after login screen")
+            throw ex
+        }
     }
 
     suspend fun insertExistingItem(

@@ -17,22 +17,22 @@ interface ReceiptItemDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(itemMapping: ReceiptItemMapping)
 
-    @Query("SELECT * FROM receipt_to_item WHERE id = :mappingId")
+    @Query("SELECT * FROM recipe_to_item WHERE id = :mappingId")
     fun read(mappingId: Long): ReceiptItemMapping?
 
-    @Query("SELECT * FROM  receipt_to_item WHERE recipeId = :receiptId AND createdBy = :createdBy")
+    @Query("SELECT * FROM  recipe_to_item WHERE recipeId = :receiptId AND createdBy = :createdBy")
     fun readAllForReceipt(
         receiptId: Long,
         createdBy: Long,
     ): List<ReceiptItemMapping>
 
-    @Query("SELECT * FROM receipt_to_item JOIN items ON itemId = items.id WHERE recipeId = :receiptId AND createdBy = :createdBy")
+    @Query("SELECT * FROM recipe_to_item JOIN items ON itemId = items.id WHERE recipeId = :receiptId AND createdBy = :createdBy")
     fun readAllForReceiptJoined(
         receiptId: Long,
         createdBy: Long,
     ): Flow<Map<ReceiptItemMapping, DbItem>>
 
-    @Query("SELECT * FROM receipt_to_item WHERE recipeId = :receiptId AND createdBy = :createdBy")
+    @Query("SELECT * FROM recipe_to_item WHERE recipeId = :receiptId AND createdBy = :createdBy")
     fun readFlow(
         receiptId: Long,
         createdBy: Long,
@@ -41,7 +41,7 @@ interface ReceiptItemDao {
     @Delete
     fun delete(itemMapping: ReceiptItemMapping)
 
-    @Query("DELETE FROM receipt_to_item WHERE recipeId = :receiptId AND createdBy = :createdBy")
+    @Query("DELETE FROM recipe_to_item WHERE recipeId = :receiptId AND createdBy = :createdBy")
     fun deleteAllForReceipt(
         receiptId: Long,
         createdBy: Long,

@@ -3,7 +3,7 @@ package com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "receipt_to_item")
+@Entity(tableName = "recipe_to_item")
 data class ReceiptItemMapping(
     @PrimaryKey(autoGenerate = true)
     var id: Long,

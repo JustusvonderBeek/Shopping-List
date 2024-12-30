@@ -16,39 +16,39 @@ interface RecipeDao {
     @Update
     fun update(receipt: DbRecipe)
 
-    @Query("DELETE FROM receipts WHERE id = :key AND createdBy = :createdBy")
+    @Query("DELETE FROM recipes WHERE id = :key AND createdBy = :createdBy")
     fun delete(
         key: Long,
         createdBy: Long,
     )
 
-    @Query("DELETE FROM receipts")
+    @Query("DELETE FROM recipes")
     fun reset()
 
-    @Query("SELECT * FROM receipts WHERE id = :key AND createdBy = :createdBy")
+    @Query("SELECT * FROM recipes WHERE id = :key AND createdBy = :createdBy")
     fun get(
         key: Long,
         createdBy: Long,
     ): DbRecipe?
 
-    @Query("SELECT * FROM receipts WHERE id = :key AND createdBy = :createdBy")
+    @Query("SELECT * FROM recipes WHERE id = :key AND createdBy = :createdBy")
     fun getLive(
         key: Long,
         createdBy: Long,
     ): LiveData<DbRecipe>
 
-    @Query("SELECT * FROM receipts WHERE id = :key AND createdBy = :createdBy")
+    @Query("SELECT * FROM recipes WHERE id = :key AND createdBy = :createdBy")
     fun getFlow(
         key: Long,
         createdBy: Long,
     ): Flow<DbRecipe>
 
-    @Query("SELECT * FROM receipts")
+    @Query("SELECT * FROM recipes")
     fun getAllLive(): LiveData<List<DbRecipe>>
 
-    @Query("UPDATE receipts SET createdBy = 0 WHERE createdBy = :createdBy")
+    @Query("UPDATE recipes SET createdBy = 0 WHERE createdBy = :createdBy")
     fun resetCreatedBy(createdBy: Long)
 
-    @Query("UPDATE receipts SET createdBy = :createdBy WHERE createdBy = 0")
+    @Query("UPDATE recipes SET createdBy = :createdBy WHERE createdBy = 0")
     fun updateCreatedBy(createdBy: Long)
 }

@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.OffsetDateTime
 
-@Entity(tableName = "receipts")
+@Entity(tableName = "recipes")
 data class DbRecipe(
     @PrimaryKey(autoGenerate = true)
     var id: Long,

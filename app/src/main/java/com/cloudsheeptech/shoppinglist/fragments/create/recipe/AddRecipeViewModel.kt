@@ -44,7 +44,7 @@ class AddRecipeViewModel @Inject constructor(
         val currentTitle = receiptName.value ?: return
         val currentDescription = receiptDescription.value ?: return
         addVmScope.launch {
-            val receipt = recipeRepository.create(currentTitle, "ic_receipt")
+            val receipt = recipeRepository.create(currentTitle, 2, "ic_receipt")
             receipt.description = listOf(ApiDescription(1, currentDescription))
             recipeRepository.update(receipt)
 //            if (word.value != null && translation.value != null) {

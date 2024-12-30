@@ -16,4 +16,6 @@ data class DbRecipe(
     var createdAt: OffsetDateTime,
     @ColumnInfo(defaultValue = "CURRENT_TIMESTAMP")
     var lastUpdated: OffsetDateTime,
+    var version: Int,
+    var defaultPortion: Int,
 )

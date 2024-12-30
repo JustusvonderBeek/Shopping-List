@@ -36,6 +36,8 @@ constructor(
                 createdBy = ListCreator(this.createdBy, this.createdByName),
                 createdAt = this.createdAt,
                 lastUpdated = this.lastUpdated,
+                version = this.version,
+                defaultPortion = this.defaultPortion,
                 ingredients = emptyList(),
                 description = emptyList(),
             )
@@ -51,6 +53,8 @@ constructor(
                 createdByName = this.createdBy.username,
                 createdAt = this.createdAt,
                 lastUpdated = this.lastUpdated,
+                version = this.version,
+                defaultPortion = this.defaultPortion,
             )
         return dbRecipe
     }
@@ -58,6 +62,7 @@ constructor(
     suspend fun create(
         name: String,
         icon: String?,
+        defaultPortion: Int,
     ): ApiRecipe {
         val user = userRepository.read() ?: throw IllegalStateException("user null after login")
         val dbRecipe =
@@ -68,6 +73,8 @@ constructor(
                 createdByName = user.Username,
                 createdAt = OffsetDateTime.now(),
                 lastUpdated = OffsetDateTime.now(),
+                version = 1,
+                defaultPortion = defaultPortion,
             )
         withContext(Dispatchers.IO) {
             val receiptId = receiptDao.insert(dbRecipe)
@@ -124,8 +131,10 @@ constructor(
                     ListCreator(0L, ""),
                     OffsetDateTime.now(),
                     OffsetDateTime.now(),
+                    1,
+                    2,
                     listOf(),
-                    listOf()
+                    listOf(),
                 )
             }
             val convertedItems =
@@ -151,6 +160,8 @@ constructor(
                 createdBy = ListCreator(baseReceipt.createdBy, baseReceipt.createdByName),
                 createdAt = baseReceipt.createdAt,
                 lastUpdated = baseReceipt.lastUpdated,
+                version = baseReceipt.version,
+                defaultPortion = baseReceipt.defaultPortion,
                 ingredients = convertedItems,
                 description = convertedDescription,
             )
@@ -199,11 +210,27 @@ constructor(
         }
     }
 
-    suspend fun update(receipt: ApiRecipe) {
+    /**
+     * returns the version of the updated receipt
+     * @throws IllegalArgumentException if the receipt does not exist
+     */
+    suspend fun update(receipt: ApiRecipe): Long {
+        if (receipt.onlineId == 0L) {
+            throw IllegalArgumentException("receipt does not exist in the database")
+        }
+        var updatedVersion = -1L
         Log.d("ReceiptLocalDataSource", "Updating: $receipt")
         withContext(Dispatchers.IO) {
             val dbReceipt = receipt.toDbReceipt()
             dbReceipt.lastUpdated = OffsetDateTime.now()
+            val recipeExists = receiptDao.get(receipt.onlineId, receipt.createdBy.onlineId)
+            if (recipeExists != null && receipt.version <= recipeExists.version) {
+                Log.i(
+                    "RecipeLocalDataSource",
+                    "Updating is skipped because the last local recipe is newer than the incoming update"
+                )
+                return@withContext
+            }
             receiptDao.update(dbReceipt)
             receiptItemDao.deleteAllForReceipt(receipt.onlineId, receipt.createdBy.onlineId)
             receipt.ingredients.forEach { ingredient ->
@@ -248,7 +275,9 @@ constructor(
                     )
                 receiptDescriptionDao.insert(convertedDesc)
             }
+            updatedVersion = dbReceipt.version.plus(1L)
         }
+        return updatedVersion
     }
 
     suspend fun deleteDescription(

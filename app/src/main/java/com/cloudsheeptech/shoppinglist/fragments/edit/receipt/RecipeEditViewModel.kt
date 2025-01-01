@@ -108,16 +108,10 @@ constructor(
     fun addDescription() {
         val emptyDescription =
             ApiDescription(
-                order = receiptDescription.value!!.size + 1,
+                order = receiptDescription.value!!.size,
                 step = "",
             )
         receiptDescription.value = receiptDescription.value!! + emptyDescription
-        //        descriptions += 1
-//        _addDescriptionView.value = descriptions
-//        vmScope.launch {
-//            descriptions = receipt.value?.description?.size ?: 1
-//            receiptRepository.insertDescription(receiptId, createdBy, descriptions, "")
-//        }
     }
 
     fun deleteDescription(order: Int) {

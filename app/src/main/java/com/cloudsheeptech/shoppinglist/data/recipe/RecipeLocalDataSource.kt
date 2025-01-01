@@ -179,7 +179,6 @@ constructor(
         withContext(Dispatchers.IO) {
             val mapping =
                 ReceiptDescriptionMapping(
-                    id = 0L,
                     recipeId = receiptId,
                     createdBy = createdBy,
                     description = description,
@@ -267,7 +266,6 @@ constructor(
             orderedDescriptions.forEachIndexed { index, description ->
                 val convertedDesc =
                     ReceiptDescriptionMapping(
-                        id = 0L,
                         recipeId = receipt.onlineId,
                         createdBy = receipt.createdBy.onlineId,
                         description = description.step,

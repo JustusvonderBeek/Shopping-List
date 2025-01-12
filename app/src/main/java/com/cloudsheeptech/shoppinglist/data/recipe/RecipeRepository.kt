@@ -61,28 +61,34 @@ class RecipeRepository
         ): ApiRecipe? = remoteDataSource.read(receiptId, createdBy)
 
         suspend fun update(recipe: ApiRecipe) {
-            recipe.version++
-            val updatedVersion = localDataSource.update(recipe)
-            if (updatedVersion < 0L) {
-                return
-            }
-            var success = false
             try {
-                success = remoteDataSource.update(recipe)
+                recipe.version++
+                val updatedVersion = localDataSource.update(recipe)
+                if (updatedVersion < 0L) {
+                    return
+                }
+                var success = false
+                try {
+                    success = remoteDataSource.update(recipe)
+                } catch (ex: UserNotAuthenticatedException) {
+                    Log.w("RecipeRepository", "User might not be authenticated: $ex")
+                }
+                if (!success) {
+                    updateRecipeCreatedBy(recipe)
+                    success = remoteDataSource.update(recipe)
+                }
+                if (!success) {
+                    success = remoteDataSource.create(recipe)
+                }
+                if (success) {
+                    Log.i("RecipeRepository", "The recipe ${recipe.onlineId} was updated online")
+                } else {
+                    Log.i("RecipeRepository", "Updating the recipe ${recipe.onlineId} online failed")
+                }
             } catch (ex: UserNotAuthenticatedException) {
-                Log.w("RecipeRepository", "User might not be authenticated: $ex")
-            }
-            if (!success) {
-                updateRecipeCreatedBy(recipe)
-                success = remoteDataSource.update(recipe)
-            }
-            if (!success) {
-                success = remoteDataSource.create(recipe)
-            }
-            if (success) {
-                Log.i("RecipeRepository", "The recipe ${recipe.onlineId} was updated online")
-            } else {
-                Log.i("RecipeRepository", "Updating the recipe ${recipe.onlineId} online failed")
+                Log.e("RecipeRepository", "Something went wrong during communication with the server: $ex")
+            } catch (ex: IllegalArgumentException) {
+                Log.e("RecipeRepository", "Something went wrong with the given recipe to update: $ex")
             }
         }
 

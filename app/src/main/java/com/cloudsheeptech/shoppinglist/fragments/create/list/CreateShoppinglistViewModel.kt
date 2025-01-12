@@ -49,7 +49,7 @@ class CreateShoppinglistViewModel
             // Storing the list to database and posting it online handled by this function
 //        listHandler.CreateNewShoppingList(title.value!!)
             vmCoroutine.launch {
-                if (listIdToEdit == -1L) {
+                if (listIdToEdit != -1L) {
                     val user = userRepository.read()
                     if (user == null || user.OnlineID == 0L) {
                         return@launch

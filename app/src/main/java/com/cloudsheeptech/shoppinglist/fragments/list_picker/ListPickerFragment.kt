@@ -21,8 +21,9 @@ import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ListPickerFragment : Fragment(), MenuProvider {
-
+class ListPickerFragment :
+    Fragment(),
+    MenuProvider {
     private val viewModel: RecipeViewModel by activityViewModels<RecipeViewModel>()
     private lateinit var binding: FragmentListPickerBinding
 
@@ -86,7 +87,7 @@ class ListPickerFragment : Fragment(), MenuProvider {
             Observer { navigate ->
                 if (navigate) {
                     findNavController().navigate(
-                        ListPickerFragmentDirections.actionListPickerFragmentToCreateShoppinglistFragment(),
+                        ListPickerFragmentDirections.actionListPickerFragmentToCreateShoppinglistFragment("", -1L),
                     )
                     viewModel.onCreateListNavigated()
                 }

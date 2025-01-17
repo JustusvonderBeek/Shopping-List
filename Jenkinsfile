@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        APP_BUILD_FILE = 'app/build/outputs/apk/release/app-release.apk'
+        APP_BUILD_FILE = 'app/build/outputs/bundle/release/app-release.aab'
         APP_CERTIFICATE_PATH = 'app/src/main/res/raw/shoppinglist.crt'
     }
     stages {

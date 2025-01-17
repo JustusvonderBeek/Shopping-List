@@ -1,27 +1,35 @@
 package com.cloudsheeptech.shoppinglist.data.sharing
 
+import androidx.lifecycle.LiveData
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ListShareRepository @Inject constructor(private val localDataSource: ListShareLocalDataSource, private val remoteDataSource: ListShareRemoteDataSource) {
+class ListShareRepository @Inject constructor(
+    private val localDataSource: ListShareLocalDataSource,
+    private val remoteDataSource: ListShareRemoteDataSource
+) {
 
-    suspend fun create(listId: Long, sharedWith: Long) {
-        localDataSource.create(listId, sharedWith)
-        remoteDataSource.create(listId, sharedWith)
+    suspend fun create(listId: Long, createdBy: Long, sharedWith: Long) {
+        localDataSource.create(listId, createdBy, sharedWith)
+        remoteDataSource.create(listId, createdBy, sharedWith)
     }
 
-    suspend fun read(listId: Long) : List<Long> {
+    suspend fun read(listId: Long): List<Long> {
         return localDataSource.read(listId)
     }
 
-    suspend fun update(listId: Long, sharedWith: List<Long>) {
-        localDataSource.update(listId, sharedWith)
+    fun readLive(listId: Long, createdBy: Long): LiveData<List<ListShareDatabase>> {
+        return localDataSource.readLive(listId, createdBy)
+    }
+
+    suspend fun update(listId: Long, createdBy: Long, sharedWith: List<Long>) {
+        localDataSource.update(listId, createdBy, sharedWith)
         remoteDataSource.update(listId, sharedWith)
     }
 
-    suspend fun delete(listId: Long) {
-        localDataSource.delete(listId)
+    suspend fun delete(listId: Long, createdBy: Long) {
+        localDataSource.delete(listId, createdBy)
         remoteDataSource.delete(listId)
     }
 

@@ -56,4 +56,5 @@
     <string name="edit_recipe_finish_btn">Salir editar</string>
     <string name="list_item_amount_name">Numeros</string>
     <string name="recipe_portions_text">Cocinandos</string>
+    <string name="share_recipe">Share Recipe</string>
 </resources>

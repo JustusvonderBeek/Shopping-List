@@ -8,7 +8,8 @@ import kotlinx.serialization.Serializable
 @Entity(tableName = "shared_table")
 data class ListShareDatabase(
     @PrimaryKey(autoGenerate = true)
-    var ID : Long,
-    var ListId : Long,
-    var SharedWith : Long,
+    var ID: Long,
+    var ListId: Long,
+    var createdBy: Long,
+    var SharedWith: Long,
 )

@@ -11,7 +11,7 @@ import androidx.room.Update
 interface SharedDao {
 
     @Insert
-    fun insertShared(shared : ListShareDatabase)
+    fun insertShared(shared: ListShareDatabase)
 
     @Update
     fun updateShared(shared: ListShareDatabase)
@@ -20,18 +20,18 @@ interface SharedDao {
     fun deleteShared(shared: ListShareDatabase)
 
     @Query("DELETE FROM shared_table WHERE ID = :sharedId")
-    fun deleteShared(sharedId : Long)
+    fun deleteShared(sharedId: Long)
 
-    @Query("DELETE FROM shared_table WHERE ListId = :listId")
-    fun deleteAllFromList(listId : Long)
+    @Query("DELETE FROM shared_table WHERE ListId = :listId AND CreatedBy = :createdBy")
+    fun deleteAllFromList(listId: Long, createdBy: Long)
 
     @Query("DELETE FROM shared_table WHERE SharedWith = :userId AND ListId = :listId")
-    fun deleteForUser(userId : Long, listId: Long)
+    fun deleteForUser(userId: Long, listId: Long)
 
     @Query("SELECT * FROM shared_table WHERE ListId = :listId")
-    fun getListSharedWith(listId : Long) : List<ListShareDatabase>
+    fun getListSharedWith(listId: Long): List<ListShareDatabase>
 
-    @Query("SELECT * FROM shared_table WHERE ListId = :listId")
-    fun getListSharedWithLive(listId : Long) : LiveData<List<ListShareDatabase>>
+    @Query("SELECT * FROM shared_table WHERE ListId = :listId AND createdBy = :createdBy")
+    fun getListSharedWithLive(listId: Long, createdBy: Long): LiveData<List<ListShareDatabase>>
 
 }

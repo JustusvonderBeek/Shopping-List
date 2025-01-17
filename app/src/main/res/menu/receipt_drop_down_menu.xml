@@ -17,5 +17,10 @@
         android:icon="@color/add_green"
         android:title="@string/recipe_drow_down_add_items_btn"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/share_recipe"
+        android:icon="@drawable/ic_share"
+        android:title="@string/share_recipe"
+        app:showAsAction="never" />
 
 </menu>

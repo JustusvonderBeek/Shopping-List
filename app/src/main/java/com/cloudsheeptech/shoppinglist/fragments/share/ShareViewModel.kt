@@ -6,12 +6,11 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
-import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
-import com.cloudsheeptech.shoppinglist.data.sharing.ListShare
+import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareRepository
+import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
+import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShareRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,38 +18,39 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @HiltViewModel
 class ShareViewModel @Inject constructor(
-    private val database : ShoppingListDatabase,
     private val onlineUserRepo: OnlineUserRepository,
     private val sharingRepository: ListShareRepository,
     private val savedStateHandle: SavedStateHandle,
-    ) : ViewModel() {
+    private val recipeShareRepository: RecipeShareRepository,
+    private val onlineUserRepository: OnlineUserRepository,
+) : ViewModel() {
 
     private val job = Job()
     private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
-    private val sharedDao = database.sharedDao()
-    private val onlineUserDao = database.onlineUserDao()
 
-    private val listId : Long = savedStateHandle["listId"]!!
+    // Both of these are -1L by default and this fragment can handle both
+    private val listId: Long = savedStateHandle["listId"]!!
+    private val createdBy: Long = savedStateHandle["createdBy"]!! // TODO:
+    private val recipeId: Long = savedStateHandle["recipeId"]!!
 
 //    private val listHandler = ShoppingListRepository(database)
 
     val searchName = MutableLiveData<String>("")
     private val _searchedUsers = MutableLiveData<List<ShareUserPreview>>()
-    val searchedUsers : LiveData<List<ShareUserPreview>> get() = _searchedUsers
+    val searchedUsers: LiveData<List<ShareUserPreview>> get() = _searchedUsers
 
-    private var _offlineShared = sharedDao.getListSharedWithLive(listId)
+    private var _offlineShared = sharingRepository.readLive(listId, createdBy)
 
     private val _shared = MediatorLiveData<List<ShareUserPreview>>()
-    val sharedPreview : LiveData<List<ShareUserPreview>> get() = _shared
+    val sharedPreview: LiveData<List<ShareUserPreview>> get() = _shared
 
     // --- Navigation / UI States ---
 
     private val _navigateUp = MutableLiveData<Boolean>(false)
-    val navigateUp : LiveData<Boolean> get() = _navigateUp
+    val navigateUp: LiveData<Boolean> get() = _navigateUp
 
     init {
         _searchedUsers.value = emptyList()
@@ -72,11 +72,11 @@ class ShareViewModel @Inject constructor(
         }
     }
 
-    private suspend fun convertListShareToPreviewUser(share : List<ListShareDatabase>) : List<ShareUserPreview> {
+    private suspend fun convertListShareToPreviewUser(share: List<ListShareDatabase>): List<ShareUserPreview> {
         val previewUsers = mutableListOf<ShareUserPreview>()
         withContext(Dispatchers.IO) {
             share.forEach { s ->
-                val user = onlineUserDao.getUser(s.SharedWith)
+                val user = onlineUserRepository.read(s.SharedWith)
                 if (user != null) {
                     previewUsers.add(ShareUserPreview(user.onlineId, user.username, true))
                 }
@@ -85,15 +85,24 @@ class ShareViewModel @Inject constructor(
         return previewUsers
     }
 
-    private suspend fun combineUserLists(onlinePreview : List<ShareUserPreview>?, offlinePreview : List<ListShareDatabase>?) {
+    private suspend fun combineUserLists(
+        onlinePreview: List<ShareUserPreview>?,
+        offlinePreview: List<ListShareDatabase>?
+    ) {
         Log.d("ShareViewModel", "Combine called")
         withContext(Dispatchers.IO) {
             val combinedUsers = mutableListOf<ShareUserPreview>()
-            Log.d("ShareViewModel", "Combine: Step before - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}")
+            Log.d(
+                "ShareViewModel",
+                "Combine: Step before - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}"
+            )
             offlinePreview?.let { combinedUsers.addAll(convertListShareToPreviewUser(it)) }
             // If the offline user is already in the list, we know he was already shared
             // Therefore don't add the online user anymore. Differentiate on UserID
-            Log.d("ShareViewModel", "Combine: Step offline - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}")
+            Log.d(
+                "ShareViewModel",
+                "Combine: Step offline - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}"
+            )
             onlinePreview?.let {
                 it.forEach {
                     // Compare on the UserID (overwritten in the class equals operator itself)
@@ -102,27 +111,31 @@ class ShareViewModel @Inject constructor(
                     }
                 }
             }
-            Log.d("ShareViewModel", "Combine: Step online - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}")
+            Log.d(
+                "ShareViewModel",
+                "Combine: Step online - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}"
+            )
             withContext(Dispatchers.Main) {
                 _shared.value = combinedUsers
             }
         }
     }
 
-    private suspend fun searchUsersFromOnlineAndDatabase(name : String) : List<ShareUserPreview> {
+    private suspend fun searchUsersFromOnlineAndDatabase(name: String): List<ShareUserPreview> {
         var users = emptyList<ShareUserPreview>()
         withContext(Dispatchers.IO) {
 //            val onlineUsers = listHandler.SearchUsersOnline(name)
 //            val onlinePreview = onlineUsers.map { x -> ShareUserPreview(x.ID, x.Name, false) }
 //            users = onlinePreview
             val onlineUser = onlineUserRepo.readOnline(name)
-            val onlinePreview = onlineUser.map { x -> ShareUserPreview(x.onlineId, x.username, false) }
+            val onlinePreview =
+                onlineUser.map { x -> ShareUserPreview(x.onlineId, x.username, false) }
             users = onlinePreview
         }
         return users
     }
 
-    private suspend fun updateListCreators(list : List<ShareUserPreview>) {
+    private suspend fun updateListCreators(list: List<ShareUserPreview>) {
         withContext(Dispatchers.Main) {
             _searchedUsers.value = list
         }
@@ -140,10 +153,11 @@ class ShareViewModel @Inject constructor(
         }
     }
 
-    fun shareList(sharedWithId : Long) {
+    fun shareList(sharedWithId: Long) {
 //        listHandler.ShareShoppingListOnline(listId, sharedWithId)
         localCoroutine.launch {
-            sharingRepository.create(listId, sharedWithId)
+            // TODO: Fix the createdBy id
+            sharingRepository.create(listId, createdBy, sharedWithId)
         }
 //        navigateUp()
     }
@@ -151,16 +165,16 @@ class ShareViewModel @Inject constructor(
     fun unshareList() {
 //        listHandler.UnshareShoppingListOnline(listId)
         localCoroutine.launch {
-            sharingRepository.delete(listId)
+            sharingRepository.delete(listId, createdBy)
         }
     }
 
-    fun unshareListForUser(userId : Long) {
+    fun unshareListForUser(userId: Long) {
 //        listHandler.UnshareShoppingListForUserOnline(userId, listId)
         localCoroutine.launch {
             val sharings = sharingRepository.read(listId)
             val filteredSharing = sharings.filter { share -> share != userId }
-            sharingRepository.update(listId, filteredSharing)
+            sharingRepository.update(listId, createdBy, filteredSharing)
         }
     }
 

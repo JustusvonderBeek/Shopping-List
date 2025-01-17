@@ -75,6 +75,9 @@ constructor(
     private val _navigateToEdit = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
     val navigateToEdit: LiveData<Pair<Long, Long>> get() = _navigateToEdit
 
+    private val _navigateToShare = MutableLiveData<Long>(-1)
+    val navigateToShare: LiveData<Long> get() = _navigateToShare
+
     private val _navigateToSelectList = MutableLiveData<Boolean>(false)
     val navigateToSelectList: LiveData<Boolean> get() = _navigateToSelectList
 
@@ -141,6 +144,10 @@ constructor(
         _navigateToEdit.value = Pair(receiptId, createdBy)
     }
 
+    fun shareRecipe() {
+        _navigateToShare.value = receiptId
+    }
+
     private fun navigateToSelectList() {
         _navigateToSelectList.value = true
     }
@@ -182,6 +189,10 @@ constructor(
 
     fun navigatedToEditWord() {
         _navigateToEdit.value = Pair(-1L, -1L)
+    }
+
+    fun onShareNavigated() {
+        _navigateToShare.value = -1
     }
 
     fun navigateUp() {

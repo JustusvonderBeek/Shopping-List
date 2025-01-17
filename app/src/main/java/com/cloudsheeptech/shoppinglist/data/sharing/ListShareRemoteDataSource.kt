@@ -15,7 +15,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ListShareRemoteDataSource @Inject constructor(private val networking: Networking, private val userRepo: AppUserRepository) {
+class ListShareRemoteDataSource @Inject constructor(
+    private val networking: Networking,
+    private val userRepo: AppUserRepository
+) {
 
     private val json = Json {
         ignoreUnknownKeys = false
@@ -30,15 +33,22 @@ class ListShareRemoteDataSource @Inject constructor(private val networking: Netw
      * @throws IllegalStateException if the app is not correctly initialized
      * @throws IllegalArgumentException if the given list does not exist
      */
-    suspend fun create(listId: Long, sharedWith: Long) : Boolean {
+    suspend fun create(listId: Long, createdBy: Long, sharedWith: Long): Boolean {
         var success = false
         withContext(Dispatchers.IO) {
             val user = userRepo.read() ?: throw IllegalStateException("user not initialized")
-            val sharing = ListShare(CreatedBy = user.OnlineID, SharedWith = listOf(sharedWith), Created = OffsetDateTime.now())
+            val sharing = ListShare(
+                CreatedBy = user.OnlineID,
+                SharedWith = listOf(sharedWith),
+                Created = OffsetDateTime.now()
+            )
             val encodedSharing = json.encodeToString(sharing)
             networking.POST("/v1/share/$listId", encodedSharing) { response ->
                 if (response.status != HttpStatusCode.Created) {
-                    Log.e("ListShareRemoteDataSource", "Failed to create sharing $listId for $sharedWith online")
+                    Log.e(
+                        "ListShareRemoteDataSource",
+                        "Failed to create sharing $listId for $sharedWith online"
+                    )
                     return@POST
                 }
                 success = true
@@ -52,15 +62,19 @@ class ListShareRemoteDataSource @Inject constructor(private val networking: Netw
      * @throws NotImplementedError
      */
     @Throws(NotImplementedError::class)
-    suspend fun read(listId: Long) : List<Long> {
+    suspend fun read(listId: Long): List<Long> {
         throw NotImplementedError("this should never be called from online")
     }
 
-    suspend fun update(listId: Long, sharedWith: List<Long>) : Boolean {
+    suspend fun update(listId: Long, sharedWith: List<Long>): Boolean {
         var success = false
         withContext(Dispatchers.IO) {
             val user = userRepo.read() ?: throw IllegalStateException("user not initialized")
-            val sharing = ListShare(CreatedBy = user.OnlineID, SharedWith = sharedWith, Created = OffsetDateTime.now())
+            val sharing = ListShare(
+                CreatedBy = user.OnlineID,
+                SharedWith = sharedWith,
+                Created = OffsetDateTime.now()
+            )
             val encodedSharing = json.encodeToString(sharing)
             networking.PUT("/v1/share/$listId", encodedSharing) { response ->
                 if (response.status != HttpStatusCode.OK) {
@@ -73,7 +87,7 @@ class ListShareRemoteDataSource @Inject constructor(private val networking: Netw
         return success
     }
 
-    suspend fun delete(listId: Long) : Boolean {
+    suspend fun delete(listId: Long): Boolean {
         var success = false
         withContext(Dispatchers.IO) {
             networking.DELETE("/v1/share/$listId") { response ->

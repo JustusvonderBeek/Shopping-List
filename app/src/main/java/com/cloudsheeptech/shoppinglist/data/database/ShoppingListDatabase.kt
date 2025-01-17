@@ -25,6 +25,8 @@ import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeDao
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.sharing.SharedDao
+import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShare
+import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShareDao
 import com.cloudsheeptech.shoppinglist.data.typeConverter.DatabaseTypeConverter
 import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreference
 import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreferencesDao
@@ -33,12 +35,12 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserDao
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
-@Suppress("ktlint:standard:max-line-length")
 @Singleton
 @Database(
-    version = 32,
-    entities =
-    [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class, ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class, ReceiptDescriptionMapping::class, ReceiptItemMapping::class],
+    version = 33,
+    entities = [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class,
+        ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class,
+        ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class],
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 18, to = 19),
@@ -68,8 +70,10 @@ abstract class ShoppingListDatabase : RoomDatabase() {
 
     abstract fun receiptItemDao(): ReceiptItemDao
 
+    abstract fun recipeShareDao(): RecipeShareDao
+
     companion object {
-        const val LATEST_VERSION = 26
+        const val LATEST_VERSION = 32
 
         @Suppress("ktlint:standard:property-naming")
         @Volatile

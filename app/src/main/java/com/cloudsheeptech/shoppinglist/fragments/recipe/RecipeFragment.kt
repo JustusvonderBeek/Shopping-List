@@ -53,6 +53,11 @@ class RecipeFragment : Fragment(), MenuProvider {
                 viewModel.addRecipeToShoppingList()
                 return true
             }
+
+            R.id.share_recipe -> {
+                viewModel.shareRecipe()
+                return true
+            }
         }
         return false
     }
@@ -142,6 +147,20 @@ class RecipeFragment : Fragment(), MenuProvider {
                 if (navigate) {
                     findNavController().navigate(RecipeFragmentDirections.actionReceiptToListPickerFragment())
                     viewModel.onSelectListNavigated()
+                }
+            },
+        )
+
+        viewModel.navigateToShare.observe(
+            viewLifecycleOwner,
+            Observer { navigate ->
+                if (navigate > 0L) {
+                    findNavController().navigate(
+                        RecipeFragmentDirections.actionReceiptToShareFragment(
+                            navigate
+                        )
+                    )
+                    viewModel.onShareNavigated()
                 }
             },
         )

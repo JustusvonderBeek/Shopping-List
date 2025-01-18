@@ -67,4 +67,5 @@
     <string name="list_item_amount_name">Menge</string>
     <string name="recipe_portions_text">Portionen</string>
     <string name="share_recipe">Rezept teilen</string>
+    <string name="start_screen_background_description">An image of vegetables, eggs, bread and other ingredients used to cook healty and delicious meals</string>
 </resources>

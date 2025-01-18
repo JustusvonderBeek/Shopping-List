@@ -11,6 +11,7 @@ import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareRepository
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShareRepository
+import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +24,9 @@ import javax.inject.Inject
 class ShareViewModel @Inject constructor(
     private val onlineUserRepo: OnlineUserRepository,
     private val sharingRepository: ListShareRepository,
-    private val savedStateHandle: SavedStateHandle,
     private val recipeShareRepository: RecipeShareRepository,
-    private val onlineUserRepository: OnlineUserRepository,
+    private val appUserRepository: AppUserRepository,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val job = Job()
@@ -33,7 +34,6 @@ class ShareViewModel @Inject constructor(
 
     // Both of these are -1L by default and this fragment can handle both
     private val listId: Long = savedStateHandle["listId"]!!
-    private val createdBy: Long = savedStateHandle["createdBy"]!! // TODO:
     private val recipeId: Long = savedStateHandle["recipeId"]!!
 
 //    private val listHandler = ShoppingListRepository(database)
@@ -42,7 +42,8 @@ class ShareViewModel @Inject constructor(
     private val _searchedUsers = MutableLiveData<List<ShareUserPreview>>()
     val searchedUsers: LiveData<List<ShareUserPreview>> get() = _searchedUsers
 
-    private var _offlineShared = sharingRepository.readLive(listId, createdBy)
+    private var _offlineShared =
+        sharingRepository.readLive(listId, appUserRepository.read()!!.OnlineID)
 
     private val _shared = MediatorLiveData<List<ShareUserPreview>>()
     val sharedPreview: LiveData<List<ShareUserPreview>> get() = _shared
@@ -76,7 +77,7 @@ class ShareViewModel @Inject constructor(
         val previewUsers = mutableListOf<ShareUserPreview>()
         withContext(Dispatchers.IO) {
             share.forEach { s ->
-                val user = onlineUserRepository.read(s.SharedWith)
+                val user = onlineUserRepo.read(s.SharedWith)
                 if (user != null) {
                     previewUsers.add(ShareUserPreview(user.onlineId, user.username, true))
                 }
@@ -153,28 +154,69 @@ class ShareViewModel @Inject constructor(
         }
     }
 
-    fun shareList(sharedWithId: Long) {
-//        listHandler.ShareShoppingListOnline(listId, sharedWithId)
-        localCoroutine.launch {
-            // TODO: Fix the createdBy id
-            sharingRepository.create(listId, createdBy, sharedWithId)
-        }
-//        navigateUp()
-    }
-
-    fun unshareList() {
-//        listHandler.UnshareShoppingListOnline(listId)
-        localCoroutine.launch {
-            sharingRepository.delete(listId, createdBy)
+    fun share(sharedWithId: Long) {
+        if (this.listId > 0L) {
+            shareList(sharedWithId)
+        } else {
+            shareRecipe(sharedWithId)
         }
     }
 
-    fun unshareListForUser(userId: Long) {
-//        listHandler.UnshareShoppingListForUserOnline(userId, listId)
+    private fun shareList(sharedWithId: Long) {
         localCoroutine.launch {
-            val sharings = sharingRepository.read(listId)
-            val filteredSharing = sharings.filter { share -> share != userId }
-            sharingRepository.update(listId, createdBy, filteredSharing)
+            val user = appUserRepository.read() ?: return@launch
+            sharingRepository.create(listId, user.OnlineID, sharedWithId)
+        }
+    }
+
+    private fun shareRecipe(sharedWithId: Long) {
+        localCoroutine.launch {
+            val user = appUserRepository.read() ?: return@launch
+            recipeShareRepository.create(recipeId, user.OnlineID, sharedWithId)
+        }
+    }
+
+    fun unshare() {
+        if (this.listId > 0L) {
+            unshareList()
+        } else {
+            unshareRecipe()
+        }
+    }
+
+    private fun unshareList() {
+        localCoroutine.launch {
+            val user = appUserRepository.read() ?: return@launch
+            sharingRepository.deleteAll(listId, user.OnlineID)
+        }
+    }
+
+    private fun unshareRecipe() {
+        localCoroutine.launch {
+            val user = appUserRepository.read() ?: return@launch
+            recipeShareRepository.deleteAll(recipeId, user.OnlineID)
+        }
+    }
+
+    fun unshareForUser(sharedWithId: Long) {
+        if (this.listId > 0L) {
+            unshareListForUser(sharedWithId)
+        } else {
+            unshareRecipeForUser(sharedWithId)
+        }
+    }
+
+    private fun unshareListForUser(sharedWithId: Long) {
+        localCoroutine.launch {
+            val user = appUserRepository.read() ?: return@launch
+            sharingRepository.delete(listId, user.OnlineID, sharedWithId)
+        }
+    }
+
+    private fun unshareRecipeForUser(sharedWithId: Long) {
+        localCoroutine.launch {
+            val user = appUserRepository.read() ?: return@launch
+            recipeShareRepository.delete(recipeId, user.OnlineID, sharedWithId)
         }
     }
 

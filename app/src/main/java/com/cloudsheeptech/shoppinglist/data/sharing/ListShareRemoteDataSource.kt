@@ -4,6 +4,7 @@ import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
+import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -43,7 +44,10 @@ class ListShareRemoteDataSource @Inject constructor(
                 Created = OffsetDateTime.now()
             )
             val encodedSharing = json.encodeToString(sharing)
-            networking.POST("/v1/share/$listId", encodedSharing) { response ->
+            networking.POST(
+                "${UrlProviderEnum.SHOPPING_LIST_SHARE.url}/$listId",
+                encodedSharing
+            ) { response ->
                 if (response.status != HttpStatusCode.Created) {
                     Log.e(
                         "ListShareRemoteDataSource",
@@ -76,7 +80,10 @@ class ListShareRemoteDataSource @Inject constructor(
                 Created = OffsetDateTime.now()
             )
             val encodedSharing = json.encodeToString(sharing)
-            networking.PUT("/v1/share/$listId", encodedSharing) { response ->
+            networking.PUT(
+                "${UrlProviderEnum.SHOPPING_LIST_SHARE.url}/$listId",
+                encodedSharing
+            ) { response ->
                 if (response.status != HttpStatusCode.OK) {
                     Log.e("ListShareRemoteDataSource", "Failed to update sharing $listId online")
                     return@PUT
@@ -87,10 +94,24 @@ class ListShareRemoteDataSource @Inject constructor(
         return success
     }
 
-    suspend fun delete(listId: Long): Boolean {
+    suspend fun delete(listId: Long, createdBy: Long, sharedWith: Long): Boolean {
         var success = false
         withContext(Dispatchers.IO) {
-            networking.DELETE("/v1/share/$listId") { response ->
+            networking.DELETE("${UrlProviderEnum.SHOPPING_LIST_SHARE.url}/$listId?createdBy=$createdBy&sharedWith=$sharedWith") { response ->
+                if (response.status != HttpStatusCode.OK) {
+                    Log.e("ListShareRemoteDataSource", "Failed to delete sharing $listId online")
+                    return@DELETE
+                }
+                success = true
+            }
+        }
+        return success
+    }
+
+    suspend fun deleteAll(listId: Long): Boolean {
+        var success = false
+        withContext(Dispatchers.IO) {
+            networking.DELETE("${UrlProviderEnum.SHOPPING_LIST_SHARE.url}/$listId") { response ->
                 if (response.status != HttpStatusCode.OK) {
                     Log.e("ListShareRemoteDataSource", "Failed to delete sharing $listId online")
                     return@DELETE

@@ -22,6 +22,9 @@ interface SharedDao {
     @Query("DELETE FROM shared_table WHERE ID = :sharedId")
     fun deleteShared(sharedId: Long)
 
+    @Query("DELETE FROM shared_table WHERE ListId = :listId AND CreatedBy = :createdBy AND SharedWith = :sharedWith")
+    fun delete(listId: Long, createdBy: Long, sharedWith: Long)
+
     @Query("DELETE FROM shared_table WHERE ListId = :listId AND CreatedBy = :createdBy")
     fun deleteAllFromList(listId: Long, createdBy: Long)
 

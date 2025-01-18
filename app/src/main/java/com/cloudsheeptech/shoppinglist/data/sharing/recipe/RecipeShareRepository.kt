@@ -19,7 +19,7 @@ class RecipeShareRepository @Inject constructor(
 
     suspend fun deleteAll(recipeId: Long, createdBy: Long) {
         localDataSource.deleteAll(recipeId, createdBy)
-        remoteDataSource.deleteAll(recipeId, createdBy)
+        remoteDataSource.deleteAll(recipeId)
     }
 
 }

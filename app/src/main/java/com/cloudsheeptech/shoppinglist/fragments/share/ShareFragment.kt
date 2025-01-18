@@ -35,10 +35,10 @@ class ShareFragment : Fragment() {
         binding.lifecycleOwner = this
         val adapter = UserShareAdapter(UserShareAdapter.UserShareClickListener { userId ->
             Log.d("ShareFragment", "Clicked on user $userId")
-            viewModel.shareList(userId)
+            viewModel.share(userId)
         }, UserShareAdapter.UserShareClickListener { userId ->
             Log.d("ShareFragment", "Clicked on unshare user $userId")
-            viewModel.unshareListForUser(userId)
+            viewModel.unshareForUser(userId)
         })
         binding.userPreviewList.adapter = adapter
 

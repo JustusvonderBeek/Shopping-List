@@ -125,7 +125,7 @@ class ListShareOfflineTest {
             val shared = listShare.read(list.listId)
             Assert.assertEquals(2, shared.size)
 
-            listShare.delete(list.listId)
+            listShare.deleteAll(list.listId)
             val sharedAfterRemove = listShare.read(list.listId)
             Assert.assertEquals(0, sharedAfterRemove.size)
         }

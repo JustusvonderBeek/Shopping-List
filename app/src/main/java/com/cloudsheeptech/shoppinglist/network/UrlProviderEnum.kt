@@ -10,6 +10,7 @@ enum class UrlProviderEnum(
     BASE_USER_URL("/v1/users"),
     BASE_SHOPPING_LIST_URL("/v1/lists"),
     SHOPPING_LIST_READ("/v1/list"),
+    SHOPPING_LIST_SHARE("/v1/share"),
     ITEM_PRICE("/v1/item/prices"),
     RECIPE("/v1/recipe"),
     RECIPE_SHARE("/v1/recipe/share"),

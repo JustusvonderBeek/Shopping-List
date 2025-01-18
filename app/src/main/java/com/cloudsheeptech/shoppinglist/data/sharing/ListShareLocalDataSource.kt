@@ -55,13 +55,14 @@ class ListShareLocalDataSource @Inject constructor(
         }
     }
 
-    suspend fun delete(listId: Long, createdBy: Long) {
+    suspend fun delete(listId: Long, createdBy: Long, sharedWith: Long) {
         withContext(Dispatchers.IO) {
-//            val user = userRepo.read() ?: throw IllegalStateException("user not initialized")
-//            val exists = listRepository.exist(listId, user.OnlineID)
-//            if (!exists) {
-//                throw IllegalArgumentException("list does not exist")
-//            }
+            shareDao.delete(listId, createdBy, sharedWith)
+        }
+    }
+
+    suspend fun deleteAll(listId: Long, createdBy: Long) {
+        withContext(Dispatchers.IO) {
             shareDao.deleteAllFromList(listId, createdBy)
         }
     }

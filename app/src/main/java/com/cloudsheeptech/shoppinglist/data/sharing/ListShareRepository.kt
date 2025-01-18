@@ -28,9 +28,14 @@ class ListShareRepository @Inject constructor(
         remoteDataSource.update(listId, sharedWith)
     }
 
-    suspend fun delete(listId: Long, createdBy: Long) {
-        localDataSource.delete(listId, createdBy)
-        remoteDataSource.delete(listId)
+    suspend fun delete(listId: Long, createdBy: Long, sharedWith: Long) {
+        localDataSource.delete(listId, createdBy, sharedWith)
+        remoteDataSource.delete(listId, createdBy, sharedWith)
+    }
+
+    suspend fun deleteAll(listId: Long, createdBy: Long) {
+        localDataSource.deleteAll(listId, createdBy)
+        remoteDataSource.deleteAll(listId)
     }
 
 }

@@ -28,134 +28,136 @@ import javax.inject.Singleton
  */
 @Singleton
 class Networking
-    @Inject
-    constructor(
-        private val tokenProvider: TokenProvider,
+@Inject
+constructor(
+    private val tokenProvider: TokenProvider,
+) {
+    private val authClient =
+        HttpClient(OkHttp) {
+            engine {
+                config {
+                    connectTimeout(Duration.ofSeconds(3))
+                    hostnameVerifier { hostname, sslSession ->
+                        HostnameVerification.verifyHostname(hostname, sslSession)
+                    }
+                }
+            }
+            install(Auth) {
+                bearer {
+                    loadTokens {
+                        tokenProvider.getToken()
+                    }
+                    refreshTokens {
+                        tokenProvider.refreshTokenAndCreateUserIfNotExists()
+                    }
+                }
+            }
+        }
+
+    suspend fun GET(
+        requestUrlPath: String,
+        responseHandler: suspend (response: HttpResponse) -> Unit,
     ) {
-        private val authClient =
-            HttpClient(OkHttp) {
-                engine {
-                    config {
-                        connectTimeout(Duration.ofSeconds(3))
-                        hostnameVerifier { hostname, sslSession ->
-                            HostnameVerification.verifyHostname(hostname, sslSession)
-                        }
-                    }
+        withContext(Dispatchers.IO) {
+            val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
+            try {
+                val response: HttpResponse = authClient.get(finalRequestUrl)
+                if (response.status == HttpStatusCode.Unauthorized) {
+                    throw UserAuthenticationFailedException("user authentication for GET request failed")
                 }
-                install(Auth) {
-                    bearer {
-                        loadTokens {
-                            tokenProvider.getToken()
-                        }
-                        refreshTokens {
-                            tokenProvider.refreshTokenAndCreateUserIfNotExists()
-                        }
-                    }
-                }
-            }
-
-        suspend fun GET(
-            requestUrlPath: String,
-            responseHandler: suspend (response: HttpResponse) -> Unit,
-        ) {
-            withContext(Dispatchers.IO) {
-                val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
-                try {
-                    val response: HttpResponse = authClient.get(finalRequestUrl)
-                    if (response.status == HttpStatusCode.Unauthorized) {
-                        throw UserAuthenticationFailedException("user authentication for GET request failed")
-                    }
-                    responseHandler(response)
-                } catch (ex: ConnectException) {
-                    Log.e("Networking", "Failed to send GET request to $finalRequestUrl: $ex")
-                }
-            }
-        }
-
-        suspend fun POST(
-            requestUrlPath: String,
-            data: String,
-            responseHandler: suspend (HttpResponse) -> Unit,
-        ) {
-            withContext(Dispatchers.IO) {
-                val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
-                try {
-                    val response: HttpResponse =
-                        authClient.post(finalRequestUrl) {
-                            setBody(data)
-                        }
-                    if (response.status == HttpStatusCode.Unauthorized) {
-                        throw UserNotAuthenticatedException("user not authenticated online")
-                    }
-                    responseHandler(response)
-                } catch (ex: ConnectException) {
-                    Log.e("Networking", "failed to send POST request to $finalRequestUrl: $ex")
-                }
-            }
-        }
-
-        @Throws(
-            UserNotAuthenticatedException::class,
-        )
-        suspend fun PUT(
-            requestUrlPath: String,
-            data: String,
-            responseHandler: suspend (HttpResponse) -> Unit,
-        ) {
-            withContext(Dispatchers.IO) {
-                val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
-                try {
-                    val response: HttpResponse =
-                        authClient.put(finalRequestUrl) {
-                            setBody(data)
-                        }
-                    if (response.status == HttpStatusCode.Unauthorized) {
-                        throw UserNotAuthenticatedException("user not authenticated online")
-                    }
-                    responseHandler(response)
-                } catch (ex: ConnectException) {
-                    Log.w("Networking", "Failed to send PUT request to $finalRequestUrl: $ex")
-                }
-            }
-        }
-
-        suspend fun PATCH(
-            requestUrlPath: String,
-            data: String,
-            responseHandler: suspend (HttpResponse) -> Unit,
-        ) {
-            withContext(Dispatchers.IO) {
-                val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
-                try {
-                    val response: HttpResponse =
-                        authClient.patch(finalRequestUrl) {
-                            setBody(data)
-                        }
-                    if (response.status == HttpStatusCode.Unauthorized) {
-                        throw UserNotAuthenticatedException("user not authenticated online")
-                    }
-                    responseHandler(response)
-                } catch (ex: ConnectException) {
-                    Log.w("Networking", "Failed to send PATH request to $finalRequestUrl: $ex")
-                }
-            }
-        }
-
-        suspend fun DELETE(
-            requestUrlPath: String,
-            responseHandler: suspend (HttpResponse) -> Unit,
-        ) {
-            withContext(Dispatchers.IO) {
-                val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
-                try {
-                    val response: HttpResponse = authClient.delete(finalRequestUrl)
-                    if (response.status == HttpStatusCode.Unauthorized) {
-                        throw UserNotAuthenticatedException("user not authenticated online")
-                    }
-                    responseHandler(response)
-                } catch (ex: ConnectException) {
-                    Log.w("Networking", "Failed to send DELETE request to $finalRequestUrl: $ex")
-                }
+                responseHandler(response)
+            } catch (ex: ConnectException) {
+                Log.e("Networking", "Failed to send GET request to $finalRequestUrl: $ex")
             }
         }
     }
+
+    suspend fun POST(
+        requestUrlPath: String,
+        data: String?,
+        responseHandler: suspend (HttpResponse) -> Unit,
+    ) {
+        withContext(Dispatchers.IO) {
+            val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
+            try {
+                val response: HttpResponse =
+                    authClient.post(finalRequestUrl) {
+                        if (!data.isNullOrEmpty()) {
+                            setBody(data)
+                        }
+                    }
+                if (response.status == HttpStatusCode.Unauthorized) {
+                    throw UserNotAuthenticatedException("user not authenticated online")
+                }
+                responseHandler(response)
+            } catch (ex: ConnectException) {
+                Log.e("Networking", "failed to send POST request to $finalRequestUrl: $ex")
+            }
+        }
+    }
+
+    @Throws(
+        UserNotAuthenticatedException::class,
+    )
+    suspend fun PUT(
+        requestUrlPath: String,
+        data: String,
+        responseHandler: suspend (HttpResponse) -> Unit,
+    ) {
+        withContext(Dispatchers.IO) {
+            val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
+            try {
+                val response: HttpResponse =
+                    authClient.put(finalRequestUrl) {
+                        setBody(data)
+                    }
+                if (response.status == HttpStatusCode.Unauthorized) {
+                    throw UserNotAuthenticatedException("user not authenticated online")
+                }
+                responseHandler(response)
+            } catch (ex: ConnectException) {
+                Log.w("Networking", "Failed to send PUT request to $finalRequestUrl: $ex")
+            }
+        }
+    }
+
+    suspend fun PATCH(
+        requestUrlPath: String,
+        data: String,
+        responseHandler: suspend (HttpResponse) -> Unit,
+    ) {
+        withContext(Dispatchers.IO) {
+            val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
+            try {
+                val response: HttpResponse =
+                    authClient.patch(finalRequestUrl) {
+                        setBody(data)
+                    }
+                if (response.status == HttpStatusCode.Unauthorized) {
+                    throw UserNotAuthenticatedException("user not authenticated online")
+                }
+                responseHandler(response)
+            } catch (ex: ConnectException) {
+                Log.w("Networking", "Failed to send PATH request to $finalRequestUrl: $ex")
+            }
+        }
+    }
+
+    suspend fun DELETE(
+        requestUrlPath: String,
+        responseHandler: suspend (HttpResponse) -> Unit,
+    ) {
+        withContext(Dispatchers.IO) {
+            val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
+            try {
+                val response: HttpResponse = authClient.delete(finalRequestUrl)
+                if (response.status == HttpStatusCode.Unauthorized) {
+                    throw UserNotAuthenticatedException("user not authenticated online")
+                }
+                responseHandler(response)
+            } catch (ex: ConnectException) {
+                Log.w("Networking", "Failed to send DELETE request to $finalRequestUrl: $ex")
+            }
+        }
+    }
+}

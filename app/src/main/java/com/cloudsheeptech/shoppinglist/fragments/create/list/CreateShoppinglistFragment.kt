@@ -28,7 +28,12 @@ class CreateShoppinglistFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_create_shoppinglist, container, false)
+        binding = DataBindingUtil.inflate(
+            inflater,
+            R.layout.fragment_create_shoppinglist,
+            container,
+            false
+        )
 
 //        val database = ShoppingListDatabase.getInstance(requireContext())
 //        val viewModelFactory = CreateShoppinglistViewModelFactory(database)
@@ -41,7 +46,7 @@ class CreateShoppinglistFragment : Fragment() {
             viewLifecycleOwner,
             Observer { editTitle ->
                 if (editTitle) {
-                    binding.createListButton.text = "Update List Title"
+                    binding.createListButton.text = getString(R.string.create_list_fragment_title)
                 }
             },
         )
@@ -75,7 +80,8 @@ class CreateShoppinglistFragment : Fragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         if (viewModel.editTitle.value != null && viewModel.editTitle.value == true) {
-            (activity as AppCompatActivity).supportActionBar?.title = "Update List Title"
+            (activity as AppCompatActivity).supportActionBar?.title =
+                getString(R.string.create_list_fragment_title)
         }
     }
 }

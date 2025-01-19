@@ -68,4 +68,5 @@
     <string name="recipe_portions_text">Portionen</string>
     <string name="share_recipe">Rezept teilen</string>
     <string name="start_screen_background_description">An image of vegetables, eggs, bread and other ingredients used to cook healty and delicious meals</string>
+    <string name="create_list_fragment_title">Listenname ändern</string>
 </resources>

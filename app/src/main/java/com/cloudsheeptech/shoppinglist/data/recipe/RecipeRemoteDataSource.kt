@@ -3,20 +3,32 @@ package com.cloudsheeptech.shoppinglist.data.recipe
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
 import com.cloudsheeptech.shoppinglist.network.Networking
+import com.cloudsheeptech.shoppinglist.network.ShoppingListAPI
+import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.io.InputStream
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
 
 @Singleton
 class RecipeRemoteDataSource
     @Inject
     constructor(
         private val networking: Networking,
+        private val certificate: InputStream,
     ) {
         private val json =
             Json {
@@ -30,14 +42,43 @@ class RecipeRemoteDataSource
 
         suspend fun create(receipt: ApiRecipe): Boolean {
             var success = false
-            val encodedReceipt = json.encodeToString(receipt)
-            networking.POST("/v1/recipe", encodedReceipt) { response ->
-                if (response.status != HttpStatusCode.Created) {
-                    Log.e("ReceiptRemoteDataSource", "Failed to create remote receipt")
-                    return@POST
-                }
-                success = true
-            }
+            val certFactory = CertificateFactory.getInstance("X509")
+            // Load system resource under 'raw' directory into input stream
+            val expectedCert = certFactory.generateCertificate(certificate)
+            certificate.close()
+            val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
+            keyStore.load(null)
+            keyStore.setCertificateEntry("self-signed", expectedCert)
+
+            val trustManager = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+            trustManager.init(keyStore)
+            val sslContext = SSLContext.getInstance("TLS")
+            sslContext.init(null, trustManager.trustManagers, null)
+
+            val okhttp =
+                OkHttpClient
+                    .Builder()
+                    .sslSocketFactory(
+                        sslContext.socketFactory,
+                        trustManager.trustManagers[0] as X509TrustManager,
+                    ).build()
+            val retrofit =
+                Retrofit
+                    .Builder()
+                    .baseUrl(UrlProviderEnum.BASE_URL.url)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .client(okhttp)
+                    .build()
+            val shoppingListAPI = retrofit.create(ShoppingListAPI::class.java)
+            shoppingListAPI.createRecipe(receipt, emptyArray())
+//            val encodedReceipt = json.encodeToString(receipt)
+//            networking.POST("/v1/recipe", encodedReceipt) { response ->
+//                if (response.status != HttpStatusCode.Created) {
+//                    Log.e("ReceiptRemoteDataSource", "Failed to create remote receipt")
+//                    return@POST
+//                }
+//                success = true
+//            }
             return success
         }
 

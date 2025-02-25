@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.sharing
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
+import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
@@ -25,7 +25,7 @@ class ListShareRemoteDataSource @Inject constructor(
         ignoreUnknownKeys = false
         encodeDefaults = true
         serializersModule = SerializersModule {
-            contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
+            contextual(OffsetDateTime::class, OffsetDateTimeFormatHandler())
         }
     }
 

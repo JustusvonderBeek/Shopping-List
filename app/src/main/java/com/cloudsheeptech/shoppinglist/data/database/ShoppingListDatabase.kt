@@ -23,6 +23,7 @@ import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.Rec
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemMapping
 import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeDao
+import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.sharing.SharedDao
 import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShare
@@ -37,10 +38,10 @@ import javax.inject.Singleton
 
 @Singleton
 @Database(
-    version = 33,
+    version = 34,
     entities = [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class,
         ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class,
-        ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class],
+        ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class],
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 18, to = 19),

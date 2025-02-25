@@ -8,6 +8,8 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.request.delete
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
@@ -30,7 +32,7 @@ import javax.inject.Singleton
 class Networking
 @Inject
 constructor(
-    private val tokenProvider: TokenProvider,
+    private val tokenProvider: ShoppingListAuthenticationTokenProvider,
 ) {
     private val authClient =
         HttpClient(OkHttp) {
@@ -92,6 +94,27 @@ constructor(
                 responseHandler(response)
             } catch (ex: ConnectException) {
                 Log.e("Networking", "failed to send POST request to $finalRequestUrl: $ex")
+            }
+        }
+    }
+
+    @Throws(UserNotAuthenticatedException::class)
+    suspend fun MULTIFORM_POST(
+        requestUrlPath: String,
+        data: String,
+        responseHandler: suspend (HttpResponse) -> Unit
+    ) {
+        withContext(Dispatchers.IO) {
+            val finalRequestUrl = "${UrlProviderEnum.BASE_URL.url}$requestUrlPath"
+            authClient.post(finalRequestUrl) {
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            append("object", data)
+                            append("content", emptyArray())
+                        }
+                    )
+                )
             }
         }
     }

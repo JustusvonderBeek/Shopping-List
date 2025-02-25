@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist
+package com.cloudsheeptech.shoppinglist.network
 
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -6,6 +6,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -33,6 +35,22 @@ class NetworkingTest {
         runTest {
 //            val networking = Networking("token.txt", authenticationInterceptor)
         }
+
+    @Test
+    fun testSimpleGet() = runTest {
+        val userProvider = TestDataProvider()
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(userProvider)
+        val networkingHandler = ShoppingListNetworkHandler(tokenProvider)
+
+        networkingHandler.get("/v1/lists", object : IHttpResponseHandler {
+            override suspend fun handle(response: HttpResponse): Boolean {
+                if (response.status != HttpStatusCode.OK) {
+                    return false
+                }
+                return true
+            }
+        })
+    }
 
     private suspend fun createUserAccount(fileDirPath: String): Boolean {
         var success = false

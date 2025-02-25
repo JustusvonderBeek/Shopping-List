@@ -4,14 +4,14 @@ import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
+import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import com.cloudsheeptech.shoppinglist.data.user.ApiUser
 import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +35,7 @@ class OnlineUserOnlineTest {
         Json {
             serializersModule =
                 SerializersModule {
-                    contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
+                    contextual(OffsetDateTime::class, OffsetDateTimeFormatHandler())
                 }
             ignoreUnknownKeys = true
             encodeDefaults = true
@@ -46,7 +46,7 @@ class OnlineUserOnlineTest {
         val database = ShoppingListDatabase.getInstance(application)
         val localUserDs = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserDs)
-        val tokenProvider = TokenProvider(payloadProvider)
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
         val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)
@@ -66,7 +66,7 @@ class OnlineUserOnlineTest {
             val database = ShoppingListDatabase.getInstance(application)
             val localUserDs = AppUserLocalDataSource(database)
             val payloadProvider = UserCreationDataProvider(localUserDs)
-            val tokenProvider = TokenProvider(payloadProvider)
+            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
             val networking = Networking(tokenProvider)
             networking.POST("/v1/users", encodedUser) { resp ->
                 // Authentication already handled by the networking object

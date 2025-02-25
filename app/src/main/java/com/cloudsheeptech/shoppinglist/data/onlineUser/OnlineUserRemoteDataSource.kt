@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.onlineUser
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
+import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import com.cloudsheeptech.shoppinglist.network.Networking
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -23,7 +23,7 @@ class OnlineUserRemoteDataSource @Inject constructor(
         encodeDefaults = true
         ignoreUnknownKeys = false
         serializersModule = SerializersModule {
-            contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
+            contextual(OffsetDateTime::class, OffsetDateTimeFormatHandler())
         }
     }
 
@@ -31,18 +31,21 @@ class OnlineUserRemoteDataSource @Inject constructor(
      * This function is not used, since users are only created by the login creation process
      */
     @Throws(NotImplementedError::class)
-    suspend fun create(user: ListCreator) : Boolean {
+    suspend fun create(user: ListCreator): Boolean {
         throw NotImplementedError("this function is not used by the application")
     }
 
-    suspend fun read(username: String) : List<ListCreator> {
+    suspend fun read(username: String): List<ListCreator> {
         if (username.isEmpty() || username.length > 50)
             return emptyList()
         val foundCreators = mutableListOf<ListCreator>()
         withContext(Dispatchers.IO) {
             networking.GET("/v1/users/name?username=$username") { response ->
                 if (response.status != HttpStatusCode.OK) {
-                    Log.e("OnlineUserRemoteDataSource", "Failed to read users with name $username from online")
+                    Log.e(
+                        "OnlineUserRemoteDataSource",
+                        "Failed to read users with name $username from online"
+                    )
                     return@GET
                 }
                 val rawBody = response.bodyAsText(Charsets.UTF_8)
@@ -52,7 +55,10 @@ class OnlineUserRemoteDataSource @Inject constructor(
                 }
                 val decoded = json.decodeFromString<List<ListCreator>>(rawBody)
                 foundCreators.addAll(decoded)
-                Log.d("OnlineUserRemoterDataSource", "${decoded.size} users found online for $username")
+                Log.d(
+                    "OnlineUserRemoterDataSource",
+                    "${decoded.size} users found online for $username"
+                )
             }
         }
         return foundCreators

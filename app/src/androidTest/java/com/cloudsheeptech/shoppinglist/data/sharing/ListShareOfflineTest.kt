@@ -15,7 +15,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
@@ -29,7 +29,7 @@ class ListShareOfflineTest {
         val database = ShoppingListDatabase.getInstance(application)
         val localUserDs = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserDs)
-        val tokenProvider = TokenProvider(payloadProvider)
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
         val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)
@@ -55,7 +55,7 @@ class ListShareOfflineTest {
             val list = slRepo.create("new list")
             Assert.assertNotNull(list)
 
-            listShare.create(list.listId, 1234L)
+            listShare.create(list.listId, 1234L, 54321L)
             val application = ApplicationProvider.getApplicationContext<Application>()
             val database = ShoppingListDatabase.getInstance(application)
             val shareDao = database.sharedDao()
@@ -67,7 +67,7 @@ class ListShareOfflineTest {
 
             var exception = false
             try {
-                listShare.create(1224L, 1234L)
+                listShare.create(1224L, 1234L, 54321L)
             } catch (ex: IllegalArgumentException) {
                 exception = true
             }
@@ -82,8 +82,8 @@ class ListShareOfflineTest {
             val list = slRepo.create("new list")
             Assert.assertNotNull(list)
 
-            listShare.create(list.listId, 1234L)
-            listShare.create(list.listId, 1235L)
+            listShare.create(list.listId, 1234L, 54321L)
+            listShare.create(list.listId, 1235L, 54321L)
 
             val shared = listShare.read(list.listId)
             Assert.assertEquals(2, shared.size)
@@ -99,13 +99,13 @@ class ListShareOfflineTest {
             val list = slRepo.create("new list")
             Assert.assertNotNull(list)
 
-            listShare.create(list.listId, 1234L)
-            listShare.create(list.listId, 1235L)
+            listShare.create(list.listId, 1234L, 54321L)
+            listShare.create(list.listId, 1235L, 54321L)
 
             val shared = listShare.read(list.listId)
             Assert.assertEquals(2, shared.size)
             val sharedRemoveList = shared.dropLast(1)
-            listShare.update(list.listId, sharedRemoveList)
+            listShare.update(list.listId, 1234L, listOf(54321L))
 
             val sharedAfterRemove = listShare.read(list.listId)
             Assert.assertEquals(1, sharedAfterRemove.size)
@@ -119,13 +119,13 @@ class ListShareOfflineTest {
             val list = slRepo.create("new list")
             Assert.assertNotNull(list)
 
-            listShare.create(list.listId, 1234L)
-            listShare.create(list.listId, 1235L)
+            listShare.create(list.listId, 1234L, 54321L)
+            listShare.create(list.listId, 1235L, 54321L)
 
             val shared = listShare.read(list.listId)
             Assert.assertEquals(2, shared.size)
 
-            listShare.deleteAll(list.listId)
+            listShare.deleteAll(list.listId, 1234L)
             val sharedAfterRemove = listShare.read(list.listId)
             Assert.assertEquals(0, sharedAfterRemove.size)
         }

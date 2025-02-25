@@ -10,9 +10,9 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializer(forClass = OffsetDateTime::class)
-class OffsetDateTimeSerializer : KSerializer<OffsetDateTime> {
+class OffsetDateTimeFormatHandler : KSerializer<OffsetDateTime> {
 
-    private val formatter : DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+    private val formatter: DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
     override fun serialize(encoder: Encoder, value: OffsetDateTime) {
         encoder.encodeString(value.format(formatter))

@@ -1,6 +1,6 @@
 package com.cloudsheeptech.shoppinglist.network
 
-interface UserCreationPayloadProvider {
+interface IUserCreationDataProvider {
     /**
      * This method turns the user or other authentication method
      * into a string which can be used by the creation mechanism
@@ -12,7 +12,7 @@ interface UserCreationPayloadProvider {
      * This method processes the response from the server and
      * extracts the information contained.
      */
-    suspend fun processUserCreationResponse(payload: String): Unit
+    suspend fun processUserCreationResponse(payload: String): Boolean
 
     /**
      * This method provides the string payload sent to the

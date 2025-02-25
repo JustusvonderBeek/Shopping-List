@@ -14,7 +14,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -42,7 +42,7 @@ class ShoppingListOfflineTest {
         localUserDs.setOnlineId(userId)
         localUserDs.store()
         val payloadProvider = UserCreationDataProvider(localUserDs)
-        val tokenProvider = TokenProvider(payloadProvider)
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
         val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)

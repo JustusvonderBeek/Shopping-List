@@ -1,6 +1,6 @@
 package com.cloudsheeptech.shoppinglist.repository
 
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
+import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -15,7 +15,7 @@ class ListShareRepositoryTest {
         Json {
             serializersModule =
                 SerializersModule {
-                    contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
+                    contextual(OffsetDateTime::class, OffsetDateTimeFormatHandler())
                 }
             ignoreUnknownKeys = false
             encodeDefaults = true

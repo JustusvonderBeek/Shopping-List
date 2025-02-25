@@ -2,7 +2,7 @@ package com.cloudsheeptech.shoppinglist.data.sharing
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
+import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import com.cloudsheeptech.shoppinglist.data.user.ApiUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -21,7 +21,7 @@ class ListShareOnlineTest {
         Json {
             serializersModule =
                 SerializersModule {
-                    contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
+                    contextual(OffsetDateTime::class, OffsetDateTimeFormatHandler())
                 }
             ignoreUnknownKeys = false
             encodeDefaults = true
@@ -49,7 +49,8 @@ class ListShareOnlineTest {
     private suspend fun createNewRemoteUser(): Long {
         var newId = 0L
         withContext(Dispatchers.IO) {
-            val newUser = ApiUser(0L, "new user", "ignore", OffsetDateTime.now(), OffsetDateTime.now())
+            val newUser =
+                ApiUser(0L, "new user", "ignore", OffsetDateTime.now(), OffsetDateTime.now())
             val encodedUser = json.encodeToString(newUser)
             val application = ApplicationProvider.getApplicationContext<Application>()
 //            val networking = Networking(application.filesDir.path + "/token.txt")

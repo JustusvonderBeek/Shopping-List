@@ -16,7 +16,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 
 object TestUtil {
     var shoppingListApplication: ShoppingListApplication = ShoppingListApplication()
@@ -84,7 +84,7 @@ object TestUtil {
             val localUserDS = createLocalAppUserDS()
 
             val userDataPayloadProvider = UserCreationDataProvider(localUserDS)
-            val tokenProvider = TokenProvider(userDataPayloadProvider)
+            val tokenProvider = ShoppingListAuthenticationTokenProvider(userDataPayloadProvider)
             networking = Networking(tokenProvider)
             shoppingListApplication.userCreationPayloadProvider = userDataPayloadProvider
             shoppingListApplication.tokenProvider = tokenProvider

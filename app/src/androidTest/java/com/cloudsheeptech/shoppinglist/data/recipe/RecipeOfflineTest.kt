@@ -10,7 +10,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,7 +23,7 @@ class RecipeOfflineTest {
         val database = ShoppingListDatabase.getInstance(context)
         val localUserRepository = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserRepository)
-        val tokenProvider = TokenProvider(payloadProvider)
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
         val networking = Networking(tokenProvider)
         val remoteUserRepository = AppUserRemoteDataSource(networking)
         val appUserRepository = AppUserRepository(localUserRepository, remoteUserRepository)
@@ -54,7 +54,7 @@ class RecipeOfflineTest {
     fun testCreateRecipe() =
         runTest {
             val localRecipeDS = createRecipeLocalDataSource()
-            val recipe = localRecipeDS.create("New recipe", "new icon")
+            val recipe = localRecipeDS.create("New recipe", "new icon", 2)
 
             val ingredients = createNIngredients(3)
             recipe.ingredients = ingredients

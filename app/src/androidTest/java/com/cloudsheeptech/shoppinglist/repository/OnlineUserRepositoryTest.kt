@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeSerializer
+import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -23,7 +23,7 @@ class OnlineUserRepositoryTest {
         Json {
             serializersModule =
                 SerializersModule {
-                    contextual(OffsetDateTime::class, OffsetDateTimeSerializer())
+                    contextual(OffsetDateTime::class, OffsetDateTimeFormatHandler())
                 }
             ignoreUnknownKeys = true
             encodeDefaults = true

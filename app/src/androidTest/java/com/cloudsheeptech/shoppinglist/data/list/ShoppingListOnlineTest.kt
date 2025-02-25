@@ -12,7 +12,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.FixMethodOrder
@@ -39,7 +39,7 @@ class ShoppingListOnlineTest {
         val database = ShoppingListDatabase.getInstance(application)
         val localUserDs = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserDs)
-        val tokenProvider = TokenProvider(payloadProvider)
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
         val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val appUserRepository = AppUserRepository(localUserDs, remoteUserDs)

@@ -7,7 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.ShoppingListApplication
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.TokenProvider
+import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -31,7 +31,7 @@ class AppUserOnlineTest {
         val tokenFile = application.filesDir.path + "/token.txt"
         val appUserLocalDataSource = AppUserLocalDataSource(database)
         val userCreationPayloadProvider = UserCreationDataProvider(appUserLocalDataSource)
-        val tokenProvider = TokenProvider(userCreationPayloadProvider)
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(userCreationPayloadProvider)
         val remoteApi = Networking(tokenProvider)
         val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
         appUserLocalDataSource.create("test user")

@@ -13,6 +13,6 @@ import javax.inject.Singleton
 object UserCreationPayloadProviderModule {
     @Provides
     @Singleton
-    fun provideUserCreationPayloadProvider(appUserLocalDataSource: AppUserLocalDataSource): UserCreationPayloadProvider =
+    fun provideUserCreationPayloadProvider(appUserLocalDataSource: AppUserLocalDataSource): IUserCreationDataProvider =
         UserCreationDataProvider(appUserLocalDataSource)
 }

@@ -37,7 +37,6 @@ android {
     namespace 'com.cloudsheeptech.shoppinglist'
     compileSdk 33
 
-
     defaultConfig {
         applicationId "com.cloudsheeptech.shoppinglist"
         minSdk 29
@@ -70,6 +69,11 @@ android {
         }
     }
 
+    // Include project variables
+    def configFile = rootProject.file("config.properties")
+    def configProperties = new Properties()
+    configProperties.load(new FileInputStream(configFile))
+
     buildTypes {
         release {
             minifyEnabled false
@@ -78,7 +82,15 @@ android {
             jniDebuggable false
             renderscriptDebuggable false
             signingConfig signingConfigs.release
+
+            buildConfigField "String", "NETWORK_RETRY_COUNT", configProperties["NETWORK_RETRY_COUNT"]
+            buildConfigField "String", "SERVER_URL", configProperties["SERVER_URL"]
         }
+        debug {
+            buildConfigField "String", "NETWORK_RETRY_COUNT", configProperties["NETWORK_RETRY_COUNT"]
+            buildConfigField "String", "SERVER_URL", configProperties["SERVER_URL"]
+        }
+
     }
 
     compileOptions {

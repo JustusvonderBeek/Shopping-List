@@ -7,12 +7,12 @@ import javax.inject.Singleton
 @Singleton
 class ShoppingListApiTokenProvider : ITokenProvider {
 
-    override suspend fun getToken(): BearerTokens {
+    override suspend fun loadToken(): BearerTokens {
         val apiToken = BuildConfig.SERVER_URL
         return BearerTokens(apiToken, "")
     }
 
-    override suspend fun refreshToken(): BearerTokens? {
-        TODO("Not yet implemented")
+    override suspend fun refreshToken(): BearerTokens {
+        return BearerTokens("", "")
     }
 }

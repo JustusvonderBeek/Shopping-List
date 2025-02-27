@@ -4,6 +4,8 @@ import android.util.Log
 import com.cloudsheeptech.shoppinglist.BuildConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -21,6 +23,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.net.ConnectException
 import javax.inject.Inject
+import javax.net.ssl.SSLHandshakeException
 
 class ShoppingListNetworkHandler @Inject constructor(private val tokenProvider: ITokenProvider) :
     INetworking {
@@ -34,9 +37,12 @@ class ShoppingListNetworkHandler @Inject constructor(private val tokenProvider: 
                     tokenProvider.refreshToken()
                 }
                 loadTokens {
-                    tokenProvider.getToken()
+                    tokenProvider.loadToken()
                 }
             }
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 2000
         }
     }
     private val retryCount = BuildConfig.NETWORK_RETRY_COUNT.toInt()
@@ -46,7 +52,7 @@ class ShoppingListNetworkHandler @Inject constructor(private val tokenProvider: 
         responseHandler: IHttpResponseHandler
     ): Boolean {
         var success = false
-        for (i in 0..retryCount) {
+        for (i in 0..<retryCount) {
             success = get_internal(requestUrlPath, responseHandler)
             if (success) {
                 break
@@ -67,6 +73,10 @@ class ShoppingListNetworkHandler @Inject constructor(private val tokenProvider: 
                 success = responseHandler.handle(response)
             } catch (ex: ConnectException) {
                 Log.e("ShoppingListNetworkHandler", "Network failed during GET: $ex")
+            } catch (ex: ConnectTimeoutException) {
+                Log.e("ShoppingListNetworkHandler", "GET network request timed out: $ex")
+            } catch (ex: SSLHandshakeException) {
+                Log.e("ShoppingListNetworkHandler", "SSL handshake failed during GET: $ex")
             } catch (ex: Exception) {
                 Log.e("ShoppingListNetworkHandler", "Unknown exception during GET: $ex")
             }

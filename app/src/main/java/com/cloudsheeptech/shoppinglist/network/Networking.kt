@@ -47,7 +47,7 @@ constructor(
             install(Auth) {
                 bearer {
                     loadTokens {
-                        tokenProvider.getToken()
+                        tokenProvider.loadToken()
                     }
                     refreshTokens {
                         tokenProvider.refreshTokenAndCreateUserIfNotExists()

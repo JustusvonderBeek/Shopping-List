@@ -90,7 +90,7 @@ constructor(
         storeTokenToDisk("token.txt", BearerTokens(this.jwtToken ?: "", this.apiToken ?: ""))
     }
 
-    override suspend fun getToken(): BearerTokens? {
+    override suspend fun loadToken(): BearerTokens {
         if (jwtToken != null) {
             return BearerTokens(jwtToken!!, jwtToken!!)
         }
@@ -101,12 +101,12 @@ constructor(
         return loginAndGetToken()
     }
 
-    private suspend fun loginAndGetToken(): BearerTokens? {
+    private suspend fun loginAndGetToken(): BearerTokens {
         val user = payloadProvider.provideLoginPayload()
         if (user.first.isEmpty() || user.second == -1L) {
-            return null
+            return BearerTokens("", "")
         }
-        var token: BearerTokens? = null
+        var token: BearerTokens = BearerTokens("", "")
         try {
             token = withContext(Dispatchers.IO) {
                 val response =
@@ -118,7 +118,7 @@ constructor(
                         "ShoppingListAuthenticationTokenProvider",
                         "Login failed, cannot get token"
                     )
-                    return@withContext null
+                    return@withContext BearerTokens("", "")
                 }
                 val loginResponseBody = response.bodyAsText(Charsets.UTF_8)
                 if (loginResponseBody.isNullOrEmpty()) {
@@ -126,7 +126,7 @@ constructor(
                         "ShoppingListAuthenticationTokenProvider",
                         "Login response is empty, failed to get token"
                     )
-                    return@withContext null
+                    return@withContext BearerTokens("", "")
                 }
                 val parsedLoginTokenResponse =
                     json.decodeFromString<NetworkToken>(loginResponseBody)
@@ -151,7 +151,7 @@ constructor(
         return token
     }
 
-    override suspend fun refreshToken(): BearerTokens? {
+    override suspend fun refreshToken(): BearerTokens {
         val token = refreshTokenAndCreateUserIfNotExists()
         return token
     }
@@ -177,7 +177,7 @@ constructor(
                 } catch (ex: Exception) {
                     Log.e(
                         "TokenProvider",
-                        "Failed to send POST to $finalRequestUrl",
+                        "Failed to send POST to $finalRequestUrl: $ex",
                     )
                 }
                 return@withContext false
@@ -185,23 +185,25 @@ constructor(
         return success
     }
 
-    suspend fun refreshTokenAndCreateUserIfNotExists(): BearerTokens? {
+    suspend fun refreshTokenAndCreateUserIfNotExists(): BearerTokens {
         Log.d("Networking", "refreshing token...")
-        val tokens: BearerTokens? =
+        val tokens: BearerTokens =
             withContext(Dispatchers.IO) {
                 try {
                     val successfullyCreated = createUserIfNotExists()
                     if (!successfullyCreated) {
-                        return@withContext null
+                        return@withContext BearerTokens("", "")
                     }
                     val token = loginAndGetToken()
                     return@withContext token
                 } catch (ex: Exception) {
                     Log.e("TokenProvider", "Failed to refresh tokens: $ex")
                 }
-                return@withContext null
+                return@withContext BearerTokens("", "")
             }
-        tokens?.let { setToken(it.accessToken) }
+        if (tokens.accessToken.isNotEmpty()) {
+            setToken(tokens.accessToken)
+        }
         return tokens
     }
 }

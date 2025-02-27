@@ -16,6 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import java.time.OffsetDateTime
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -37,17 +38,14 @@ class NetworkingTest {
         }
 
     @Test
-    fun testSimpleGet() = runTest {
+    fun testSimpleGet() = runTest(timeout = 500.seconds) {
         val userProvider = TestDataProvider()
         val tokenProvider = ShoppingListAuthenticationTokenProvider(userProvider)
         val networkingHandler = ShoppingListNetworkHandler(tokenProvider)
 
         networkingHandler.get("/v1/lists", object : IHttpResponseHandler {
             override suspend fun handle(response: HttpResponse): Boolean {
-                if (response.status != HttpStatusCode.OK) {
-                    return false
-                }
-                return true
+                return response.status == HttpStatusCode.OK
             }
         })
     }

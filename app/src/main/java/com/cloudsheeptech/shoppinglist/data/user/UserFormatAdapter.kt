@@ -11,6 +11,7 @@ class UserFormatAdapter {
                 this.OnlineID,
                 this.Username,
                 this.Password,
+                UserRightsEnum.USER.value,
                 this.Created,
                 OffsetDateTime.now(),
             )

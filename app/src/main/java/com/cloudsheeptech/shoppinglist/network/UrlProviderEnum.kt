@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.network
 
 enum class UrlProviderEnum(
-    val url: String,
+    var url: String,
 ) {
     BASE_URL("https://10.0.2.2:46152"),
     LOGIN("/v1/users/login"),

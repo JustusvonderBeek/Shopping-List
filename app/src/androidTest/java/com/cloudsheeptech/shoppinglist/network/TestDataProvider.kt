@@ -1,6 +1,7 @@
 package com.cloudsheeptech.shoppinglist.network
 
 import com.cloudsheeptech.shoppinglist.data.user.ApiUser
+import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.OffsetDateTime
@@ -16,6 +17,7 @@ class TestDataProvider : IUserCreationDataProvider {
         0L,
         "test user",
         "test password",
+        UserRightsEnum.USER.value,
         OffsetDateTime.now(),
         OffsetDateTime.now()
     )

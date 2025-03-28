@@ -2,6 +2,7 @@ package com.cloudsheeptech.shoppinglist.data.recipe
 
 import com.cloudsheeptech.shoppinglist.data.user.ApiUser
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
+import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -14,6 +15,7 @@ class RecipeRemoteDataSourceTest {
             onlineId = this.OnlineID,
             username = this.Username,
             password = this.Password,
+            userRights = UserRightsEnum.USER.value,
             created = this.Created,
             lastLogin = this.Created,
         )
@@ -72,9 +74,8 @@ class RecipeRemoteDataSourceTest {
     fun testCreateRecipe() =
         runTest {
 //            val (recipeRemoteDS, appUser) = createRecipeRemoteDataSource()
-            val recipeId = 0L
-            val ingredients = createNIngredients(3)
-            val descriptions = createNDescription(3)
+            createNIngredients(3)
+            createNDescription(3)
 //            val recipe =
 //                ApiReceipt(
 //                    recipeId,
@@ -93,9 +94,8 @@ class RecipeRemoteDataSourceTest {
     fun testGetRecipe() =
         runTest {
 //            val (recipeRemoteDS, appUser) = createRecipeRemoteDataSource()
-            val recipeId = 1L
-            val ingredients = createNIngredients(3)
-            val descriptions = createNDescription(3)
+            createNIngredients(3)
+            createNDescription(3)
 //            val recipe =
 //                ApiReceipt(
 //                    recipeId,

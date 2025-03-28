@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import com.cloudsheeptech.shoppinglist.data.user.ApiUser
+import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -50,9 +51,16 @@ class ListShareOnlineTest {
         var newId = 0L
         withContext(Dispatchers.IO) {
             val newUser =
-                ApiUser(0L, "new user", "ignore", OffsetDateTime.now(), OffsetDateTime.now())
-            val encodedUser = json.encodeToString(newUser)
-            val application = ApplicationProvider.getApplicationContext<Application>()
+                ApiUser(
+                    0L,
+                    "new user",
+                    "ignore",
+                    UserRightsEnum.USER.value,
+                    OffsetDateTime.now(),
+                    OffsetDateTime.now()
+                )
+            json.encodeToString(newUser)
+            ApplicationProvider.getApplicationContext<Application>()
 //            val networking = Networking(application.filesDir.path + "/token.txt")
 //            networking.POST("/v1/users", encodedUser) { resp ->
 //                // Authentication already handled by the networking object

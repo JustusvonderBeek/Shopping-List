@@ -11,6 +11,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
+import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 import kotlinx.coroutines.test.runTest
@@ -30,6 +31,7 @@ class ShoppingListOnlineTest {
             onlineId = this.OnlineID,
             username = this.Username,
             password = this.Password,
+            userRights = UserRightsEnum.USER.value,
             created = this.Created,
             lastLogin = this.Created,
         )

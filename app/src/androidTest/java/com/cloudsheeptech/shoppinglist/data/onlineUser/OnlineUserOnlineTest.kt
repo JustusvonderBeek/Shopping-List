@@ -10,6 +10,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
+import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 import io.ktor.client.statement.bodyAsText
@@ -51,7 +52,7 @@ class OnlineUserOnlineTest {
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)
         userRepository.create("test user")
-        val user = userRepository.read()!!
+        userRepository.read()!!
         return OnlineUserRemoteDataSource(networking)
     }
 
@@ -60,7 +61,14 @@ class OnlineUserOnlineTest {
         var username = ""
         withContext(Dispatchers.IO) {
             val newUser =
-                ApiUser(0L, "distinct", "ignore", OffsetDateTime.now(), OffsetDateTime.now())
+                ApiUser(
+                    0L,
+                    "distinct",
+                    "ignore",
+                    UserRightsEnum.USER.value,
+                    OffsetDateTime.now(),
+                    OffsetDateTime.now()
+                )
             val encodedUser = json.encodeToString(newUser)
             val application = ApplicationProvider.getApplicationContext<Application>()
             val database = ShoppingListDatabase.getInstance(application)

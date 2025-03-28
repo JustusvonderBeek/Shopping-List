@@ -37,7 +37,8 @@ class Network {
                 network.get(
                     "/v1/lists",
                     object : IHttpResponseHandler {
-                        override suspend fun handle(response: HttpResponse): Boolean = response.status == HttpStatusCode.OK
+                        override suspend fun handle(response: HttpResponse): Boolean =
+                            response.status == HttpStatusCode.OK
                     },
                 )
             assert(success)

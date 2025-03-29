@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.network
+package com.cloudsheeptech.shoppinglist.network.token
 
 import io.ktor.client.plugins.auth.providers.BearerTokens
 

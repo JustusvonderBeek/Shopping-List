@@ -1,9 +1,9 @@
 package com.cloudsheeptech.shoppinglist
 
 import com.cloudsheeptech.shoppinglist.network.IHttpResponseHandler
-import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.network.ShoppingListNetworkHandler
 import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
+import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest

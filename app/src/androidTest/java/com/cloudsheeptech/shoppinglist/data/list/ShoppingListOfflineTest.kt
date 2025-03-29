@@ -14,7 +14,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
+import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -375,7 +375,7 @@ class ShoppingListOfflineTest {
     @Test
     fun testResetId() =
         runTest {
-            val (localDataSource, localUserDataStore, userRepo) =
+            val (localDataSource, _, _) =
                 createLocalDataSourceAndUserHandling(
                     1234L,
                 )

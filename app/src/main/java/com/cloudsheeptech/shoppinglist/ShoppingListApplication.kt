@@ -20,7 +20,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.IUserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
+import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 

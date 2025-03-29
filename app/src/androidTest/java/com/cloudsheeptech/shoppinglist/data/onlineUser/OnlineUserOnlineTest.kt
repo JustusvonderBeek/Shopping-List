@@ -12,7 +12,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
+import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers

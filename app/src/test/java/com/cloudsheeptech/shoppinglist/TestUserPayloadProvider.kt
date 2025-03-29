@@ -50,9 +50,9 @@ class TestUserPayloadProvider : IUserCreationDataProvider {
         return decoded.onlineId != 0L
     }
 
-    override fun provideLoginPayload(): Pair<String, Long> {
+    override fun provideLoginPayload(): Pair<String, Long>? {
         if (decodedOnlineUser == null || decodedOnlineUser!!.onlineId == 0L) {
-            return Pair("", -1L)
+            return null
         }
         decodedOnlineUser!!.password = "test password"
         val encoded = json.encodeToString(decodedOnlineUser)

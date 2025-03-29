@@ -15,7 +15,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.ShoppingListAuthenticationTokenProvider
+import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
@@ -104,7 +104,7 @@ class ListShareOfflineTest {
 
             val shared = listShare.read(list.listId)
             Assert.assertEquals(2, shared.size)
-            val sharedRemoveList = shared.dropLast(1)
+            shared.dropLast(1)
             listShare.update(list.listId, 1234L, listOf(54321L))
 
             val sharedAfterRemove = listShare.read(list.listId)

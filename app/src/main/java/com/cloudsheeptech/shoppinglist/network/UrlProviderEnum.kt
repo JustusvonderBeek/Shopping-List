@@ -3,7 +3,8 @@ package com.cloudsheeptech.shoppinglist.network
 enum class UrlProviderEnum(
     var url: String,
 ) {
-    BASE_URL("https://10.0.2.2:46152"),
+    //    BASE_URL("https://10.0.2.2:46152"),
+    BASE_URL("https://shop.cloudsheeptech.com:46152"),
     LOGIN("/v1/users/login"),
 
     //    BASE_URL("https://cloudsheeptech.com:46152"),

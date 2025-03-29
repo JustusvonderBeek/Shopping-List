@@ -18,5 +18,5 @@ interface IUserCreationDataProvider {
      * This method provides the string payload sent to the
      * server when authenticating for login
      */
-    fun provideLoginPayload(): Pair<String, Long>
+    fun provideLoginPayload(): Pair<String, Long>?
 }

@@ -6,6 +6,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
+import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
@@ -57,7 +58,7 @@ class NetworkingTest {
             return success
         }
         val onlineAppUser = AppUser(0, 0L, "test user", "test password", OffsetDateTime.now())
-        val encoded = Json.encodeToString(onlineAppUser)
+        Json.encodeToString(onlineAppUser)
 //        Networking.POST("auth/create", encoded) { resp ->
 //            if (resp.status != HttpStatusCode.Created)
 //                return@POST
@@ -81,7 +82,7 @@ class NetworkingTest {
 
     private suspend fun getTestPathUnauth(): Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val db = ShoppingListDatabase.getInstance(appContext)
+        ShoppingListDatabase.getInstance(appContext)
 //        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
         var success = false
 //        Networking.GET("test/unauth") { resp ->
@@ -106,7 +107,7 @@ class NetworkingTest {
 
     private suspend fun getTestPathAuth(): Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val db = ShoppingListDatabase.getInstance(appContext)
+        ShoppingListDatabase.getInstance(appContext)
 //        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
         // For debugging, create a new user first
         var success = createUserAccount(appContext.filesDir.absolutePath)
@@ -149,7 +150,7 @@ class NetworkingTest {
 
     private suspend fun postTestPathAuth(): Boolean {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val db = ShoppingListDatabase.getInstance(appContext)
+        ShoppingListDatabase.getInstance(appContext)
 //        Networking.registerApplicationDir(appContext.filesDir.absolutePath, db)
         // For debugging, create a new user first
         var success = createUserAccount(appContext.filesDir.absolutePath)
@@ -158,7 +159,7 @@ class NetworkingTest {
         success = false
         var answer = ""
         val dbItem = DbItem(123, "Test Item", "Empty")
-        val encodedItem = Json.encodeToString(dbItem)
+        Json.encodeToString(dbItem)
 //        Networking.POST("v1/test/auth", encodedItem) { resp ->
 //            println("Got an answer: ${resp.bodyAsText(Charsets.UTF_8)}")
 //            if (resp.status != HttpStatusCode.OK)

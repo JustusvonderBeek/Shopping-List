@@ -4,11 +4,11 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 
 interface ITokenStorage {
 
-    fun storeTokenToDisk(fileName: String, token: String): Boolean
+    fun storeTokenToDisk(appFileDir: String, fileName: String, token: String): Boolean
 
-    fun storeTokenToDisk(fileName: String, token: BearerTokens): Boolean
+    fun storeTokenToDisk(appFileDir: String, fileName: String, token: BearerTokens): Boolean
 
-    fun readTokenFromDisk(fileName: String): BearerTokens?
+    fun readTokenFromDisk(appFileDir: String, fileName: String): BearerTokens?
 
     fun resetTokens(): Int
 

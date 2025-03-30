@@ -20,8 +20,12 @@ class ShoppingListTokenStorage {
          * @return True if the token was stored successfully, otherwise false
          */
         @OptIn(InternalSerializationApi::class)
-        override fun storeTokenToDisk(fileName: String, token: String): Boolean {
-            return storeTokenToDisk(fileName, BearerTokens(token, token))
+        override fun storeTokenToDisk(
+            appFileDir: String,
+            fileName: String,
+            token: String
+        ): Boolean {
+            return storeTokenToDisk(appFileDir, fileName, BearerTokens(token, token))
         }
 
         /**
@@ -29,6 +33,7 @@ class ShoppingListTokenStorage {
          */
         @OptIn(InternalSerializationApi::class)
         override fun storeTokenToDisk(
+            appFileDir: String,
             fileName: String,
             token: BearerTokens
         ): Boolean {
@@ -40,7 +45,8 @@ class ShoppingListTokenStorage {
                 val tokenInFileformat = NetworkToken(token.accessToken)
                 val encodedToken = Json.Default.encodeToString(tokenInFileformat)
                 // Overwriting the file in case it does exist
-                val fileNameInFolder = Path(TokenFolder, fileName)
+                val fileNameInFolder = Path(appFileDir, TokenFolder, fileName)
+                Log.d("ShoppingListTokenStorage", "Writing token to $fileNameInFolder")
                 fileNameInFolder.createParentDirectories()
                 fileNameInFolder.toFile().writeText(encodedToken, TokenCharset)
                 return true
@@ -55,13 +61,13 @@ class ShoppingListTokenStorage {
         }
 
         @OptIn(InternalSerializationApi::class)
-        override fun readTokenFromDisk(fileName: String): BearerTokens? {
+        override fun readTokenFromDisk(appFileDir: String, fileName: String): BearerTokens? {
             var token: BearerTokens? = null
             if (fileName.isEmpty()) {
                 Log.w("ShoppingListTokenStorage", "Given tokenFile value is empty")
                 return null
             }
-            val fileNameInFolder = Path(TokenFolder, fileName)
+            val fileNameInFolder = Path(appFileDir, TokenFolder, fileName)
             if (!fileNameInFolder.toFile().exists()) {
                 Log.d(
                     "ShoppingListTokenStorage",

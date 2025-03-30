@@ -26,6 +26,7 @@ class ShoppingListAuthenticationTokenProvider
 @Inject
 constructor(
     private val payloadProvider: IUserCreationDataProvider,
+    private val appFileDir: String,
 ) : ITokenProvider {
     private val tokenFile = "token.tkn"
 
@@ -51,14 +52,18 @@ constructor(
         if (jwtToken != null) {
             return jwtToken
         }
-        return ShoppingListTokenStorage.readTokenFromDisk(tokenFile)
+        return ShoppingListTokenStorage.readTokenFromDisk(appFileDir, tokenFile)
     }
 
     override suspend fun refreshToken(): BearerTokens? {
         val token = refreshTokenAndCreateUserIfNotExists()
         if (token?.accessToken?.isNotEmpty() == true) {
             this.jwtToken = token
-            ShoppingListTokenStorage.storeTokenToDisk(tokenFile, token)
+            ShoppingListTokenStorage.storeTokenToDisk(
+                appFileDir,
+                tokenFile,
+                token
+            )
         }
         return token
     }
@@ -139,7 +144,11 @@ constructor(
         }
         if (token != null) {
             this.jwtToken = token
-            ShoppingListTokenStorage.storeTokenToDisk(tokenFile, token)
+            ShoppingListTokenStorage.storeTokenToDisk(
+                appFileDir,
+                tokenFile,
+                token
+            )
         }
         return token
     }

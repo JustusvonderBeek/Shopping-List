@@ -168,7 +168,7 @@ constructor(
     suspend fun deleteAll(): Boolean {
         var success = false
         withContext(Dispatchers.IO) {
-            networking.DELETE("${UrlProviderEnum.BASE_SHOPPING_LIST_URL.url}/lists") { response ->
+            networking.DELETE(UrlProviderEnum.BASE_SHOPPING_LIST_URL.url) { response ->
                 if (response.status != HttpStatusCode.OK) {
                     Log.e("ShoppingListRemoteDataSource", "Failed to delete all lists at remote")
                     return@DELETE

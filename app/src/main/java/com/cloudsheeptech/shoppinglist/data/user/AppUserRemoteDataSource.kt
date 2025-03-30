@@ -40,11 +40,31 @@ constructor(
             encodeDefaults = true
         }
 
-    // Because the creation can take place throughout the entire program flow and
-    // at any stage, remove this explicit method here and moved into the token
-    // provider
-    suspend fun create(user: AppUser): Unit =
-        throw NotImplementedError("this method should never be called")
+    // Because the creation is handled by the request itself, we only
+    // ping the endpoint which should be enough to create a new account
+    suspend fun create() {
+        withContext(Dispatchers.IO) {
+            var requestSuccess = false
+            try {
+                remoteApi.GET(
+                    "${UrlProviderEnum.PING.url}",
+                ) { resp ->
+                    if (resp.status != HttpStatusCode.OK) {
+                        Log.e("AppUserRemoteRepository", "Current status is not online")
+                        return@GET
+                    }
+                    requestSuccess = true
+                }
+                return@withContext requestSuccess
+            } catch (ex: UserNotCreatedException) {
+                Log.e("AppUserRemoteRepository", "User is not authenticated online")
+            } catch (ex: UserAuthenticationFailedException) {
+                Log.e("AppUserRemoteRepository", "User authentication failed")
+            }
+            return@withContext false
+        }
+        return
+    }
 
     suspend fun read(): ApiUser = throw NotImplementedError("this method should never be called")
 

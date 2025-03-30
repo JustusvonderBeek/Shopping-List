@@ -15,57 +15,60 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.InternalSerializationApi
 import javax.inject.Inject
 
 @HiltViewModel
-class AddRecipeViewModel @Inject constructor(
-    private val recipeRepository: RecipeRepository,
-    private val userRepository: AppUserRepository,
-) : ViewModel() {
+class AddRecipeViewModel
+    @Inject
+    constructor(
+        private val recipeRepository: RecipeRepository,
+        private val userRepository: AppUserRepository,
+    ) : ViewModel() {
+        private val job = Job()
+        private val addVmScope = CoroutineScope(Dispatchers.IO + job)
 
-    private val job = Job()
-    private val addVmScope = CoroutineScope(Dispatchers.IO + job)
+        val dbItemListWithName = MutableLiveData<ItemListWithName<DbItem>>()
 
-    val dbItemListWithName = MutableLiveData<ItemListWithName<DbItem>>()
+        val receiptName = MutableLiveData<String>()
+        val receiptDescription = MutableLiveData<String>()
 
-    val receiptName = MutableLiveData<String>()
-    val receiptDescription = MutableLiveData<String>()
+        private val handledToast = MutableLiveData<SingleEvent<String>>()
+        val toast: LiveData<SingleEvent<String>>
+            get() = handledToast
 
-    private val handledToast = MutableLiveData<SingleEvent<String>>()
-    val toast: LiveData<SingleEvent<String>>
-        get() = handledToast
+        private val _selectImage = MutableLiveData<Boolean>(false)
+        val selectImage: LiveData<Boolean> get() = _selectImage
+        private val _navigateUp = MutableLiveData<Boolean>(false)
+        val navigateUp: LiveData<Boolean> get() = _navigateUp
 
-    private val _selectImage = MutableLiveData<Boolean>(false)
-    val selectImage: LiveData<Boolean> get() = _selectImage
-    private val _navigateUp = MutableLiveData<Boolean>(false)
-    val navigateUp: LiveData<Boolean> get() = _navigateUp
-
-    fun create() {
-        val currentTitle = receiptName.value ?: return
-        val currentDescription = receiptDescription.value ?: return
-        addVmScope.launch {
-            val receipt = recipeRepository.create(currentTitle, 2, "ic_receipt")
-            receipt.description = listOf(ApiDescription(1, currentDescription))
-            recipeRepository.update(receipt)
-            withContext(Dispatchers.Main) {
-                navigateUp()
+        @OptIn(InternalSerializationApi::class)
+        fun create() {
+            val currentTitle = receiptName.value ?: return
+            val currentDescription = receiptDescription.value ?: return
+            addVmScope.launch {
+                val recipe = recipeRepository.create(currentTitle, 2, emptyList())
+                recipe.description = listOf(ApiDescription(1, currentDescription))
+                recipeRepository.update(recipe, emptyList())
+                withContext(Dispatchers.Main) {
+                    navigateUp()
+                }
             }
         }
-    }
 
-    fun selectImage() {
-        this._selectImage.value = true
-    }
+        fun selectImage() {
+            this._selectImage.value = true
+        }
 
-    fun onImageSelected() {
-        this._selectImage.value = false
-    }
+        fun onImageSelected() {
+            this._selectImage.value = false
+        }
 
-    private fun navigateUp() {
-        _navigateUp.value = true
-    }
+        private fun navigateUp() {
+            _navigateUp.value = true
+        }
 
-    fun onUpNavigated() {
-        _navigateUp.value = false
+        fun onUpNavigated() {
+            _navigateUp.value = false
+        }
     }
-}

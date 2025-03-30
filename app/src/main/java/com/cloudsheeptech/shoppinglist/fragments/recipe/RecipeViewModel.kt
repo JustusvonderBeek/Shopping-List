@@ -18,196 +18,216 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 import javax.inject.Inject
 import kotlin.math.max
 
 @HiltViewModel
 class RecipeViewModel
-@Inject
-constructor(
-    private val recipeRepository: RecipeRepository,
-    private val userRepository: AppUserRepository,
-    private val listRepository: ShoppingListRepository,
-    savedStateHandle: SavedStateHandle,
-) : ViewModel() {
-    private val job = Job()
-    private val vmScope = CoroutineScope(Dispatchers.Main + job)
+    @Inject
+    constructor(
+        private val recipeRepository: RecipeRepository,
+        private val userRepository: AppUserRepository,
+        private val listRepository: ShoppingListRepository,
+        savedStateHandle: SavedStateHandle,
+    ) : ViewModel() {
+        private val job = Job()
+        private val vmScope = CoroutineScope(Dispatchers.Main + job)
 
-    private var receiptId: Long = savedStateHandle["receiptId"] ?: -1L
-    private var createdBy: Long = savedStateHandle["createdBy"] ?: -1L
-    private val listPickerRecipeId: Long = savedStateHandle["recipeIdForSelectedList"] ?: -1L
-    val title = MutableLiveData<String>("Rezept")
-    val portionsText = MutableLiveData("Portions")
+        private var receiptId: Long = savedStateHandle["receiptId"] ?: -1L
+        private var createdBy: Long = savedStateHandle["createdBy"] ?: -1L
+        private val listPickerRecipeId: Long = savedStateHandle["recipeIdForSelectedList"] ?: -1L
+        val title = MutableLiveData<String>("Rezept")
+        val portionsText = MutableLiveData("Portions")
 
-    private var selectedIngredients: List<ApiIngredient> = emptyList()
-    private var selectedList: Pair<Long, Long> = Pair(-1L, -1L)
+        private var selectedIngredients: List<ApiIngredient> = emptyList()
+        private var selectedList: Pair<Long, Long> = Pair(-1L, -1L)
 
-    private val _shoppingLists = listRepository.readAllLive()
-    val shoppingLists: LiveData<List<DbShoppingList>> get() = _shoppingLists
+        private val _shoppingLists = listRepository.readAllLive()
+        val shoppingLists: LiveData<List<DbShoppingList>> get() = _shoppingLists
 
-    var receipt = recipeRepository.readLive(receiptId, createdBy)
+        @OptIn(InternalSerializationApi::class)
+        var recipe = recipeRepository.readLive(receiptId, createdBy)
 
-    private val _images = MutableLiveData<List<CarouselItem>>(emptyList())
-    val images: LiveData<List<CarouselItem>> get() = _images
+        private val _images = MutableLiveData<List<CarouselItem>>(emptyList())
+        val images: LiveData<List<CarouselItem>> get() = _images
 
-    private val _portions = MutableLiveData<Int>(2)
-    val portions: LiveData<Int> get() = _portions
+        private val _portions = MutableLiveData<Int>(2)
+        val portions: LiveData<Int> get() = _portions
 
-    private var _ingredients: LiveData<List<ApiIngredient>> =
-        receipt.map { recipe -> recipe.ingredients }
-    val ingredientWithPortionsApplied = MediatorLiveData<List<ApiIngredient>>().apply {
-        addSource(_ingredients) { ingredients ->
-            val mappedIngredients = ingredients.map { ingredient ->
-                return@map ingredient.copy(
-                    quantity = ingredient.quantity * (portions.value ?: 1)
+        @Suppress("ktlint:standard:backing-property-naming")
+        @OptIn(InternalSerializationApi::class)
+        private var _ingredients: LiveData<List<ApiIngredient>> =
+            recipe.map { recipe -> recipe.ingredients }
+
+        @OptIn(InternalSerializationApi::class)
+        val ingredientWithPortionsApplied =
+            MediatorLiveData<List<ApiIngredient>>().apply {
+                addSource(_ingredients) { ingredients ->
+                    val mappedIngredients =
+                        ingredients.map { ingredient ->
+                            return@map ingredient.copy(
+                                quantity = ingredient.quantity * (portions.value ?: 1),
+                            )
+                        }
+                    value = mappedIngredients
+                }
+                addSource(_portions) { portion ->
+                    val mappedIngredients =
+                        recipe.value?.ingredients?.map { ingredient ->
+                            return@map ingredient.copy(quantity = ingredient.quantity * portion)
+                        }
+                    value = mappedIngredients
+                }
+            }
+
+        private val _navigateToEdit = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
+        val navigateToEdit: LiveData<Pair<Long, Long>> get() = _navigateToEdit
+
+        private val _navigateToShare = MutableLiveData<Long>(-1)
+        val navigateToShare: LiveData<Long> get() = _navigateToShare
+
+        private val _navigateToSelectList = MutableLiveData<Boolean>(false)
+        val navigateToSelectList: LiveData<Boolean> get() = _navigateToSelectList
+
+        private val _navigateToCreateList = MutableLiveData<Boolean>(false)
+        val navigateToCreateList: LiveData<Boolean> get() = _navigateToCreateList
+
+        private val _navigateUp = MutableLiveData<Boolean>(false)
+        val navigateUp: LiveData<Boolean> get() = _navigateUp
+
+        private val _toastMessage = MutableLiveData(Pair("", -1))
+        val toastMessage: LiveData<Pair<String, Int>> get() = _toastMessage
+
+        @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+        fun setRecipeIds(
+            recipeId: Long,
+            createdBy: Long,
+        ) {
+            this.receiptId = recipeId
+            this.createdBy = createdBy
+            this.ingredientWithPortionsApplied.removeSource(this._ingredients)
+            this.recipe = recipeRepository.readLive(receiptId, createdBy)
+            this._ingredients = this.recipe.map { recipe -> recipe.ingredients }
+            this.ingredientWithPortionsApplied.addSource(this._ingredients) { ingredients ->
+                val mappedIngredients =
+                    ingredients.map { ingredient ->
+                        return@map ingredient.copy(
+                            quantity = ingredient.quantity * (portions.value ?: 1),
+                        )
+                    }
+                this.ingredientWithPortionsApplied.value = mappedIngredients
+            }
+        }
+
+        fun setTitle(title: String) {
+            this.title.value = title
+        }
+
+        fun setPortionsText(text: String) {
+            this.portionsText.value = text
+        }
+
+        // TODO: Include a question if the receipt should really be deleted
+        fun removeRecipe() {
+            vmScope.launch {
+                recipeRepository.delete(receiptId, createdBy)
+                withContext(Dispatchers.Main) {
+                    navigateUp()
+                }
+            }
+        }
+
+        @OptIn(InternalSerializationApi::class)
+        fun addRecipeToShoppingList() {
+            Log.d("RecipeViewModel", "Adding items to viewmodel pressed")
+            // First we need to know which list, then we can add the items into the list
+            Log.d("RecipeViewModel", "Would add: ${recipe.value?.ingredients}")
+            selectedIngredients = ingredientWithPortionsApplied.value ?: emptyList()
+            navigateToSelectList()
+        }
+
+        fun increasePortions() {
+            _portions.value = _portions.value?.plus(1)
+        }
+
+        fun decreasePortions() {
+            _portions.value = max(1, _portions.value?.minus(1) ?: 1)
+        }
+
+        fun editReceipt() {
+            _navigateToEdit.value = Pair(receiptId, createdBy)
+        }
+
+        fun shareRecipe() {
+            _navigateToShare.value = receiptId
+        }
+
+        private fun navigateToSelectList() {
+            _navigateToSelectList.value = true
+        }
+
+        fun selectList(
+            listId: Long,
+            createdBy: Long,
+        ) {
+            selectedList = Pair(listId, createdBy)
+            vmScope.launch {
+                Log.d(
+                    "RecipeViewModel",
+                    "Adding ${selectedIngredients.size} items from $receiptId by $createdBy to list $listId",
                 )
-            }
-            value = mappedIngredients
-        }
-        addSource(_portions) { portion ->
-            val mappedIngredients =
-                receipt.value?.ingredients?.map { ingredient -> return@map ingredient.copy(quantity = ingredient.quantity * portion) }
-            value = mappedIngredients
-        }
-    }
-
-    private val _navigateToEdit = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
-    val navigateToEdit: LiveData<Pair<Long, Long>> get() = _navigateToEdit
-
-    private val _navigateToShare = MutableLiveData<Long>(-1)
-    val navigateToShare: LiveData<Long> get() = _navigateToShare
-
-    private val _navigateToSelectList = MutableLiveData<Boolean>(false)
-    val navigateToSelectList: LiveData<Boolean> get() = _navigateToSelectList
-
-    private val _navigateToCreateList = MutableLiveData<Boolean>(false)
-    val navigateToCreateList: LiveData<Boolean> get() = _navigateToCreateList
-
-    private val _navigateUp = MutableLiveData<Boolean>(false)
-    val navigateUp: LiveData<Boolean> get() = _navigateUp
-
-    private val _toastMessage = MutableLiveData(Pair("", -1))
-    val toastMessage: LiveData<Pair<String, Int>> get() = _toastMessage
-
-    fun setRecipeIds(recipeId: Long, createdBy: Long) {
-        this.receiptId = recipeId
-        this.createdBy = createdBy
-        this.ingredientWithPortionsApplied.removeSource(this._ingredients)
-        this.receipt = recipeRepository.readLive(receiptId, createdBy)
-        this._ingredients = this.receipt.map { recipe -> recipe.ingredients }
-        this.ingredientWithPortionsApplied.addSource(this._ingredients) { ingredients ->
-            val mappedIngredients = ingredients.map { ingredient ->
-                return@map ingredient.copy(
-                    quantity = ingredient.quantity * (portions.value ?: 1)
-                )
-            }
-            this.ingredientWithPortionsApplied.value = mappedIngredients
-        }
-    }
-
-    fun setTitle(title: String) {
-        this.title.value = title
-    }
-
-    fun setPortionsText(text: String) {
-        this.portionsText.value = text
-    }
-
-    // TODO: Include a question if the receipt should really be deleted
-    fun removeRecipe() {
-        vmScope.launch {
-            recipeRepository.delete(receiptId, createdBy)
-            withContext(Dispatchers.Main) {
-                navigateUp()
+                listRepository.addAll(listId, createdBy, selectedIngredients)
+                val list = listRepository.read(listId, createdBy) ?: return@launch
+                makeToast(selectedIngredients.size, list.title)
+                withContext(Dispatchers.Main) {
+                    navigateUp()
+                }
             }
         }
-    }
 
-    fun addRecipeToShoppingList() {
-        Log.d("RecipeViewModel", "Adding items to viewmodel pressed")
-        // First we need to know which list, then we can add the items into the list
-        Log.d("RecipeViewModel", "Would add: ${receipt.value?.ingredients}")
-        selectedIngredients = ingredientWithPortionsApplied.value ?: emptyList()
-        navigateToSelectList()
-    }
+        fun onSelectListNavigated() {
+            _navigateToSelectList.value = false
+        }
 
-    fun increasePortions() {
-        _portions.value = _portions.value?.plus(1)
-    }
+        fun createList() {
+            navigateToCreateList()
+        }
 
-    fun decreasePortions() {
-        _portions.value = max(1, _portions.value?.minus(1) ?: 1)
-    }
+        private fun navigateToCreateList() {
+            _navigateToCreateList.value = true
+        }
 
-    fun editReceipt() {
-        _navigateToEdit.value = Pair(receiptId, createdBy)
-    }
+        fun onCreateListNavigated() {
+            _navigateToCreateList.value = false
+        }
 
-    fun shareRecipe() {
-        _navigateToShare.value = receiptId
-    }
+        fun navigatedToEditWord() {
+            _navigateToEdit.value = Pair(-1L, -1L)
+        }
 
-    private fun navigateToSelectList() {
-        _navigateToSelectList.value = true
-    }
+        fun onShareNavigated() {
+            _navigateToShare.value = -1
+        }
 
-    fun selectList(
-        listId: Long,
-        createdBy: Long,
-    ) {
-        selectedList = Pair(listId, createdBy)
-        vmScope.launch {
-            Log.d(
-                "RecipeViewModel",
-                "Adding ${selectedIngredients.size} items from $receiptId by $createdBy to list $listId"
-            )
-            listRepository.addAll(listId, createdBy, selectedIngredients)
-            val list = listRepository.read(listId, createdBy) ?: return@launch
-            makeToast(selectedIngredients.size, list.title)
-            withContext(Dispatchers.Main) {
-                navigateUp()
-            }
+        fun navigateUp() {
+            _navigateUp.value = true
+        }
+
+        fun onUpNavigated() {
+            _navigateUp.value = false
+        }
+
+        private fun makeToast(
+            items: Int,
+            list: String,
+        ) {
+            _toastMessage.value = Pair(list, items)
+        }
+
+        fun onToastMessageShown() {
+            _toastMessage.value = Pair("", -1)
         }
     }
-
-    fun onSelectListNavigated() {
-        _navigateToSelectList.value = false
-    }
-
-    fun createList() {
-        navigateToCreateList()
-    }
-
-    private fun navigateToCreateList() {
-        _navigateToCreateList.value = true
-    }
-
-    fun onCreateListNavigated() {
-        _navigateToCreateList.value = false
-    }
-
-    fun navigatedToEditWord() {
-        _navigateToEdit.value = Pair(-1L, -1L)
-    }
-
-    fun onShareNavigated() {
-        _navigateToShare.value = -1
-    }
-
-    fun navigateUp() {
-        _navigateUp.value = true
-    }
-
-    fun onUpNavigated() {
-        _navigateUp.value = false
-    }
-
-    private fun makeToast(items: Int, list: String) {
-        _toastMessage.value = Pair(list, items)
-    }
-
-    fun onToastMessageShown() {
-        _toastMessage.value = Pair("", -1)
-    }
-}

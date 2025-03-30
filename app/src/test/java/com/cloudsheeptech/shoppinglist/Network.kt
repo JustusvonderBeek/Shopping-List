@@ -28,7 +28,7 @@ class Network {
     fun testSimpleGet() =
         runTest(timeout = 500.seconds) {
             val payloadProvider = TestUserPayloadProvider()
-            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
+            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "")
             val network = ShoppingListNetworkHandler(tokenProvider)
 
             UrlProviderEnum.BASE_URL.url = "http://127.0.0.1:46152"
@@ -37,8 +37,7 @@ class Network {
                 network.get(
                     "/v1/lists",
                     object : IHttpResponseHandler {
-                        override suspend fun handle(response: HttpResponse): Boolean =
-                            response.status == HttpStatusCode.OK
+                        override suspend fun handle(response: HttpResponse): Boolean = response.status == HttpStatusCode.OK
                     },
                 )
             assert(success)

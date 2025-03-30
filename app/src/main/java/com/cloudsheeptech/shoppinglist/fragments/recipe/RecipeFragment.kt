@@ -21,10 +21,14 @@ import androidx.navigation.fragment.navArgs
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentReceiptBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 @AndroidEntryPoint
-class RecipeFragment : Fragment(), MenuProvider {
+class RecipeFragment :
+    Fragment(),
+    MenuProvider {
     private val viewModel: RecipeViewModel by activityViewModels<RecipeViewModel>()
     private lateinit var binding: FragmentReceiptBinding
 
@@ -62,6 +66,7 @@ class RecipeFragment : Fragment(), MenuProvider {
         return false
     }
 
+    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -97,8 +102,8 @@ class RecipeFragment : Fragment(), MenuProvider {
                     findNavController().navigate(
                         RecipeFragmentDirections.actionReceiptToReceiptEditFragment(
                             receiptId,
-                            createdBy
-                        )
+                            createdBy,
+                        ),
                     )
                     viewModel.navigatedToEditWord()
                 }
@@ -123,7 +128,7 @@ class RecipeFragment : Fragment(), MenuProvider {
             },
         )
 
-        viewModel.receipt.observe(
+        viewModel.recipe.observe(
             viewLifecycleOwner,
             Observer { x ->
                 descriptionAdapter.submitList(x.description)
@@ -157,31 +162,36 @@ class RecipeFragment : Fragment(), MenuProvider {
                 if (navigate > 0L) {
                     findNavController().navigate(
                         RecipeFragmentDirections.actionReceiptToShareFragment(
-                            navigate
-                        )
+                            navigate,
+                        ),
                     )
                     viewModel.onShareNavigated()
                 }
             },
         )
 
-        viewModel.toastMessage.observe(viewLifecycleOwner, Observer { listAndItems ->
-            val list = listAndItems.first
-            val items = listAndItems.second
-            if (list.isNotEmpty() && items > 0) {
-                val toastString = resources.getString(R.string.recipe_add_items_finish_toast)
-                val formattedString = String.format(toastString, items, list)
-                Toast.makeText(context, formattedString, Toast.LENGTH_LONG).show()
-                viewModel.onToastMessageShown()
-            }
-        })
+        viewModel.toastMessage.observe(
+            viewLifecycleOwner,
+            Observer { listAndItems ->
+                val list = listAndItems.first
+                val items = listAndItems.second
+                if (list.isNotEmpty() && items > 0) {
+                    val toastString = resources.getString(R.string.recipe_add_items_finish_toast)
+                    val formattedString = String.format(toastString, items, list)
+                    Toast.makeText(context, formattedString, Toast.LENGTH_LONG).show()
+                    viewModel.onToastMessageShown()
+                }
+            },
+        )
 
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         (activity as AppCompatActivity).supportActionBar?.title = viewModel.title.value
     }
-
 }

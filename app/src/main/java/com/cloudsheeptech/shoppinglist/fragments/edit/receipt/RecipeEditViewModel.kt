@@ -169,7 +169,7 @@ class RecipeEditViewModel
                         _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
                     newReceipt.description =
                         receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
-                    recipeRepository.update(newReceipt, emptyList())
+                    recipeRepository.update(newReceipt, imageLocations)
                     withContext(Dispatchers.Main) {
                         navigateUp()
                     }

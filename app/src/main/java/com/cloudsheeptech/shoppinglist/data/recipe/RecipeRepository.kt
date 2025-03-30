@@ -84,17 +84,17 @@ class RecipeRepository
                     return
                 }
                 var success = false
+                val binaryImages = binaryFileHandler.readImagesFromFiles(recipeImages)
                 try {
-                    success = remoteDataSource.update(recipe)
+                    success = remoteDataSource.update(recipe, binaryImages)
                 } catch (ex: UserNotAuthenticatedException) {
                     Log.w("RecipeRepository", "User might not be authenticated: $ex")
                 }
                 if (!success) {
                     updateRecipeCreatedBy(recipe)
-                    success = remoteDataSource.update(recipe)
+                    success = remoteDataSource.update(recipe, binaryImages)
                 }
                 if (!success) {
-                    val binaryImages = binaryFileHandler.readImagesFromFiles(recipeImages)
                     success = remoteDataSource.create(recipe, binaryImages)
                 }
                 if (success) {
@@ -131,7 +131,7 @@ class RecipeRepository
                 Log.e("RecipeRepository", "Recipe not found")
                 return
             }
-            remoteDataSource.update(localRecipe.first!!)
+            remoteDataSource.update(localRecipe.first!!, emptyList())
         }
 
         @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
@@ -143,7 +143,7 @@ class RecipeRepository
         ) {
             localDataSource.updateDescription(receiptId, createdBy, order, description)
             val localReceipt = localDataSource.read(receiptId, createdBy)
-            remoteDataSource.update(localReceipt.first!!)
+            remoteDataSource.update(localReceipt.first!!, emptyList())
         }
 
         @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
@@ -154,7 +154,7 @@ class RecipeRepository
         ) {
             localDataSource.deleteDescription(receiptId, createdBy, order)
             val localReceipt = localDataSource.read(receiptId, createdBy)
-            remoteDataSource.update(localReceipt.first!!)
+            remoteDataSource.update(localReceipt.first!!, emptyList())
         }
 
         suspend fun delete(

@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.recipe
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
@@ -13,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.InternalSerializationApi
 import java.time.OffsetDateTime
 import javax.inject.Inject
 
@@ -27,7 +29,9 @@ constructor(
     private val itemDao = database.itemDao()
     private val receiptItemDao = database.receiptItemDao()
     private val receiptDescriptionDao = database.receiptDescriptionDao()
+    private val recipeImageDao = database.recipeImageDao()
 
+    @OptIn(InternalSerializationApi::class)
     private fun DbRecipe.toApiReceipt(): ApiRecipe {
         val apiRecipe =
             ApiRecipe(
@@ -44,6 +48,7 @@ constructor(
         return apiRecipe
     }
 
+    @OptIn(InternalSerializationApi::class)
     private fun ApiRecipe.toDbReceipt(): DbRecipe {
         val dbRecipe =
             DbRecipe(
@@ -59,9 +64,10 @@ constructor(
         return dbRecipe
     }
 
+    @OptIn(InternalSerializationApi::class)
     suspend fun create(
         name: String,
-        icon: String?,
+        images: List<Uri>,
         defaultPortion: Int,
     ): ApiRecipe {
         val user = userRepository.read() ?: throw IllegalStateException("user null after login")
@@ -79,23 +85,36 @@ constructor(
         withContext(Dispatchers.IO) {
             val receiptId = receiptDao.insert(dbRecipe)
             dbRecipe.id = receiptId
+            val recipeImage = RecipeImage(
+                recipeId = receiptId,
+                createdBy = user.OnlineID,
+                imageId = 0,
+                fileLocation = "",
+            )
+            images.forEachIndexed { index, uri ->
+                recipeImage.imageId = index
+                recipeImage.fileLocation = uri.toString()
+                recipeImageDao.insert(recipeImage)
+            }
         }
         return dbRecipe.toApiReceipt()
     }
 
+    @OptIn(InternalSerializationApi::class)
     suspend fun read(
-        receiptId: Long,
+        recipeId: Long,
         createdBy: Long,
-    ): ApiRecipe? {
-        var storedReceipt: ApiRecipe? = null
+    ): Pair<ApiRecipe?, List<RecipeImage>> {
+        var storedRecipe: ApiRecipe? = null
+        var recipeImages: List<RecipeImage> = emptyList()
         withContext(Dispatchers.IO) {
-            val dbReceipt = receiptDao.get(receiptId, createdBy) ?: return@withContext
-            storedReceipt = dbReceipt.toApiReceipt()
-            val storedDescriptions = receiptDescriptionDao.read(receiptId, createdBy)
-            storedReceipt!!.description =
+            val dbReceipt = receiptDao.get(recipeId, createdBy) ?: return@withContext
+            storedRecipe = dbReceipt.toApiReceipt()
+            val storedDescriptions = receiptDescriptionDao.read(recipeId, createdBy)
+            storedRecipe!!.description =
                 storedDescriptions.map { x -> ApiDescription(x.descriptionOrder, x.description) }
-            val storedIngredients = receiptItemDao.readAllForReceipt(receiptId, createdBy)
-            storedReceipt!!.ingredients =
+            val storedIngredients = receiptItemDao.readAllForReceipt(recipeId, createdBy)
+            storedRecipe!!.ingredients =
                 storedIngredients.map { ingredient ->
                     val storedItem = itemDao.getItem(ingredient.itemId)
                     ApiIngredient(
@@ -106,10 +125,12 @@ constructor(
                         ingredient.quantityType
                     )
                 }
+            recipeImages = recipeImageDao.read(recipeId, createdBy)
         }
-        return storedReceipt
+        return Pair(storedRecipe, recipeImages)
     }
 
+    @OptIn(InternalSerializationApi::class)
     fun readLive(
         receiptId: Long,
         createdBy: Long,
@@ -213,6 +234,7 @@ constructor(
      * returns the version of the updated receipt
      * @throws IllegalArgumentException if the receipt does not exist
      */
+    @OptIn(InternalSerializationApi::class)
     suspend fun update(receipt: ApiRecipe): Long {
         if (receipt.onlineId == 0L) {
             throw IllegalArgumentException("receipt does not exist in the database")

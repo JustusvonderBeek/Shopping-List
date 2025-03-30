@@ -45,7 +45,7 @@
                 app:layout_constraintTop_toBottomOf="@id/imageCarousel"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:text="@={recipeVM.receipt.name}"
+                android:text="@={recipeVM.recipe.name}"
                 style="@style/ReceiptTitleStyle" />
 
             <LinearLayout

@@ -24,6 +24,7 @@ import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.Rec
 import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeDao
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
+import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImageDao
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
 import com.cloudsheeptech.shoppinglist.data.sharing.SharedDao
 import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShare
@@ -72,6 +73,8 @@ abstract class ShoppingListDatabase : RoomDatabase() {
     abstract fun receiptItemDao(): ReceiptItemDao
 
     abstract fun recipeShareDao(): RecipeShareDao
+
+    abstract fun recipeImageDao(): RecipeImageDao
 
     companion object {
         const val LATEST_VERSION = 32

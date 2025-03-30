@@ -47,10 +47,6 @@ class AddRecipeViewModel @Inject constructor(
             val receipt = recipeRepository.create(currentTitle, 2, "ic_receipt")
             receipt.description = listOf(ApiDescription(1, currentDescription))
             recipeRepository.update(receipt)
-//            if (word.value != null && translation.value != null) {
-//                vocabulary.postVocabulary(word.value!!, translation.value!!)
-//                resetValues()
-//            }
             withContext(Dispatchers.Main) {
                 navigateUp()
             }

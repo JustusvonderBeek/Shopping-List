@@ -102,7 +102,8 @@ constructor(
     @Throws(UserNotAuthenticatedException::class)
     suspend fun MULTIFORM_POST(
         requestUrlPath: String,
-        data: String,
+        data: String?,
+        binaryContent: List<ByteArray>,
         responseHandler: suspend (HttpResponse) -> Unit
     ) {
         withContext(Dispatchers.IO) {
@@ -111,8 +112,12 @@ constructor(
                 setBody(
                     MultiPartFormDataContent(
                         formData {
-                            append("object", data)
-                            append("content", emptyArray())
+                            append("object", data ?: "")
+                            if (binaryContent.isNotEmpty()) {
+                                for (bytes in binaryContent) {
+                                    append("content", bytes)
+                                }
+                            }
                         }
                     )
                 )

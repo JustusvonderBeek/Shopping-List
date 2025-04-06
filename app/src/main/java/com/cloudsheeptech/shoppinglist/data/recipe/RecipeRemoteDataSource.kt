@@ -4,10 +4,19 @@ import android.util.Log
 import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
 import com.cloudsheeptech.shoppinglist.network.Networking
+import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.readBytes
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import jakarta.mail.MessagingException
+import jakarta.mail.internet.MimeMultipart
+import jakarta.mail.internet.ParseException
+import jakarta.mail.util.ByteArrayDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
@@ -16,6 +25,7 @@ import kotlinx.serialization.modules.SerializersModule
 import java.io.IOException
 import java.io.InputStream
 import java.net.ConnectException
+import java.nio.ByteBuffer
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -77,18 +87,18 @@ class RecipeRemoteDataSource
             createdBy: Long,
         ): ApiRecipe? {
             var onlineReceipt: ApiRecipe? = null
-            networking.GET("/v1/recipe/$recipeId?createdBy=$createdBy") { response ->
+            networking.get("/v1/recipe/$recipeId?createdBy=$createdBy") { response ->
                 if (response.status != HttpStatusCode.OK) {
                     Log.e(
                         "ReceiptRemoteDataSource",
                         "Failed to get receipt $recipeId from $createdBy online",
                     )
-                    return@GET
+                    return@get
                 }
                 val rawBody = response.bodyAsText(Charsets.UTF_8)
                 if (rawBody.isEmpty() || rawBody == "null") {
                     Log.w("ReceiptRemoteDataSource", "List $recipeId from $createdBy not found online")
-                    return@GET
+                    return@get
                 }
                 val decoded = json.decodeFromString<ApiRecipe>(rawBody)
                 onlineReceipt = decoded
@@ -98,6 +108,85 @@ class RecipeRemoteDataSource
                 )
             }
             return onlineReceipt
+        }
+
+        suspend fun readImages(
+            recipeId: Long,
+            createdBy: Long,
+            imagesMetadata: RecipeMetadata,
+        ): List<ByteArray> {
+            val images = mutableListOf<ByteArray>()
+            // TODO: Get the total number of bytes and the individual bytes
+            val imageBuffer = ByteBuffer.allocate(1024)
+            networking.get("${UrlProviderEnum.BASE_URL}${UrlProviderEnum.RECIPE}$recipeId/images") { response ->
+                if (response.status != HttpStatusCode.OK) {
+                    Log.e(
+                        "ReceiptRemoteDataSource",
+                        "Failed to get receipt $recipeId from $createdBy online",
+                    )
+                    return@get
+                }
+                val rawBody = response.bodyAsChannel()
+                rawBody.readFully(imageBuffer)
+            }
+            var offset = 0
+            for (i in 0..imagesMetadata.numOfImages) {
+                val sizeOfImage = imagesMetadata.sizeOfImages.get(i)
+                val imageSlice = ByteArray(sizeOfImage)
+                imageBuffer.get(imageSlice, offset, sizeOfImage)
+                images.add(imageSlice)
+            }
+            return images
+        }
+
+        @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+        suspend fun readFull(
+            recipeId: Long,
+            createdBy: Long,
+        ): Pair<ApiRecipe?, List<ByteArray>> {
+            var recipe: ApiRecipe? = null
+            val rawImageList = mutableListOf<ByteArray>()
+            networking.get("${UrlProviderEnum.BASE_URL}${UrlProviderEnum.RECIPE}$recipeId/full") { response ->
+                if (response.status != HttpStatusCode.OK) {
+                    Log.e(
+                        "ReceiptRemoteDataSource",
+                        "Failed to get receipt $recipeId from $createdBy online",
+                    )
+                    return@get
+                }
+                try {
+                    val contentType = response.headers["Content-Type"] ?: return@get
+                    val fullBody = response.readBytes()
+                    val multipartDataSource = ByteArrayDataSource(fullBody, contentType)
+                    val multipart = MimeMultipart(multipartDataSource)
+                    val rawRecipe = multipart.getBodyPart(0)
+                    if (!rawRecipe.contentType.equals(ContentType.Application.Json)) {
+                        Log.e("RecipeRemoteDataSource", "Received recipe response in wrong format")
+                        return@get
+                    }
+                    recipe = json.decodeFromString<ApiRecipe>(rawRecipe.content.toString())
+                    for (i in 1..multipart.count) {
+                        val imagePart = multipart.getBodyPart(i)
+                        if (!imagePart.contentType.equals(ContentType.Image.Any)) {
+                            Log.e("RecipeRemoteDataSource", "The type of image is incorrect: ${imagePart.contentType}")
+                            return@get
+                        }
+                        val rawImage = imagePart.content
+                        if (rawImage is ByteArray) {
+                            rawImageList.add(rawImage)
+                        } else {
+                            Log.e("RecipeRemoteDataSource", "Image content-cype is ${imagePart.content.javaClass}")
+                        }
+                    }
+                } catch (ex: MessagingException) {
+                    Log.e("RecipeRemoteDataSource", "Failed to parse all body parts: $ex")
+                } catch (ex: ParseException) {
+                    Log.e("RecipeRemoteDataSource", "Received recipe response in wrong format: $ex")
+                } catch (ex: OutOfMemoryError) {
+                    Log.e("RecipeRemoteDataSource", "The received message cannot be parse at once: $ex")
+                }
+            }
+            return Pair(recipe, rawImageList)
         }
 
         @OptIn(InternalSerializationApi::class)

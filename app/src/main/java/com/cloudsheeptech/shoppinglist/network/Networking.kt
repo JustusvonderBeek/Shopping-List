@@ -60,7 +60,7 @@ class Networking
                 }
             }
 
-        suspend fun GET(
+        suspend fun get(
             requestUrlPath: String,
             responseHandler: suspend (response: HttpResponse) -> Unit,
         ) {

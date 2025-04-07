@@ -66,18 +66,18 @@ abstract class ShoppingListDatabase : RoomDatabase() {
 
     abstract fun preferenceDao(): UIPreferencesDao
 
-    abstract fun receiptDao(): RecipeDao
+    abstract fun recipeDao(): RecipeDao
 
-    abstract fun receiptDescriptionDao(): ReceiptDescriptionDao
+    abstract fun recipeDescriptionDao(): ReceiptDescriptionDao
 
-    abstract fun receiptItemDao(): ReceiptItemDao
+    abstract fun recipeItemDao(): ReceiptItemDao
 
     abstract fun recipeShareDao(): RecipeShareDao
 
     abstract fun recipeImageDao(): RecipeImageDao
 
     companion object {
-        const val LATEST_VERSION = 32
+        const val LATEST_VERSION = 34
 
         @Suppress("ktlint:standard:property-naming")
         @Volatile

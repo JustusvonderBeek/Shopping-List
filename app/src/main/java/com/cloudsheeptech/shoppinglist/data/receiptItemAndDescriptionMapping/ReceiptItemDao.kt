@@ -14,6 +14,9 @@ interface ReceiptItemDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(itemMapping: ReceiptItemMapping)
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insertAll(itemMappings: List<ReceiptItemMapping>)
+
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(itemMapping: ReceiptItemMapping)
 

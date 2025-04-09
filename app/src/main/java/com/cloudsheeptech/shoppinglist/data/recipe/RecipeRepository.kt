@@ -73,6 +73,32 @@ constructor(
         createdBy: Long,
     ): ApiRecipe? = remoteDataSource.read(receiptId, createdBy)
 
+    suspend fun readAllOnline() {
+        val allRelevantRecipeIds = localDataSource.readAllRecipeIds()
+        allRelevantRecipeIds.forEach { recipeIdAndCreatedBy ->
+            val recipeId = recipeIdAndCreatedBy.first
+            val createdBy = recipeIdAndCreatedBy.second
+            val remoteRecipe = remoteDataSource.readFull(recipeId, createdBy)
+            if (remoteRecipe.first == null) {
+                Log.e(
+                    "RecipeRepository",
+                    "Recipe $recipeId from $createdBy could not be read from remote"
+                )
+                return@forEach
+            }
+            localDataSource.update(remoteRecipe.first!!)
+            val updatedImageLocation = mutableListOf<String>()
+            remoteRecipe.second?.forEachIndexed { index, image ->
+                val imageStoreFile = binaryFileHandler.storeImageToFile(
+                    image,
+                    "${recipeId}_${createdBy}_${index}.png"
+                )
+                updatedImageLocation.add(imageStoreFile.toString())
+            }
+            localDataSource.updateImages(recipeId, createdBy, updatedImageLocation)
+        }
+    }
+
     suspend fun update(
         recipe: ApiRecipe,
         recipeImages: List<String>,
@@ -116,42 +142,6 @@ constructor(
         val user =
             userRepository.read() ?: throw IllegalStateException("user null after login screen")
         localDataSource.resetCreatedBy(user.OnlineID)
-    }
-
-    suspend fun insertDescription(
-        receiptId: Long,
-        createdBy: Long,
-        order: Int,
-        description: String,
-    ) {
-        localDataSource.insertDescription(receiptId, createdBy, order, description)
-        val localRecipe = localDataSource.read(receiptId, createdBy)
-        if (localRecipe.first == null) {
-            Log.e("RecipeRepository", "Recipe not found")
-            return
-        }
-        remoteDataSource.update(localRecipe.first!!, emptyList())
-    }
-
-    suspend fun updateDescription(
-        receiptId: Long,
-        createdBy: Long,
-        order: Int,
-        description: String,
-    ) {
-        localDataSource.updateDescription(receiptId, createdBy, order, description)
-        val localReceipt = localDataSource.read(receiptId, createdBy)
-        remoteDataSource.update(localReceipt.first!!, emptyList())
-    }
-
-    suspend fun deleteDescription(
-        receiptId: Long,
-        createdBy: Long,
-        order: Int,
-    ) {
-        localDataSource.deleteDescription(receiptId, createdBy, order)
-        val localReceipt = localDataSource.read(receiptId, createdBy)
-        remoteDataSource.update(localReceipt.first!!, emptyList())
     }
 
     suspend fun delete(

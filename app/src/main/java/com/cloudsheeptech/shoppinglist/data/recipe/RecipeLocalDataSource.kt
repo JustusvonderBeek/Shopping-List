@@ -243,6 +243,8 @@ constructor(
 
     fun readAllLive(): LiveData<List<DbRecipe>> = recipeDao.getAllLive()
 
+    fun readAllRecipeIds(): List<Pair<Long, Long>> = recipeDao.getAllRecipeIds()
+
     suspend fun insertDescription(
         receiptId: Long,
         createdBy: Long,
@@ -279,6 +281,28 @@ constructor(
                     ?: throw IllegalArgumentException("the requested description does not exist")
             descriptionMapping.description = description
             recipeDescriptionDao.update(descriptionMapping)
+        }
+    }
+
+    suspend fun updateImages(
+        recipeId: Long,
+        createdBy: Long,
+        images: List<String>
+    ) {
+        withContext(Dispatchers.IO) {
+            // Deleting ALL images for the recipe
+            recipeImageDao.delete(recipeId, createdBy)
+            val recipeImage = RecipeImage(
+                recipeId = recipeId,
+                createdBy = createdBy,
+                imageId = 0,
+                fileLocation = "",
+            )
+            for ((index, image) in images.withIndex()) {
+                recipeImage.imageId = index
+                recipeImage.fileLocation = image
+                recipeImageDao.insert(recipeImage)
+            }
         }
     }
 

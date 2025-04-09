@@ -16,8 +16,6 @@ import jakarta.mail.internet.ParseException
 import jakarta.mail.util.ByteArrayDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -46,7 +44,6 @@ constructor(
                 }
         }
 
-    @OptIn(InternalSerializationApi::class)
     suspend fun create(
         recipe: ApiRecipe,
         recipeImages: List<ByteArray>,
@@ -80,7 +77,6 @@ constructor(
         return success
     }
 
-    @OptIn(InternalSerializationApi::class)
     suspend fun read(
         recipeId: Long,
         createdBy: Long,
@@ -138,7 +134,6 @@ constructor(
         return images
     }
 
-    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     suspend fun readFull(
         recipeId: Long,
         createdBy: Long,
@@ -194,7 +189,6 @@ constructor(
         return Pair(recipe, rawImageList)
     }
 
-    @OptIn(InternalSerializationApi::class)
     suspend fun update(
         recipe: ApiRecipe,
         recipeImages: List<ByteArray>,

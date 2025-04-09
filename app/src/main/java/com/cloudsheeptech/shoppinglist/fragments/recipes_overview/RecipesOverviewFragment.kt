@@ -57,6 +57,11 @@ class RecipesOverviewFragment : Fragment(), MenuProvider {
             })
         binding.receiptOverviewList.adapter = adapter
 
+        binding.receiptListOverviewRefresh.setOnRefreshListener {
+            Log.d("ReceiptsOverviewFragment", "Refresh called")
+            viewModel.updateAllRecipes()
+        }
+
         viewModel.receipts.observe(viewLifecycleOwner, Observer { list ->
             list?.let { x ->
                 adapter.submitList(x)
@@ -88,6 +93,12 @@ class RecipesOverviewFragment : Fragment(), MenuProvider {
                     )
                 )
                 viewModel.onReceiptNavigated()
+            }
+        })
+
+        viewModel.refreshing.observe(viewLifecycleOwner, Observer { refresh ->
+            if (!refresh) {
+                binding.receiptListOverviewRefresh.isRefreshing = false
             }
         })
 

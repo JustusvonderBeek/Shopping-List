@@ -1,6 +1,9 @@
 package com.cloudsheeptech.shoppinglist.data.items
 
+import android.util.Log
 import androidx.lifecycle.LiveData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,6 +19,24 @@ class ItemRepository @Inject constructor(private val localDataSource: ItemLocalD
         if (itemList.isEmpty())
             return null
         return itemList[0]
+    }
+
+    /**
+     * This function tries to retrieve an item with the given
+     * name. If none is found a new item is created
+     * @return An item with similar name
+     */
+    suspend fun readOrCreate(itemName: String): DbItem {
+        val localItem = withContext(Dispatchers.IO) {
+            var localItem = localDataSource.readByExactName(itemName)
+            if (localItem == null) {
+                Log.d("ItemRepository", "Item with name $itemName not found. Creating new item")
+                localItem = DbItem(0L, itemName, "")
+                localItem.id = localDataSource.create(localItem)
+            }
+            return@withContext localItem
+        }
+        return localItem
     }
 
     /**

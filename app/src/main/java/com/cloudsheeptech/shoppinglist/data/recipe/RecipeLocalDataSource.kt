@@ -29,7 +29,10 @@ constructor(
     private val recipeDescriptionDao = database.recipeDescriptionDao()
     private val recipeImageDao = database.recipeImageDao()
 
-    private fun DbRecipe.toApiReceipt(): ApiRecipe {
+    private fun DbRecipe.toApiReceipt(
+        ingredients: List<ApiIngredient>,
+        description: List<ApiDescription>
+    ): ApiRecipe {
         val apiRecipe =
             ApiRecipe(
                 onlineId = this.id,
@@ -39,8 +42,8 @@ constructor(
                 lastUpdated = this.lastUpdated,
                 version = this.version,
                 defaultPortion = this.defaultPortion,
-                ingredients = emptyList(),
-                description = emptyList(),
+                ingredients = ingredients,
+                description = description,
             )
         return apiRecipe
     }
@@ -66,7 +69,8 @@ constructor(
         recipeId: Long,
         createdBy: Long,
         ingredients: List<ApiIngredient>
-    ) {
+    ): Boolean {
+        var success = true
         withContext(Dispatchers.IO) {
             val mapping = ReceiptItemMapping(
                 0L,
@@ -77,13 +81,14 @@ constructor(
                 ""
             )
             ingredients.forEach { ingr ->
-                itemRepository.readByName(ingr.name)
-                mapping.itemId = ingr.id
+                var item = itemRepository.readOrCreate(ingr.name)
+                mapping.itemId = item.id
                 mapping.quantity = ingr.quantity
                 mapping.quantityType = ingr.quantityType
                 recipeItemDao.insert(mapping)
             }
         }
+        return success
     }
 
     private suspend fun insertDescriptions(
@@ -117,19 +122,20 @@ constructor(
     ): ApiRecipe {
         val user = userRepository.read() ?: throw IllegalStateException("user null after login")
         val newRecipe =
-            DbRecipe(
-                id = 0L,
+            ApiRecipe(
+                onlineId = 0L,
                 name = name,
-                createdBy = user.OnlineID,
-                createdByName = user.Username,
+                createdBy = ListCreator(user.OnlineID, user.Username),
                 createdAt = OffsetDateTime.now(),
                 lastUpdated = OffsetDateTime.now(),
                 version = 1,
                 defaultPortion = defaultPortion,
+                ingredients = ingredients,
+                description = descriptions,
             )
         withContext(Dispatchers.IO) {
-            val recipeId = recipeDao.insert(newRecipe)
-            newRecipe.id = recipeId
+            val recipeId = recipeDao.insert(newRecipe.toDbReceipt())
+            newRecipe.onlineId = recipeId
             val recipeImage =
                 RecipeImage(
                     recipeId = recipeId,
@@ -143,9 +149,9 @@ constructor(
                 recipeImageDao.insert(recipeImage)
             }
             insertDescriptions(recipeId, user.OnlineID, descriptions)
-
+            insertIngredients(recipeId, user.OnlineID, ingredients)
         }
-        return newRecipe.toApiReceipt()
+        return newRecipe
     }
 
     suspend fun read(
@@ -156,12 +162,12 @@ constructor(
         var recipeImages: List<RecipeImage> = emptyList()
         withContext(Dispatchers.IO) {
             val dbReceipt = recipeDao.get(recipeId, createdBy) ?: return@withContext
-            storedRecipe = dbReceipt.toApiReceipt()
+            storedRecipe = dbReceipt.toApiReceipt(emptyList(), emptyList())
             val storedDescriptions = recipeDescriptionDao.read(recipeId, createdBy)
-            storedRecipe!!.description =
+            storedRecipe.description =
                 storedDescriptions.map { x -> ApiDescription(x.descriptionOrder, x.description) }
             val storedIngredients = recipeItemDao.readAllForReceipt(recipeId, createdBy)
-            storedRecipe!!.ingredients =
+            storedRecipe.ingredients =
                 storedIngredients.map { ingredient ->
                     val storedItem = itemDao.getItem(ingredient.itemId)
                     ApiIngredient(
@@ -280,67 +286,29 @@ constructor(
      * returns the version of the updated receipt
      * @throws IllegalArgumentException if the receipt does not exist
      */
-    suspend fun update(receipt: ApiRecipe): Long {
-        if (receipt.onlineId == 0L) {
+    suspend fun update(recipe: ApiRecipe): Long {
+        if (recipe.onlineId == 0L) {
             throw IllegalArgumentException("receipt does not exist in the database")
         }
         var updatedVersion = -1L
-        Log.d("ReceiptLocalDataSource", "Updating: $receipt")
+        Log.d("ReceiptLocalDataSource", "Updating: $recipe")
         withContext(Dispatchers.IO) {
-            val dbReceipt = receipt.toDbReceipt()
-            dbReceipt.lastUpdated = OffsetDateTime.now()
-            val recipeExists = recipeDao.get(receipt.onlineId, receipt.createdBy.onlineId)
-            if (recipeExists != null && receipt.version <= recipeExists.version) {
+            val dbRecipe = recipe.toDbReceipt()
+            dbRecipe.lastUpdated = OffsetDateTime.now()
+            val recipeExists = recipeDao.get(recipe.onlineId, recipe.createdBy.onlineId)
+            if (recipeExists != null && recipe.version <= recipeExists.version) {
                 Log.i(
                     "RecipeLocalDataSource",
                     "Updating is skipped because the last local recipe is newer than the incoming update",
                 )
                 return@withContext
             }
-            recipeDao.update(dbReceipt)
-            recipeItemDao.deleteAllForReceipt(receipt.onlineId, receipt.createdBy.onlineId)
-            receipt.ingredients.forEach { ingredient ->
-                // Check if we might need to create the item first
-                var itemExists = itemDao.getItem(ingredient.id)
-                if (ingredient.id == 0L || itemExists == null) {
-                    itemExists = itemDao.getItemFromName(ingredient.name)
-                }
-                if (itemExists == null) {
-                    val item =
-                        DbItem(
-                            id = 0L,
-                            name = ingredient.name,
-                            icon = "",
-                        )
-                    val itemId = itemRepository.create(item)
-                    ingredient.id = itemId
-                } else {
-                    ingredient.id = itemExists.id
-                }
-                val convertedIngredient =
-                    ReceiptItemMapping(
-                        id = ingredient.id,
-                        recipeId = receipt.onlineId,
-                        createdBy = receipt.createdBy.onlineId,
-                        itemId = ingredient.id,
-                        quantity = ingredient.quantity,
-                        quantityType = ingredient.quantityType,
-                    )
-                recipeItemDao.insert(convertedIngredient)
-            }
-            val orderedDescriptions = receipt.description.sortedBy { x -> x.order }
-            recipeDescriptionDao.deleteAllForReceipt(receipt.onlineId, receipt.createdBy.onlineId)
-            orderedDescriptions.forEachIndexed { index, description ->
-                val convertedDesc =
-                    ReceiptDescriptionMapping(
-                        recipeId = receipt.onlineId,
-                        createdBy = receipt.createdBy.onlineId,
-                        description = description.step,
-                        descriptionOrder = index,
-                    )
-                recipeDescriptionDao.insert(convertedDesc)
-            }
-            updatedVersion = dbReceipt.version.plus(1L)
+            recipeDao.update(dbRecipe)
+            recipeItemDao.deleteAllForReceipt(recipe.onlineId, recipe.createdBy.onlineId)
+            insertIngredients(recipe.onlineId, recipe.createdBy.onlineId, recipe.ingredients)
+            recipeDescriptionDao.deleteAllForReceipt(recipe.onlineId, recipe.createdBy.onlineId)
+            insertDescriptions(recipe.onlineId, recipe.createdBy.onlineId, recipe.description)
+            updatedVersion = dbRecipe.version.plus(1L)
         }
         return updatedVersion
     }

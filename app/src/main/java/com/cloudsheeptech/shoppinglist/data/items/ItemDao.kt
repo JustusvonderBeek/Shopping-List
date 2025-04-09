@@ -43,8 +43,11 @@ interface ItemDao {
     @Query("SELECT * FROM items WHERE name = :name")
     fun getItemFromName(name: String): DbItem?
 
-    @Query("SELECT * FROM items WHERE INSTR(name, :name) > 0")
+    @Query("SELECT * FROM items WHERE name LIKE '%' || :name || '%'")
     fun getItemsFromName(name: String): List<DbItem>
+
+    @Query("SELECT * FROM items WHERE name = :name")
+    fun getItemFromNameExactMatch(name: String): DbItem?
 
     @Query("SELECT * FROM items")
     fun getAllItems(): List<DbItem>

@@ -40,6 +40,14 @@ class ItemLocalDataSource @Inject constructor(val database: ShoppingListDatabase
         return finalList
     }
 
+    suspend fun readByExactName(name: String): DbItem? {
+        var item = withContext(Dispatchers.IO) {
+            var dbItem = itemDao.getItemFromNameExactMatch(name)
+            return@withContext dbItem
+        }
+        return item
+    }
+
     fun readForListLive(listId: Long) = itemDao.getItemsWithQuantityInListLive(listId)
 
     /**
@@ -53,11 +61,9 @@ class ItemLocalDataSource @Inject constructor(val database: ShoppingListDatabase
     suspend fun create(item: DbItem): Long {
         var dbItemId = 0L
         withContext(Dispatchers.IO) {
-            val possibleItems = readByName(item.name)
-            if (possibleItems.isNotEmpty()) {
-                val matchingItem = possibleItems.firstOrNull { dbItem -> dbItem == item }
-                if (matchingItem != null)
-                    throw IllegalStateException("item already exists in database")
+            val possibleItems = readByExactName(item.name)
+            if (possibleItems != null) {
+                throw IllegalStateException("item already exists in database")
             }
             dbItemId = itemDao.insertItem(item)
         }

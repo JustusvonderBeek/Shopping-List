@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ReceiptDescriptionDao {
     @Insert
-    fun insert(description: ReceiptDescriptionMapping)
+    fun insert(description: ReceiptDescriptionMapping): Long
 
     @Update
     fun update(description: ReceiptDescriptionMapping)

@@ -39,6 +39,8 @@ constructor(
         val success = remoteDataSource.create(recipe, binaryImages)
         if (!success) {
             Log.e("RecipeRepository", "Creating recipe online failed")
+        } else {
+            Log.i("RecipeRepository", "The recipe ${recipe.name} was successfully created online")
         }
         return recipe
     }

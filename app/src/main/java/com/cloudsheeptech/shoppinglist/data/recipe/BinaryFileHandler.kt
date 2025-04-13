@@ -19,102 +19,117 @@ import kotlin.io.path.writeBytes
 
 @Singleton
 class BinaryFileHandler
-@Inject
-constructor(
-    @ApplicationContext private val context: Context,
-) : IBinaryFileHandler {
-    private fun loadFileFromContent(location: String): ByteArray? {
-        if (location.isEmpty() || !location.startsWith("content://")) {
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+    ) : IBinaryFileHandler {
+        private fun loadFileFromContent(location: String): ByteArray? {
+            if (location.isEmpty() || !location.startsWith("content://")) {
+                return null
+            }
+            try {
+                // Resolve the location of the content:// file and read the raw binary data from disk
+                val rawImage =
+                    context.contentResolver.openInputStream(location.toUri())?.use { inputStream ->
+                        val buffer = ByteArrayOutputStream()
+                        val data = ByteArray(1024)
+                        var bytesRead: Int
+                        while (inputStream.read(data).also { bytesRead = it } != -1) {
+                            buffer.write(data, 0, bytesRead)
+                        }
+                        buffer.toByteArray()
+                    }
+                return rawImage
+            } catch (ex: IOException) {
+                Log.e("BinaryFileHandler", "Failed to read $location file: $ex")
+            } catch (ex: FileNotFoundException) {
+                Log.e("BinaryFileHandler", "File $location not found: $ex")
+            }
             return null
         }
-        try {
-            // Resolve the location of the content:// file and read the raw binary data from disk
-            val rawImage =
-                context.contentResolver.openInputStream(location.toUri())?.use { inputStream ->
-                    val buffer = ByteArrayOutputStream()
-                    val data = ByteArray(1024)
-                    var bytesRead: Int
-                    while (inputStream.read(data).also { bytesRead = it } != -1) {
-                        buffer.write(data, 0, bytesRead)
-                    }
-                    buffer.toByteArray()
+
+        private fun resolveContentTypeAndReadImage(location: String): ByteArray? =
+            when {
+                location.startsWith("content://") -> {
+                    loadFileFromContent(location)
                 }
-            return rawImage
-        } catch (ex: IOException) {
-            Log.e("BinaryFileHandler", "Failed to read $location file: $ex")
-        } catch (ex: FileNotFoundException) {
-            Log.e("BinaryFileHandler", "File $location not found: $ex")
-        }
-        return null
-    }
 
-    private fun resolveContentTypeAndReadImage(location: String): ByteArray? =
-        when {
-            location.startsWith("content://") -> {
-                loadFileFromContent(location)
+                else -> {
+                    null
+                }
             }
 
-            else -> {
-                null
+        override suspend fun readImageFromFile(imageLocation: String): ByteArray? {
+            var binaryImage: ByteArray? = null
+            withContext(Dispatchers.IO) {
+                try {
+                    binaryImage = resolveContentTypeAndReadImage(imageLocation)
+                } catch (ex: IllegalArgumentException) {
+                    Log.e("BinaryFileHandler", "Given URI in wrong format for local file: $ex")
+                } catch (ex: IOException) {
+                    Log.e("BinaryFileHandler", "Failed to read local file: $ex")
+                } catch (ex: Exception) {
+                    Log.e("BinaryFileHandler", "Unknown exception while reading local file: $ex")
+                }
             }
+            return binaryImage
         }
 
-    override suspend fun readImageFromFile(imageLocation: String): ByteArray? {
-        var binaryImage: ByteArray? = null
-        withContext(Dispatchers.IO) {
-            try {
-                binaryImage = resolveContentTypeAndReadImage(imageLocation)
-            } catch (ex: IllegalArgumentException) {
-                Log.e("BinaryFileHandler", "Given URI in wrong format for local file: $ex")
-            } catch (ex: IOException) {
-                Log.e("BinaryFileHandler", "Failed to read local file: $ex")
-            } catch (ex: Exception) {
-                Log.e("BinaryFileHandler", "Unknown exception while reading local file: $ex")
+        override suspend fun readImagesFromFiles(imageUris: List<String>): List<ByteArray> {
+            val binaryImages = mutableListOf<ByteArray>()
+            for (uri in imageUris) {
+                val image = readImageFromFile(uri)
+                if (image != null) {
+                    binaryImages.add(image)
+                }
             }
+            return binaryImages
         }
-        return binaryImage
-    }
 
-    override suspend fun readImagesFromFiles(imageUris: List<String>): List<ByteArray> {
-        val binaryImages = mutableListOf<ByteArray>()
-        for (uri in imageUris) {
-            val image = readImageFromFile(uri)
-            if (image != null) {
-                binaryImages.add(image)
+        override suspend fun storeImageToFile(
+            imageByteArray: ByteArray,
+            fileName: String,
+        ): URI {
+            val createdUri =
+                withContext(Dispatchers.IO) {
+                    val imagePath = context.filesDir.absolutePath
+                    val newImagePath = Path(imagePath, fileName)
+                    try {
+                        newImagePath.writeBytes(
+                            imageByteArray,
+                            StandardOpenOption.CREATE,
+                            StandardOpenOption.TRUNCATE_EXISTING,
+                            StandardOpenOption.WRITE,
+                        )
+                    } catch (ex: NoSuchFileException) {
+                        Log.e("BinaryFileHandler", "Failed to create file $newImagePath: $ex")
+                    } catch (ex: IOException) {
+                        Log.e("BinaryFileHandler", "Failed to write to file $newImagePath: $ex")
+                    }
+                    return@withContext newImagePath.toUri()
+                }
+            return createdUri
+        }
+
+        suspend fun deleteImagesForRecipe(imageUris: List<String>): Int {
+            var deletedImages = 0
+            for (uri in imageUris) {
+                if (deleteImage(uri)) {
+                    deletedImages++
+                }
             }
+            return deletedImages
         }
-        return binaryImages
-    }
 
-    override suspend fun storeImageToFile(imageByteArray: ByteArray, fileName: String): URI {
-        val createdUri = withContext(Dispatchers.IO) {
-            val imagePath = context.filesDir.absolutePath
-            val newImagePath = Path(imagePath, fileName)
-            newImagePath.writeBytes(imageByteArray, StandardOpenOption.TRUNCATE_EXISTING)
-            return@withContext newImagePath.toUri()
-        }
-        return createdUri
-    }
-
-    suspend fun deleteImagesForRecipe(imageUris: List<String>): Int {
-        var deletedImages = 0
-        for (uri in imageUris) {
-            if (deleteImage(uri)) {
-                deletedImages++
+        suspend fun deleteImage(imageUri: String): Boolean {
+            var success = true
+            withContext(Dispatchers.IO) {
+                if (imageUri.startsWith("content://")) {
+                    Log.i("BinaryFileHandler", "Cannot delete image in content://: $imageUri")
+                    return@withContext
+                }
+                success = File(imageUri).delete()
             }
+            return success
         }
-        return deletedImages
     }
-
-    suspend fun deleteImage(imageUri: String): Boolean {
-        var success = true
-        withContext(Dispatchers.IO) {
-            if (imageUri.startsWith("content://")) {
-                Log.i("BinaryFileHandler", "Cannot delete image in content://: $imageUri")
-                return@withContext
-            }
-            success = File(imageUri).delete()
-        }
-        return success
-    }
-}

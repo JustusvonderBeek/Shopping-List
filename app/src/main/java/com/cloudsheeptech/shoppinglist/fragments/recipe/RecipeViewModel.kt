@@ -120,17 +120,17 @@ class RecipeViewModel
             }
             var locationsTest =
                 recipeRepository.readAllImageLocationsLive(recipeId, createdBy).value
-            if (locationsTest.isNullOrEmpty()) {
-                locationsTest =
-                    listOf(
-                        RecipeImage(
-                            recipeId,
-                            createdBy,
-                            0,
-                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_262053270_0.png",
-                        ),
-                    )
-            }
+//            if (locationsTest.isNullOrEmpty()) {
+//                locationsTest =
+//                    listOf(
+//                        RecipeImage(
+//                            recipeId,
+//                            createdBy,
+//                            0,
+//                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_262053270_0.png",
+//                        ),
+//                    )
+//            }
             this.imageLocations.value = locationsTest
             this._images.value =
                 locationsTest?.map { loc -> CarouselItem(imageUrl = loc.fileLocation) }

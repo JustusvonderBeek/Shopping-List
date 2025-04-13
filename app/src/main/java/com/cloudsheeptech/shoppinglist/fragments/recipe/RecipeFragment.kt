@@ -18,6 +18,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.bumptech.glide.Glide
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentReceiptBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -140,6 +141,7 @@ class RecipeFragment :
             Observer { images ->
                 if (images.isNotEmpty()) {
                     binding.imageCarousel.setData(images)
+                    Glide.with(requireContext()).load(images[0].imageUrl).into(binding.testImage)
                 } else {
                     binding.imageCarousel.setData(listOf(CarouselItem(imageDrawable = R.drawable.receipt_stock)))
                 }

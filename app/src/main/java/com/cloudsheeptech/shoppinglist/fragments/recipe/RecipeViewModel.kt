@@ -10,6 +10,7 @@ import androidx.lifecycle.map
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
+import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,8 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
 import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 import javax.inject.Inject
 import kotlin.math.max
@@ -36,7 +35,7 @@ class RecipeViewModel
         private val job = Job()
         private val vmScope = CoroutineScope(Dispatchers.Main + job)
 
-        private var receiptId: Long = savedStateHandle["receiptId"] ?: -1L
+        private var recipeId: Long = savedStateHandle["receiptId"] ?: -1L
         private var createdBy: Long = savedStateHandle["createdBy"] ?: -1L
         private val listPickerRecipeId: Long = savedStateHandle["recipeIdForSelectedList"] ?: -1L
         val title = MutableLiveData<String>("Rezept")
@@ -48,21 +47,21 @@ class RecipeViewModel
         private val _shoppingLists = listRepository.readAllLive()
         val shoppingLists: LiveData<List<DbShoppingList>> get() = _shoppingLists
 
-        @OptIn(InternalSerializationApi::class)
-        var recipe = recipeRepository.readLive(receiptId, createdBy)
+        var recipe = recipeRepository.readLive(recipeId, createdBy)
 
-        private val _images = MutableLiveData<List<CarouselItem>>(emptyList())
+        private var imageLocations = MutableLiveData<List<RecipeImage>>(emptyList())
+        private val _images: MutableLiveData<List<CarouselItem>> =
+            MutableLiveData(emptyList<CarouselItem>())
         val images: LiveData<List<CarouselItem>> get() = _images
 
         private val _portions = MutableLiveData<Int>(2)
         val portions: LiveData<Int> get() = _portions
 
         @Suppress("ktlint:standard:backing-property-naming")
-        @OptIn(InternalSerializationApi::class)
         private var _ingredients: LiveData<List<ApiIngredient>> =
             recipe.map { recipe -> recipe.ingredients }
 
-        @OptIn(InternalSerializationApi::class)
+        // TODO: Clean up this mess
         val ingredientWithPortionsApplied =
             MediatorLiveData<List<ApiIngredient>>().apply {
                 addSource(_ingredients) { ingredients ->
@@ -101,15 +100,14 @@ class RecipeViewModel
         private val _toastMessage = MutableLiveData(Pair("", -1))
         val toastMessage: LiveData<Pair<String, Int>> get() = _toastMessage
 
-        @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
         fun setRecipeIds(
             recipeId: Long,
             createdBy: Long,
         ) {
-            this.receiptId = recipeId
+            this.recipeId = recipeId
             this.createdBy = createdBy
             this.ingredientWithPortionsApplied.removeSource(this._ingredients)
-            this.recipe = recipeRepository.readLive(receiptId, createdBy)
+            this.recipe = recipeRepository.readLive(this@RecipeViewModel.recipeId, createdBy)
             this._ingredients = this.recipe.map { recipe -> recipe.ingredients }
             this.ingredientWithPortionsApplied.addSource(this._ingredients) { ingredients ->
                 val mappedIngredients =
@@ -120,6 +118,23 @@ class RecipeViewModel
                     }
                 this.ingredientWithPortionsApplied.value = mappedIngredients
             }
+            var locationsTest =
+                recipeRepository.readAllImageLocationsLive(recipeId, createdBy).value
+            if (locationsTest.isNullOrEmpty()) {
+                locationsTest =
+                    listOf(
+                        RecipeImage(
+                            recipeId,
+                            createdBy,
+                            0,
+                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_262053270_0.png",
+                        ),
+                    )
+            }
+            this.imageLocations.value = locationsTest
+            this._images.value =
+                locationsTest?.map { loc -> CarouselItem(imageUrl = loc.fileLocation) }
+                    ?: emptyList()
         }
 
         fun setTitle(title: String) {
@@ -133,14 +148,13 @@ class RecipeViewModel
         // TODO: Include a question if the receipt should really be deleted
         fun removeRecipe() {
             vmScope.launch {
-                recipeRepository.delete(receiptId, createdBy)
+                recipeRepository.delete(recipeId, createdBy)
                 withContext(Dispatchers.Main) {
                     navigateUp()
                 }
             }
         }
 
-        @OptIn(InternalSerializationApi::class)
         fun addRecipeToShoppingList() {
             Log.d("RecipeViewModel", "Adding items to viewmodel pressed")
             // First we need to know which list, then we can add the items into the list
@@ -158,11 +172,11 @@ class RecipeViewModel
         }
 
         fun editReceipt() {
-            _navigateToEdit.value = Pair(receiptId, createdBy)
+            _navigateToEdit.value = Pair(recipeId, createdBy)
         }
 
         fun shareRecipe() {
-            _navigateToShare.value = receiptId
+            _navigateToShare.value = recipeId
         }
 
         private fun navigateToSelectList() {
@@ -177,7 +191,7 @@ class RecipeViewModel
             vmScope.launch {
                 Log.d(
                     "RecipeViewModel",
-                    "Adding ${selectedIngredients.size} items from $receiptId by $createdBy to list $listId",
+                    "Adding ${selectedIngredients.size} items from $recipeId by $createdBy to list $listId",
                 )
                 listRepository.addAll(listId, createdBy, selectedIngredients)
                 val list = listRepository.read(listId, createdBy) ?: return@launch

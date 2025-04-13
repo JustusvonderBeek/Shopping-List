@@ -38,7 +38,7 @@ class RecipesOverviewViewModel
 
         fun updateAllRecipes() {
             vmScope.launch {
-                recipeRepository.readAllOwnRecipesOnline()
+                recipeRepository.readAllOwnAndSharedRecipesOnline()
                 withContext(Dispatchers.Main) {
                     _refreshing.value = false
                 }

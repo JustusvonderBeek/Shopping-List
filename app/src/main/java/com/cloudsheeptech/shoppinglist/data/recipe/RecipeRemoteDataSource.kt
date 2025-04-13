@@ -147,62 +147,81 @@ class RecipeRemoteDataSource
             // TODO: Include file compression and decompression
             withContext(Dispatchers.IO) {
                 val contentType = response.headers["Content-Type"] ?: return@withContext
-                val fullBody = response.readBytes()
-                val multipartDataSource = ByteArrayDataSource(fullBody, contentType)
-                val multipart = MimeMultipart(multipartDataSource)
-                if (multipart.count < 1) {
-                    Log.e("RecipeRemoteDataSource", "Recipe response contains no useful data")
-                    return@withContext
-                }
-                MultipartContentStatusType.START
-                for (bodyPartIndex in 0..<multipart.count) {
-                    val bodyPart = multipart.getBodyPart(bodyPartIndex)
-
-                    if (bodyPart.contentType.equals(ContentType.Application.Json.toString())) {
-                        Log.d("RecipeRemoteDataSource", "Received JSON in body part: $bodyPartIndex")
-                        val objectContent =
-                            bodyPart.dataHandler.inputStream
-                                .bufferedReader(Charsets.UTF_8)
-                                .readText()
-                        json.decodeFromString<ApiRecipe>(objectContent)
-                    } else if (bodyPart.contentType.substringBefore("/").equals(
-                            ContentType.Image.Any
-                                .toString()
-                                .substringBefore("/"),
-                        )
-                    ) {
-                        Log.d("RecipeRemoteDataSource", "Received image in body part: $bodyPartIndex")
-                        mutableListOf<ByteArray>()
-                    } else {
-                        Log.e("RecipeRemoteDataSource", "Received unknown body part type: ${bodyPart.contentType}")
-                        // We don't want to propagate data if the response is incorrect
-                        recipesAndImages.clear()
+                // Maybe make adaptive parsing, but would require more sophisticated handling
+                try {
+                    val fullBody = response.readBytes()
+                    val multipartDataSource = ByteArrayDataSource(fullBody, contentType)
+                    val multipart = MimeMultipart(multipartDataSource)
+                    if (multipart.count < 1) {
+                        Log.e("RecipeRemoteDataSource", "Recipe response contains no useful data")
                         return@withContext
                     }
-                    for (i in 1..<multipart.count) {
-                        val imagePart = multipart.getBodyPart(i)
-                        if (!imagePart.contentType.substringBefore("/").equals(
+                    var previousBodyType = MultipartContentStatusType.START
+                    var currentRecipe: ApiRecipe? = null
+                    val rawImages = mutableListOf<ByteArray>()
+                    for (bodyPartIndex in 0..<multipart.count) {
+                        val bodyPart = multipart.getBodyPart(bodyPartIndex)
+
+                        if (bodyPart.contentType.equals(ContentType.Application.Json.toString())) {
+                            Log.d(
+                                "RecipeRemoteDataSource",
+                                "Received JSON in body part: $bodyPartIndex",
+                            )
+                            if (previousBodyType != MultipartContentStatusType.START) {
+                                if (currentRecipe == null) {
+                                    Log.e("RecipeRemoteDataSource", "Received empty recipe object")
+                                    return@withContext
+                                }
+                                val newRecipe = Pair(currentRecipe, rawImages)
+                                recipesAndImages.add(newRecipe)
+                                currentRecipe = null
+                                rawImages.clear()
+                            }
+                            previousBodyType = MultipartContentStatusType.JSON
+                            val objectContent =
+                                bodyPart.dataHandler.inputStream
+                                    .bufferedReader(Charsets.UTF_8)
+                                    .readText()
+                            currentRecipe = json.decodeFromString<ApiRecipe>(objectContent)
+                        } else if (bodyPart.contentType.substringBefore("/").equals(
                                 ContentType.Image.Any
                                     .toString()
                                     .substringBefore("/"),
                             )
                         ) {
-                            Log.e(
+                            Log.d(
                                 "RecipeRemoteDataSource",
-                                "The type of image is incorrect: ${imagePart.contentType}",
+                                "Received image in body part: $bodyPartIndex",
                             )
-                            return@withContext
-                        }
-                        val rawImage = imagePart.inputStream.buffered(1024).readBytes()
-                        if (rawImage.isNotEmpty()) {
-                            rawImageList.add(rawImage)
+                            val rawImage = bodyPart.inputStream.buffered(1024).readBytes()
+                            if (rawImage.isNotEmpty()) {
+                                rawImages.add(rawImage)
+                            }
+                            previousBodyType = MultipartContentStatusType.IMAGE
                         } else {
                             Log.e(
                                 "RecipeRemoteDataSource",
-                                "Image $i content is empty",
+                                "Received unknown body part type: ${bodyPart.contentType}",
                             )
+                            // We don't want to propagate data if the response is incorrect
+                            recipesAndImages.clear()
+                            return@withContext
+                        }
+                        if (bodyPartIndex + 1 == multipart.count) {
+                            Log.d("RecipeRemoteDataSource", "Received last body part")
+                            if (currentRecipe == null) {
+                                Log.e("RecipeRemoteDataSource", "Received empty recipe object")
+                                return@withContext
+                            }
+                            val newRecipe = Pair(currentRecipe, rawImages)
+                            recipesAndImages.add(newRecipe)
                         }
                     }
+                } catch (ex: Exception) {
+                    Log.e(
+                        "RecipeRemoteDataSource",
+                        "Unknown exception while parsing all recipes: $ex",
+                    )
                 }
             }
             return recipesAndImages
@@ -292,7 +311,10 @@ class RecipeRemoteDataSource
                     } catch (ex: IOException) {
                     } catch (ex: SerializationException) {
                     } catch (ex: Exception) {
-                        Log.e("RecipeRemoteDataSource", "Unknown exception while reading all recipes: $ex")
+                        Log.e(
+                            "RecipeRemoteDataSource",
+                            "Unknown exception while reading all recipes: $ex",
+                        )
                     }
                 }
             }

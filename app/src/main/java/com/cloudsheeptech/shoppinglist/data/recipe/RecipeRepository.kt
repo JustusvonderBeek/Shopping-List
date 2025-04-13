@@ -5,8 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -70,6 +68,11 @@ class RecipeRepository
         // TODO: Fix the different list type
         fun readAllLive(): LiveData<List<DbRecipe>> = localDataSource.readAllLive()
 
+        fun readAllImageLocationsLive(
+            recipeId: Long,
+            createdBy: Long,
+        ): LiveData<List<RecipeImage>> = localDataSource.readAllImageLocationsLive(recipeId, createdBy)
+
         suspend fun readOnline(
             receiptId: Long,
             createdBy: Long,
@@ -88,10 +91,16 @@ class RecipeRepository
                     )
                     return@forEach
                 }
-                Log.d("RecipeRepository", "Successfully read recipe $recipeId from $createdBy from online endpoint")
+                Log.d(
+                    "RecipeRepository",
+                    "Successfully read recipe $recipeId from $createdBy from online endpoint",
+                )
                 val updatedVersion = localDataSource.update(remoteRecipe.first!!)
                 if (updatedVersion != -1L) {
-                    Log.d("RecipeRepository", "Successfully updated recipe $recipeId from $createdBy in offline storage")
+                    Log.d(
+                        "RecipeRepository",
+                        "Successfully updated recipe $recipeId from $createdBy in offline storage",
+                    )
                 }
                 val updatedImageLocation = mutableListOf<String>()
                 remoteRecipe.second.forEachIndexed { index, image ->
@@ -107,8 +116,56 @@ class RecipeRepository
         }
 
         suspend fun readAllOwnAndSharedRecipesOnline() {
-            val recipes, images = remoteDataSource.readAllRecipesFull()
-
+            val currentUser = userRepository.read()
+            if (currentUser == null) {
+                Log.e("RecipeRepository", "User null after login screen")
+                return
+            }
+            val recipesAndImages = remoteDataSource.readAllRecipesFull()
+            recipesAndImages.forEach { recipeAndImages ->
+                val recipe = recipeAndImages.first
+                val images = recipeAndImages.second
+                if (recipe.createdBy.onlineId != currentUser.OnlineID) {
+                    val imageFilePaths = mutableListOf<String>()
+                    images.forEachIndexed { index, image ->
+                        val fileLocation =
+                            binaryFileHandler.storeImageToFile(
+                                image,
+                                "${recipe.onlineId}_${recipe.createdBy.onlineId}_$index.png",
+                            )
+                        imageFilePaths.add(fileLocation.toString())
+                    }
+                    localDataSource.create(
+                        recipe.name,
+                        recipe.ingredients,
+                        recipe.description,
+                        imageFilePaths,
+                        recipe.defaultPortion,
+                    )
+                } else {
+                    val updatedVersion = localDataSource.update(recipe)
+                    if (updatedVersion != -1L) {
+                        Log.d(
+                            "RecipeRepository",
+                            "Successfully updated recipe ${recipe.onlineId} from ${recipe.createdBy.username} in offline storage",
+                        )
+                    }
+                    val updatedImageLocation = mutableListOf<String>()
+                    images.forEachIndexed { index, image ->
+                        val imageStoreFile =
+                            binaryFileHandler.storeImageToFile(
+                                image,
+                                "${recipe.onlineId}_${recipe.createdBy.onlineId}_$index.png",
+                            )
+                        updatedImageLocation.add(imageStoreFile.toString())
+                    }
+                    localDataSource.updateImages(
+                        recipe.onlineId,
+                        recipe.createdBy.onlineId,
+                        updatedImageLocation,
+                    )
+                }
+            }
         }
 
         suspend fun update(

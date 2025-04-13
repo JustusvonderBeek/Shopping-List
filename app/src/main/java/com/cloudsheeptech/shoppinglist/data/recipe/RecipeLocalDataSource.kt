@@ -136,6 +136,7 @@ class RecipeLocalDataSource
                     description = descriptions,
                 )
             withContext(Dispatchers.IO) {
+                // TODO: Handle existing recipe in DB
                 val recipeId = recipeDao.insert(newRecipe.toDbReceipt())
                 newRecipe.onlineId = recipeId
                 val recipeImage =
@@ -244,6 +245,11 @@ class RecipeLocalDataSource
         }
 
         fun readAllLive(): LiveData<List<DbRecipe>> = recipeDao.getAllLive()
+
+        fun readAllImageLocationsLive(
+            recipeId: Long,
+            createdBy: Long,
+        ): LiveData<List<RecipeImage>> = recipeImageDao.readLive(recipeId, createdBy)
 
         suspend fun readAllRecipeIds(): List<RecipeIdAndCreatedBy> {
             return withContext(Dispatchers.IO) {

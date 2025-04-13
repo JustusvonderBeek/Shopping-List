@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class ApiIngredient(
-    var id: Long,
+    var id: Long = 0L,
     var name: String,
     val icon: String,
     var quantity: Int,

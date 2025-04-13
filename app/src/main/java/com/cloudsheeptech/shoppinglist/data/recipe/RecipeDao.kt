@@ -46,8 +46,8 @@ interface RecipeDao {
     @Query("SELECT * FROM recipes")
     fun getAllLive(): LiveData<List<DbRecipe>>
 
-    @Query("SELECT id, createdBy FROM recipes")
-    fun getAllRecipeIds(): List<Pair<Long, Long>>
+    @Query("SELECT id as recipeId, createdBy FROM recipes")
+    fun getAllRecipeIds(): List<RecipeIdAndCreatedBy>
 
     @Query("UPDATE recipes SET createdBy = 0 WHERE createdBy = :createdBy")
     fun resetCreatedBy(createdBy: Long)

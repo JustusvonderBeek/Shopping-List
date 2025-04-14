@@ -73,6 +73,11 @@ class RecipeRepository
             createdBy: Long,
         ): LiveData<List<RecipeImage>> = localDataSource.readAllImageLocationsLive(recipeId, createdBy)
 
+        suspend fun readAllImageLocations(
+            recipeId: Long,
+            createdBy: Long,
+        ): List<RecipeImage> = localDataSource.readAllImageLocations(recipeId, createdBy)
+
         suspend fun readOnline(
             receiptId: Long,
             createdBy: Long,

@@ -19,7 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -50,9 +49,9 @@ class RecipeViewModel
         var recipe = recipeRepository.readLive(recipeId, createdBy)
 
         private var imageLocations = MutableLiveData<List<RecipeImage>>(emptyList())
-        private val _images: MutableLiveData<List<CarouselItem>> =
-            MutableLiveData(emptyList<CarouselItem>())
-        val images: LiveData<List<CarouselItem>> get() = _images
+        private val _images: MutableLiveData<List<String>> =
+            MutableLiveData(emptyList<String>())
+        val images: LiveData<List<String>> get() = _images
 
         private val _portions = MutableLiveData<Int>(2)
         val portions: LiveData<Int> get() = _portions
@@ -118,23 +117,13 @@ class RecipeViewModel
                     }
                 this.ingredientWithPortionsApplied.value = mappedIngredients
             }
-            var locationsTest =
-                recipeRepository.readAllImageLocationsLive(recipeId, createdBy).value
-//            if (locationsTest.isNullOrEmpty()) {
-//                locationsTest =
-//                    listOf(
-//                        RecipeImage(
-//                            recipeId,
-//                            createdBy,
-//                            0,
-//                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_262053270_0.png",
-//                        ),
-//                    )
-//            }
-            this.imageLocations.value = locationsTest
-            this._images.value =
-                locationsTest?.map { loc -> CarouselItem(imageUrl = loc.fileLocation) }
-                    ?: emptyList()
+            vmScope.launch {
+                var locationsTest =
+                    recipeRepository.readAllImageLocations(recipeId, createdBy)
+                withContext(Dispatchers.Main) {
+                    _images.postValue(locationsTest.map { it.fileLocation })
+                }
+            }
         }
 
         fun setTitle(title: String) {

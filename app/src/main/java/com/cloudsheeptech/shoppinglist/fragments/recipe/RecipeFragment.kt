@@ -23,7 +23,6 @@ import com.cloudsheeptech.shoppinglist.databinding.FragmentReceiptBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
-import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 @AndroidEntryPoint
 class RecipeFragment :
@@ -91,7 +90,6 @@ class RecipeFragment :
         binding.receiptDescriptionListView.adapter = descriptionAdapter
         val ingredientAdapter = RecipeIngredientAdapter()
         binding.receiptIngredientListView.adapter = ingredientAdapter
-        binding.imageCarousel.registerLifecycle(viewLifecycleOwner)
         val recipeImageAdapter = RecipeImageAdapter(emptyList<String>())
         binding.viewPager.adapter = recipeImageAdapter
 
@@ -143,11 +141,14 @@ class RecipeFragment :
             viewLifecycleOwner,
             Observer { images ->
                 if (images.isNotEmpty()) {
-                    binding.imageCarousel.setData(images)
-                    recipeImageAdapter.updateImages(images.map { it.imageUrl!! })
+                    recipeImageAdapter.updateImages(images)
                 } else {
-                    binding.imageCarousel.setData(listOf(CarouselItem(imageDrawable = R.drawable.receipt_stock)))
-                    recipeImageAdapter.updateImages(listOf(R.drawable.receipt_stock.toString()))
+                    recipeImageAdapter.updateImages(
+                        listOf(
+                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_2027828975_0.png",
+                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/27_1896409800_0.png",
+                        ),
+                    )
                 }
             },
         )

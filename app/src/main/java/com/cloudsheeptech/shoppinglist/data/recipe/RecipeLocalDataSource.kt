@@ -251,6 +251,15 @@ class RecipeLocalDataSource
             createdBy: Long,
         ): LiveData<List<RecipeImage>> = recipeImageDao.readLive(recipeId, createdBy)
 
+        suspend fun readAllImageLocations(
+            recipeId: Long,
+            createdBy: Long,
+        ): List<RecipeImage> {
+            return withContext(Dispatchers.IO) {
+                return@withContext recipeImageDao.read(recipeId, createdBy)
+            }
+        }
+
         suspend fun readAllRecipeIds(): List<RecipeIdAndCreatedBy> {
             return withContext(Dispatchers.IO) {
                 return@withContext recipeDao.getAllRecipeIds()

@@ -152,5 +152,12 @@
             android:name="createdBy"
             android:defaultValue="-1L"
             app:argType="long" />
+        <action
+            android:id="@+id/action_receiptEditFragment_to_cameraFragment"
+            app:destination="@id/cameraFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.camera.CameraFragment"
+        android:label="CameraFragment" />
 </navigation>

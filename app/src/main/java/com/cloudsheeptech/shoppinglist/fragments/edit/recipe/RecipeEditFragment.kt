@@ -5,7 +5,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -110,7 +109,8 @@ class RecipeEditFragment : Fragment() {
             viewLifecycleOwner,
             Observer { takeImage ->
                 if (takeImage) {
-                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+//                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    findNavController().navigate(RecipeEditFragmentDirections.actionReceiptEditFragmentToCameraFragment())
                 }
             },
         )

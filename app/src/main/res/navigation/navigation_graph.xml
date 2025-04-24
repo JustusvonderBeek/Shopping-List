@@ -142,7 +142,7 @@
     </fragment>
     <fragment
         android:id="@+id/receiptEditFragment"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.RecipeEditFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.edit.recipe.RecipeEditFragment"
         android:label="@string/receipt_edit_title"
         tools:layout="@layout/fragment_recipe_edit">
         <argument

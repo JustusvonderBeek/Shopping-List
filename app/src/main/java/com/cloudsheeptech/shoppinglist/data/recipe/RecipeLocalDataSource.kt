@@ -360,23 +360,24 @@ class RecipeLocalDataSource
         }
 
         suspend fun deleteDescription(
-            receiptId: Long,
+            recipeId: Long,
             createdBy: Long,
             order: Int,
         ) {
             withContext(Dispatchers.IO) {
-                recipeDescriptionDao.delete(receiptId, createdBy, order)
+                recipeDescriptionDao.delete(recipeId, createdBy, order)
             }
         }
 
         suspend fun delete(
-            receiptId: Long,
+            recipeId: Long,
             createdBy: Long,
         ) {
             withContext(Dispatchers.IO) {
-                recipeDao.delete(receiptId, createdBy)
-                recipeDescriptionDao.deleteAllForReceipt(receiptId, createdBy)
-                recipeItemDao.deleteAllForReceipt(receiptId, createdBy)
+                recipeDao.delete(recipeId, createdBy)
+                recipeDescriptionDao.deleteAllForReceipt(recipeId, createdBy)
+                recipeItemDao.deleteAllForReceipt(recipeId, createdBy)
+                recipeImageDao.delete(recipeId, createdBy)
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.fragments.edit.receipt
+package com.cloudsheeptech.shoppinglist.fragments.edit.recipe
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

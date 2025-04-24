@@ -9,7 +9,7 @@
 
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.edit.receipt.RecipeDescriptionEditAdapter.ReceiptDescriptionEditClickListener" />
+            type="com.cloudsheeptech.shoppinglist.fragments.edit.recipe.RecipeDescriptionEditAdapter.ReceiptDescriptionEditClickListener" />
     </data>
 
     <LinearLayout

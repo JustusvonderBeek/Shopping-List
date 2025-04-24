@@ -35,7 +35,9 @@ class RecipeRepository
             images: List<String>,
         ): ApiRecipe {
             val recipe = localDataSource.create(name, ingredients, descriptions, images, defaultPortion)
-            val binaryImages = binaryFileHandler.readImagesFromFiles(images)
+            val updatedImages = binaryFileHandler.persistTemporaryImagesInLocalStorage(recipe.onlineId, recipe.createdBy.onlineId, images)
+            localDataSource.updateImages(recipe.onlineId, recipe.createdBy.onlineId, updatedImages)
+            val binaryImages = binaryFileHandler.readImagesFromFiles(updatedImages)
             val success = remoteDataSource.create(recipe, binaryImages)
             if (!success) {
                 Log.e("RecipeRepository", "Creating recipe online failed")

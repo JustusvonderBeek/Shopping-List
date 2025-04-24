@@ -2,12 +2,12 @@ package com.cloudsheeptech.shoppinglist.data.recipe
 
 import android.content.Context
 import android.util.Log
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.URI
@@ -48,12 +48,38 @@ class BinaryFileHandler
             return null
         }
 
+        private fun loadFileFromFileStorage(location: String): ByteArray? {
+            if (location.isEmpty() || !location.startsWith("file://")) {
+                return null
+            }
+            try {
+                val rawImage =
+                    context.contentResolver.openInputStream(location.toUri())?.use { inputStream ->
+                        val buffer = ByteArrayOutputStream()
+                        val data = ByteArray(1024)
+                        var bytesRead: Int
+                        while (inputStream.read(data).also { bytesRead = it } != -1) {
+                            buffer.write(data, 0, bytesRead)
+                        }
+                        buffer.toByteArray()
+                    }
+                return rawImage
+            } catch (ex: FileNotFoundException) {
+                Log.e("BinaryFileHandler", "File to read not found: $ex")
+            } catch (ex: Exception) {
+                Log.e("BinaryFileHandler", "Unknown error while reading file: $ex")
+            }
+            return null
+        }
+
         private fun resolveContentTypeAndReadImage(location: String): ByteArray? =
             when {
                 location.startsWith("content://") -> {
                     loadFileFromContent(location)
                 }
-
+                location.startsWith("file://") -> {
+                    loadFileFromFileStorage(location)
+                }
                 else -> {
                     null
                 }
@@ -84,6 +110,34 @@ class BinaryFileHandler
                 }
             }
             return binaryImages
+        }
+
+        suspend fun persistTemporaryImagesInLocalStorage(
+            recipeId: Long,
+            userId: Long,
+            images: List<String>,
+        ): List<String> {
+            return withContext(Dispatchers.IO) {
+                val updatedImagePaths = mutableListOf<String>()
+                var updatedImageIndex = 0
+                for (image in images) {
+                    if (!image.startsWith("content://")) {
+                        Log.d("BinaryFileHandler", "Image '$image' already persisted, nothing to do")
+                        updatedImagePaths.add(image)
+                        continue
+                    }
+                    val rawImage = resolveContentTypeAndReadImage(image)
+                    if (rawImage == null) {
+                        Log.i("BinaryFileHandler", "Failed to load image $image, skipping step")
+                        updatedImagePaths.add(image)
+                        continue
+                    }
+                    val newPath = storeImageToFile(rawImage, "${recipeId}_${userId}_$updatedImageIndex.img")
+                    updatedImageIndex++
+                    updatedImagePaths.add(newPath.toString())
+                }
+                return@withContext updatedImagePaths
+            }
         }
 
         override suspend fun storeImageToFile(
@@ -128,7 +182,12 @@ class BinaryFileHandler
                     Log.i("BinaryFileHandler", "Cannot delete image in content://: $imageUri")
                     return@withContext
                 }
-                success = File(imageUri).delete()
+                val imageFile = imageUri.toUri().toFile()
+                if (!imageFile.isFile || !imageFile.exists()) {
+                    Log.e("BinaryFileHandler", "File to delete not found: $imageUri")
+                    return@withContext
+                }
+                success = imageFile.delete()
             }
             return success
         }

@@ -22,6 +22,7 @@ class RecipeLocalDataSource
         database: ShoppingListDatabase,
         private val userRepository: AppUserRepository,
         private val itemRepository: ItemRepository,
+        private val binaryFileHandler: BinaryFileHandler,
     ) {
         private val recipeDao = database.recipeDao()
         private val itemDao = database.itemDao()
@@ -377,6 +378,11 @@ class RecipeLocalDataSource
                 recipeDao.delete(recipeId, createdBy)
                 recipeDescriptionDao.deleteAllForReceipt(recipeId, createdBy)
                 recipeItemDao.deleteAllForReceipt(recipeId, createdBy)
+                val imagesForRecipe =
+                    recipeImageDao.read(recipeId, createdBy).map {
+                        it.fileLocation
+                    }
+                binaryFileHandler.deleteImagesForRecipe(imagesForRecipe)
                 recipeImageDao.delete(recipeId, createdBy)
             }
         }

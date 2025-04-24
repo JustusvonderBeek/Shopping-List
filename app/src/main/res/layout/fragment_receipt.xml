@@ -20,28 +20,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="32dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="32dp"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="16dp"
             android:paddingBottom="8dp">
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/viewPager"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:paddingTop="16dp"
+                android:layout_height="0dp"
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
-            <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+            <com.tbuonomo.viewpagerdotsindicator.SpringDotsIndicator
                 android:id="@+id/dotsIndicator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:dotsColor="@color/shopping_gray"
-                app:selectedDotColor="@color/add_green"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
+                app:dotsColor="@color/shopping_green"
+                app:dotsSize="14dp"
+                app:flow_wrapMode="chain"
+                android:layout_marginTop="8dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/viewPager" />

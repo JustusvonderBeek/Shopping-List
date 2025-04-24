@@ -91,7 +91,9 @@ class RecipeFragment :
         val ingredientAdapter = RecipeIngredientAdapter()
         binding.receiptIngredientListView.adapter = ingredientAdapter
         val recipeImageAdapter = RecipeImageAdapter(emptyList<String>())
+//        val recipeImageAdapterWithArrows = RecipeImageWithArrowsAdapter()
         binding.viewPager.adapter = recipeImageAdapter
+//        binding.viewPager.adapter = recipeImageAdapterWithArrows
 
         binding.dotsIndicator.attachTo(binding.viewPager)
 
@@ -142,13 +144,17 @@ class RecipeFragment :
             Observer { images ->
                 if (images.isNotEmpty()) {
                     recipeImageAdapter.updateImages(images)
+//                    recipeImageAdapterWithArrows.submitList(images)
                 } else {
-                    recipeImageAdapter.updateImages(
+                    val defaultList =
                         listOf(
                             "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_2027828975_0.png",
                             "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/27_1896409800_0.png",
-                        ),
+                        )
+                    recipeImageAdapter.updateImages(
+                        defaultList,
                     )
+//                    recipeImageAdapterWithArrows.submitList(defaultList)
                 }
             },
         )

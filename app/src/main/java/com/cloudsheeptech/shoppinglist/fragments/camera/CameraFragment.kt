@@ -7,9 +7,11 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -22,9 +24,12 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentCameraxBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -35,7 +40,6 @@ class CameraFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private var activityResultLauncher: ActivityResultLauncher<Array<String>>? = null
-    private val imagePaths = mutableListOf<String>()
 
     companion object {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
@@ -65,6 +69,33 @@ class CameraFragment : Fragment() {
             },
         )
 
+        viewModel.navigateUp.observe(
+            viewLifecycleOwner,
+            Observer { finish ->
+                if (finish) {
+                    viewModel.onFinished()
+                    makePhotoPathsAvailable()
+                    findNavController().navigateUp()
+                }
+            },
+        )
+
+        // Make sure captured images which are not to be used get delete
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    lifecycleScope.launch {
+                        viewModel.clearTemporaryImages()
+                        findNavController().navigateUp()
+                    }
+                }
+            },
+        )
+
+        // This is necessary to force calling the onOptionsItemSelected method
+        setHasOptionsMenu(true)
+
         return binding.root
     }
 
@@ -81,6 +112,19 @@ class CameraFragment : Fragment() {
             requestPermissions()
         }
     }
+
+    override fun onOptionsItemSelected(item: MenuItem) =
+        when (item.itemId) {
+            android.R.id.home -> {
+                lifecycleScope.launch {
+                    viewModel.clearTemporaryImages()
+                    findNavController().navigateUp()
+                }
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
@@ -146,13 +190,17 @@ class CameraFragment : Fragment() {
 
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     val message = "Image ${outputFileResults.savedUri} successfully captured"
-                    imagePaths.add(outputFileResults.savedUri.toString())
+                    viewModel.addPhotoPath(outputFileResults.savedUri.toString())
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                     Log.d("CameraFragment", message)
                 }
             },
         )
-        Log.d("CameraFragment", "All images taken: $imagePaths")
+    }
+
+    private fun makePhotoPathsAvailable() {
+        val imagePaths = viewModel.getImagePaths()
+        Log.d("CameraFragment", "Took ${imagePaths.size} images: $imagePaths")
         val bundle =
             Bundle().apply {
                 putStringArrayList("uris", ArrayList(imagePaths))

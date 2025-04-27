@@ -1,6 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.recipe
 
 import android.content.Context
+import android.provider.MediaStore
 import android.util.Log
 import androidx.core.net.toFile
 import androidx.core.net.toUri
@@ -77,9 +78,11 @@ class BinaryFileHandler
                 location.startsWith("content://") -> {
                     loadFileFromContent(location)
                 }
+
                 location.startsWith("file://") -> {
                     loadFileFromFileStorage(location)
                 }
+
                 else -> {
                     null
                 }
@@ -132,7 +135,8 @@ class BinaryFileHandler
                         updatedImagePaths.add(image)
                         continue
                     }
-                    val newPath = storeImageToFile(rawImage, "${recipeId}_${userId}_$updatedImageIndex.img")
+                    val newPath =
+                        storeImageToFile(rawImage, "${recipeId}_${userId}_$updatedImageIndex.img")
                     updatedImageIndex++
                     updatedImagePaths.add(newPath.toString())
                 }
@@ -175,14 +179,52 @@ class BinaryFileHandler
             return deletedImages
         }
 
+        fun resolveContentUriToFileIfPossible(contentUri: String): String? {
+            val projection = arrayOf(MediaStore.Images.Media.DATA)
+
+            val cursor =
+                context.contentResolver.query(
+                    contentUri.toUri(),
+                    projection,
+                    null,
+                    null,
+                    null,
+                )
+            if (cursor == null) {
+                Log.e("BinaryFileHandler", "Failed to resolve content URI to file: $contentUri")
+                return null
+            }
+            if (cursor.moveToFirst()) {
+                val index = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
+                if (index < 0) {
+                    Log.e(
+                        "BinaryFileHandler",
+                        "Data column for uri $contentUri does not exist, cannot convert to File",
+                    )
+                    return null
+                }
+                var path = cursor.getString(index)
+                cursor.close()
+                if (!path.startsWith("file://")) {
+                    path = "file://$path"
+            }
+            return path
+        }
+        return null
+    }
+
         suspend fun deleteImage(imageUri: String): Boolean {
             var success = true
             withContext(Dispatchers.IO) {
+                var realImageUri: String? = imageUri
                 if (imageUri.startsWith("content://")) {
-                    Log.i("BinaryFileHandler", "Cannot delete image in content://: $imageUri")
-                    return@withContext
+                    realImageUri = resolveContentUriToFileIfPossible(imageUri)
+                    if (realImageUri == null) {
+                        Log.i("BinaryFileHandler", "Cannot delete image in content://: $imageUri")
+                        return@withContext
+                    }
                 }
-                val imageFile = imageUri.toUri().toFile()
+                val imageFile = realImageUri!!.toUri().toFile()
                 if (!imageFile.isFile || !imageFile.exists()) {
                     Log.e("BinaryFileHandler", "File to delete not found: $imageUri")
                     return@withContext

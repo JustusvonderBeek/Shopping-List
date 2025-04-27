@@ -25,6 +25,8 @@ import androidx.lifecycle.Observer
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentCameraxBinding
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @AndroidEntryPoint
 class CameraFragment : Fragment() {
@@ -35,6 +37,7 @@ class CameraFragment : Fragment() {
     private var activityResultLauncher: ActivityResultLauncher<Array<String>>? = null
 
     companion object {
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =
             mutableListOf(
                 Manifest.permission.CAMERA,
@@ -110,9 +113,10 @@ class CameraFragment : Fragment() {
             Log.e("CameraFragment", "Cannot start camera since image capture is null")
             return
         }
+        val filename = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
         val contentValues =
             ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, "test")
+                put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/recipes")
             }
@@ -125,6 +129,7 @@ class CameraFragment : Fragment() {
                     contentValues,
                 ).build()
 
+        val imagePaths = mutableListOf<String>()
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(requireContext()),
@@ -134,12 +139,14 @@ class CameraFragment : Fragment() {
                 }
 
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    val message = "Image successfully captured"
+                    val message = "Image ${outputFileResults.savedUri} successfully captured"
+                    imagePaths.add(outputFileResults.savedUri.toString())
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                     Log.d("CameraFragment", message)
                 }
             },
         )
+        Log.d("CameraFragment", "All images taken: $imagePaths")
     }
 
     private fun requestPermissions() {

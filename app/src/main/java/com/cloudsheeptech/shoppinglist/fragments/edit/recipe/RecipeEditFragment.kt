@@ -13,9 +13,8 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentRecipeEditBinding
+import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeImageAdapter
 import dagger.hilt.android.AndroidEntryPoint
-import org.imaginativeworld.whynotimagecarousel.listener.CarouselListener
-import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 @AndroidEntryPoint
 class RecipeEditFragment : Fragment() {
@@ -59,16 +58,20 @@ class RecipeEditFragment : Fragment() {
                 },
             )
         binding.itemRecyclerView.adapter = receiptIngredientAdapter
-        binding.imageCarousel.registerLifecycle(viewLifecycleOwner)
-        binding.imageCarousel.carouselListener =
-            object : CarouselListener {
-                override fun onClick(
-                    position: Int,
-                    carouselItem: CarouselItem,
-                ) {
-                    viewModel.selectImages()
-                }
-            }
+        val recipeImageAdapter = RecipeImageAdapter(emptyList())
+        binding.viewPager.adapter = recipeImageAdapter
+
+        binding.dotsIndicator.attachTo(binding.viewPager)
+//        binding.imageCarousel.registerLifecycle(viewLifecycleOwner)
+//        binding.imageCarousel.carouselListener =
+//            object : CarouselListener {
+//                override fun onClick(
+//                    position: Int,
+//                    carouselItem: CarouselItem,
+//                ) {
+//                    viewModel.selectImages()
+//                }
+//            }
 
         viewModel.receiptIngredients.observe(
             viewLifecycleOwner,
@@ -89,9 +92,10 @@ class RecipeEditFragment : Fragment() {
             viewLifecycleOwner,
             Observer { images ->
                 if (images.isNotEmpty()) {
-                    binding.imageCarousel.setData(images)
+//                    binding.imageCarousel.setData(images)
+//                    recipeImageAdapter.updateImages(images)
                 } else {
-                    binding.imageCarousel.setData(listOf(CarouselItem(imageDrawable = R.drawable.receipt_stock)))
+//                    binding.imageCarousel.setData(listOf(CarouselItem(imageDrawable = R.drawable.receipt_stock)))
                 }
             },
         )
@@ -111,6 +115,7 @@ class RecipeEditFragment : Fragment() {
                 if (takeImage) {
 //                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     findNavController().navigate(RecipeEditFragmentDirections.actionReceiptEditFragmentToCameraFragment())
+                    viewModel.onImageSelected()
                 }
             },
         )

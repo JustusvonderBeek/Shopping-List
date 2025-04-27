@@ -35,6 +35,7 @@ class CameraFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private var activityResultLauncher: ActivityResultLauncher<Array<String>>? = null
+    private val imagePaths = mutableListOf<String>()
 
     companion object {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
@@ -100,7 +101,12 @@ class CameraFragment : Fragment() {
             try {
                 cameraProvider.unbindAll()
 
-                cameraProvider.bindToLifecycle(viewLifecycleOwner, cameraSelector, cameraPreview, imageCapture)
+                cameraProvider.bindToLifecycle(
+                    viewLifecycleOwner,
+                    cameraSelector,
+                    cameraPreview,
+                    imageCapture,
+                )
             } catch (ex: Exception) {
                 Log.e("CameraFragment", "Unbinding or binding the camera failed: $ex")
             }
@@ -113,7 +119,8 @@ class CameraFragment : Fragment() {
             Log.e("CameraFragment", "Cannot start camera since image capture is null")
             return
         }
-        val filename = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
+        val filename =
+            SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
         val contentValues =
             ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
@@ -129,7 +136,6 @@ class CameraFragment : Fragment() {
                     contentValues,
                 ).build()
 
-        val imagePaths = mutableListOf<String>()
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(requireContext()),
@@ -147,6 +153,11 @@ class CameraFragment : Fragment() {
             },
         )
         Log.d("CameraFragment", "All images taken: $imagePaths")
+        val bundle =
+            Bundle().apply {
+                putStringArrayList("uris", ArrayList(imagePaths))
+            }
+        parentFragmentManager.setFragmentResult("captured_image_uris", bundle)
     }
 
     private fun requestPermissions() {
@@ -171,7 +182,12 @@ class CameraFragment : Fragment() {
                     }
                 }
                 if (!allPermissionsGranted) {
-                    Toast.makeText(requireContext(), "Not all permissions granted", Toast.LENGTH_LONG).show()
+                    Toast
+                        .makeText(
+                            requireContext(),
+                            "Not all permissions granted",
+                            Toast.LENGTH_LONG,
+                        ).show()
                 } else {
                     startCamera()
                 }

@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
-import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -47,8 +46,8 @@ class RecipeEditViewModel
         private val recipe = recipeRepository.readLive(receiptId, createdBy)
 
         val title = MutableLiveData("")
-        private val _images = MutableLiveData<List<CarouselItem>>(emptyList())
-        val images: LiveData<List<CarouselItem>> get() = _images
+        private val _images = MutableLiveData<List<String>>(emptyList())
+        val images: LiveData<List<String>> get() = _images
 
         val receiptDescription = MutableLiveData<List<ApiDescription>>(emptyList())
 
@@ -85,15 +84,17 @@ class RecipeEditViewModel
             }
         }
 
-        fun setImages(uris: List<Uri>) {
+        fun setImagesUris(uris: List<Uri>) {
             Log.d("Got images", "$uris")
-            val newImageList = mutableListOf<CarouselItem>()
+            val newImageList = mutableListOf<String>()
             uris.forEach { uri ->
-                newImageList.add(
-                    CarouselItem(imageUrl = uri.toString()),
-                )
+                newImageList.add(uri.toString())
             }
-            _images.value = newImageList
+            setImages(newImageList)
+        }
+
+        fun setImages(uris: List<String>) {
+            _images.value = uris
         }
 
         fun addItem() {
@@ -161,7 +162,7 @@ class RecipeEditViewModel
                 return
             }
             // Differentiate between completely new receipt and existing one
-            val imageLocations = images.value?.map { image -> image.imageUrl ?: "" } ?: emptyList()
+            val imageLocations = images.value?.map { image -> image } ?: emptyList()
             if (receiptId == -1L && createdBy == -1L) {
                 Log.d("ReceiptEditViewModel", "Creating new recipe")
                 vmScope.launch {

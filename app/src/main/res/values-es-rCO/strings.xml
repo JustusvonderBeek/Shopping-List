@@ -59,4 +59,6 @@
     <string name="share_recipe">Share Recipe</string>
     <string name="start_screen_background_description">An image of vegetables, eggs, bread and other ingredients used to cook healty and delicious meals</string>
     <string name="create_list_fragment_title">Update List Title</string>
+    <string name="select_images_bot_dialog">Selectionar Fotos</string>
+    <string name="take_images_bot_dialog">Hacer Fotos</string>
 </resources>

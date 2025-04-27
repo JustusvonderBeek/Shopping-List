@@ -90,7 +90,11 @@ class RecipeFragment :
         binding.receiptDescriptionListView.adapter = descriptionAdapter
         val ingredientAdapter = RecipeIngredientAdapter()
         binding.receiptIngredientListView.adapter = ingredientAdapter
-        val recipeImageAdapter = RecipeImageAdapter(emptyList<String>())
+        val recipeImageAdapter =
+            RecipeImageAdapter(
+                emptyList<String>(),
+                null,
+            )
 //        val recipeImageAdapterWithArrows = RecipeImageWithArrowsAdapter()
         binding.viewPager.adapter = recipeImageAdapter
 //        binding.viewPager.adapter = recipeImageAdapterWithArrows
@@ -148,8 +152,8 @@ class RecipeFragment :
                 } else {
                     val defaultList =
                         listOf(
-                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_2027828975_0.png",
-                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/27_1896409800_0.png",
+                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_262053270_0.png",
+                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/7_1006887184_0.png",
                         )
                     recipeImageAdapter.updateImages(
                         defaultList,

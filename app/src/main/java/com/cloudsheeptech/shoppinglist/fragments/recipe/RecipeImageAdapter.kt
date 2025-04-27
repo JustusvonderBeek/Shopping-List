@@ -7,6 +7,7 @@ import com.bumptech.glide.Glide
 
 class RecipeImageAdapter(
     private var imagePaths: List<String>,
+    val clickListener: RecipeImageClickListener?,
 ) : RecyclerView.Adapter<RecipeImageAdapter.ImageViewHolder>() {
     inner class ImageViewHolder(
         val imageView: ImageView,
@@ -37,6 +38,9 @@ class RecipeImageAdapter(
             .with(holder.imageView.context)
             .load(path) // Or just `path` if it's a URL
             .into(holder.imageView)
+        holder.imageView.setOnClickListener {
+            clickListener?.onClick()
+        }
     }
 
     override fun getItemCount(): Int = imagePaths.size
@@ -44,5 +48,11 @@ class RecipeImageAdapter(
     fun updateImages(newImages: List<String>) {
         imagePaths = newImages
         notifyDataSetChanged()
+    }
+
+    class RecipeImageClickListener(
+        val clickListener: () -> Unit,
+    ) {
+        fun onClick() = clickListener()
     }
 }

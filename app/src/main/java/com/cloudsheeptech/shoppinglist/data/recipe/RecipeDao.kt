@@ -35,7 +35,7 @@ interface RecipeDao {
     fun getLive(
         key: Long,
         createdBy: Long,
-    ): LiveData<DbRecipe>
+    ): LiveData<DbRecipe?>
 
     @Query("SELECT * FROM recipes WHERE id = :key AND createdBy = :createdBy")
     fun getFlow(

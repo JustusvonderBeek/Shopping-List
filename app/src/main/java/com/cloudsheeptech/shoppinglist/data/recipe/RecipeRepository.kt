@@ -35,7 +35,12 @@ class RecipeRepository
             images: List<String>,
         ): ApiRecipe {
             val recipe = localDataSource.create(name, ingredients, descriptions, images, defaultPortion)
-            val updatedImages = binaryFileHandler.persistTemporaryImagesInLocalStorage(recipe.onlineId, recipe.createdBy.onlineId, images)
+            val updatedImages =
+                binaryFileHandler.persistTemporaryImagesInLocalStorage(
+                    recipe.onlineId,
+                    recipe.createdBy.onlineId,
+                    images,
+                )
             localDataSource.updateImages(recipe.onlineId, recipe.createdBy.onlineId, updatedImages)
             val binaryImages = binaryFileHandler.readImagesFromFiles(updatedImages)
             val success = remoteDataSource.create(recipe, binaryImages)
@@ -142,13 +147,19 @@ class RecipeRepository
                             )
                         imageFilePaths.add(fileLocation.toString())
                     }
-                    localDataSource.create(
-                        recipe.name,
-                        recipe.ingredients,
-                        recipe.description,
-                        imageFilePaths,
-                        recipe.defaultPortion,
-                    )
+                    if (localDataSource.exists(recipe.onlineId, recipe.createdBy.onlineId)) {
+                        localDataSource.update(recipe)
+                    } else {
+                        localDataSource.create(
+                            recipe.onlineId,
+                            recipe.name,
+                            recipe.createdBy,
+                            recipe.ingredients,
+                            recipe.description,
+                            imageFilePaths,
+                            recipe.defaultPortion,
+                        )
+                    }
                 } else {
                     val updatedVersion = localDataSource.update(recipe)
                     if (updatedVersion != -1L) {

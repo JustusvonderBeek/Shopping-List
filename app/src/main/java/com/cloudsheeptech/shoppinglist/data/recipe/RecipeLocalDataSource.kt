@@ -116,6 +116,16 @@ class RecipeLocalDataSource
 
         // -------------------------------------------------------------
 
+        suspend fun exists(
+            onlineId: Long,
+            createdBy: Long,
+        ): Boolean {
+            return withContext(Dispatchers.IO) {
+                val dbRecipe = recipeDao.get(onlineId, createdBy)
+                return@withContext dbRecipe != null
+        }
+    }
+
         suspend fun create(
             name: String,
             ingredients: List<ApiIngredient>,
@@ -124,11 +134,33 @@ class RecipeLocalDataSource
             defaultPortion: Int,
         ): ApiRecipe {
             val user = userRepository.read() ?: throw IllegalStateException("user null after login")
+            val recipeCreator = ListCreator(user.OnlineID, user.Username)
+            return create(
+                0L,
+                name,
+                recipeCreator,
+                ingredients,
+                descriptions,
+                images,
+                defaultPortion,
+            )
+        }
+
+        // If the onlineId is set to 0L, no new ID is allocated
+        suspend fun create(
+            onlineId: Long = 0L,
+            name: String,
+            recipeCreator: ListCreator,
+            ingredients: List<ApiIngredient>,
+            descriptions: List<ApiDescription>,
+            images: List<String>,
+            defaultPortion: Int,
+    ): ApiRecipe {
             val newRecipe =
                 ApiRecipe(
-                    onlineId = 0L,
+                    onlineId = onlineId,
                     name = name,
-                    createdBy = ListCreator(user.OnlineID, user.Username),
+                    createdBy = recipeCreator,
                     createdAt = OffsetDateTime.now(),
                     lastUpdated = OffsetDateTime.now(),
                     version = 1,
@@ -143,7 +175,7 @@ class RecipeLocalDataSource
                 val recipeImage =
                     RecipeImage(
                         recipeId = recipeId,
-                        createdBy = user.OnlineID,
+                        createdBy = recipeCreator.onlineId,
                         imageId = 0,
                         fileLocation = "",
                     )
@@ -152,8 +184,8 @@ class RecipeLocalDataSource
                     recipeImage.fileLocation = uri
                     recipeImageDao.insert(recipeImage)
                 }
-                insertDescriptions(recipeId, user.OnlineID, descriptions)
-                insertIngredients(recipeId, user.OnlineID, ingredients)
+                insertDescriptions(recipeId, recipeCreator.onlineId, descriptions)
+                insertIngredients(recipeId, recipeCreator.onlineId, ingredients)
             }
             return newRecipe
         }

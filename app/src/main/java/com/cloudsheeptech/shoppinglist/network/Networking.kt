@@ -74,6 +74,8 @@ class Networking
                     responseHandler(response)
                 } catch (ex: ConnectException) {
                     Log.e("Networking", "Failed to send GET request to $finalRequestUrl: $ex")
+                } catch (ex: SocketTimeoutException) {
+                    Log.e("Networking", "Timeout while reading from remote: $ex")
                 }
             }
         }

@@ -4,6 +4,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.cloudsheeptech.shoppinglist.R
 
 class RecipeImageAdapter(
     private var imagePaths: List<String>,
@@ -34,10 +35,15 @@ class RecipeImageAdapter(
         position: Int,
     ) {
         val path = imagePaths[position]
-        Glide
-            .with(holder.imageView.context)
-            .load(path) // Or just `path` if it's a URL
-            .into(holder.imageView)
+        if (path.isNotEmpty()) {
+            Glide
+                .with(holder.imageView.context)
+                .load(path) // Or just `path` if it's a URL
+                .into(holder.imageView)
+        } else {
+            // Prevent ugly scaling of Glide loading
+            holder.imageView.setImageResource(R.drawable.ic_image)
+        }
         holder.imageView.setOnClickListener {
             clickListener?.onClick()
         }

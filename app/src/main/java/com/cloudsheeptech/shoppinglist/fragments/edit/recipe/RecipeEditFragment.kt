@@ -102,16 +102,11 @@ class RecipeEditFragment : Fragment() {
             viewLifecycleOwner,
             Observer { images ->
                 if (images.isNotEmpty()) {
-//                    binding.imageCarousel.setData(images)
                     recipeImageAdapter.updateImages(images)
                 } else {
                     val defaultList =
-                        listOf(
-                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_262053270_0.png",
-                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/7_1006887184_0.png",
-                        )
+                        listOf("")
                     recipeImageAdapter.updateImages(defaultList)
-//                    binding.imageCarousel.setData(listOf(CarouselItem(imageDrawable = R.drawable.receipt_stock)))
                 }
             },
         )

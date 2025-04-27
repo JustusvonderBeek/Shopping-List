@@ -5,6 +5,7 @@
     tools:context=".fragments.recipes_overview.RecipesOverviewFragment">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.cloudsheeptech.shoppinglist.fragments.recipes_overview.RecipesOverviewViewModel" />
@@ -13,22 +14,19 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/receiptListOverviewRefresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            >
+            android:layout_height="match_parent">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/receiptOverviewList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:listitem="@layout/recipe_overview_list_item"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                />
+                tools:listitem="@layout/recipe_overview_item"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

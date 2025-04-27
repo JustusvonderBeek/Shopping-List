@@ -6,13 +6,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
-import com.cloudsheeptech.shoppinglist.databinding.RecipeOverviewListItemBinding
+import com.cloudsheeptech.shoppinglist.databinding.RecipeOverviewItemBinding
 
 class RecipesListAdapter(
-    val clickListener: ReceiptClickListener
+    val clickListener: ReceiptClickListener,
 ) : ListAdapter<DbRecipe, RecipesListAdapter.ReceiptListViewHolder>(
-    ItemDiffCallback(),
-) {
+        ItemDiffCallback(),
+    ) {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -26,11 +26,11 @@ class RecipesListAdapter(
     }
 
     class ReceiptListViewHolder private constructor(
-        val binding: RecipeOverviewListItemBinding,
+        val binding: RecipeOverviewItemBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             clickListener: ReceiptClickListener,
-            receipt: DbRecipe
+            receipt: DbRecipe,
         ) {
             binding.receipt = receipt
             binding.clickListener = clickListener
@@ -40,7 +40,7 @@ class RecipesListAdapter(
         companion object {
             fun from(parent: ViewGroup): ReceiptListViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val binding = RecipeOverviewListItemBinding.inflate(layoutInflater, parent, false)
+                val binding = RecipeOverviewItemBinding.inflate(layoutInflater, parent, false)
                 return ReceiptListViewHolder(binding)
             }
         }

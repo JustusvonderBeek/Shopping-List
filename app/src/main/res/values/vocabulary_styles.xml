@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="WordListItemBaseStyle" parent="Widget.AppCompat.TextView">
+    <style name="ListItemBaseStyle" parent="Widget.AppCompat.TextView">
         <item name="android:textSize">24sp</item>
     </style>
 
-    <style name="WordListItemVocabStyle" parent="WordListItemBaseStyle">
+    <style name="ListItemHeaderStyle" parent="ListItemBaseStyle">
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">24sp</item>
     </style>
 
-    <style name="WordListItemTransStyle" parent="WordListItemBaseStyle">
+    <style name="ListItemSubtitleStyle" parent="ListItemBaseStyle">
         <item name="android:textStyle">italic</item>
         <item name="android:textSize">18sp</item>
     </style>
 
-    <style name="ShoppingListSubtleStyle" parent="WordListItemBaseStyle">
+    <style name="ShoppingListSubtleStyle" parent="ListItemBaseStyle">
         <item name="android:textStyle">italic</item>
         <item name="android:textSize">16sp</item>
     </style>

@@ -12,11 +12,9 @@
             type="com.cloudsheeptech.shoppinglist.fragments.recipes_overview.RecipesListAdapter.ReceiptClickListener" />
     </data>
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
         android:onClick="@{() -> clickListener.onClick(receipt)}"
         style="@style/ShoppingListItemStyle">
 
@@ -45,16 +43,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%s", receipt.name)}'
-                    style="@style/WordListItemVocabStyle" />
+                    style="@style/ListItemHeaderStyle" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%s", receipt.createdByName)}'
-                    style="@style/WordListItemTransStyle" />
+                    style="@style/ListItemSubtitleStyle" />
 
             </LinearLayout>
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
 </layout>

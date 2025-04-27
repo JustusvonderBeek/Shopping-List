@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="ShoppingListItemStyle" parent="Widget.MaterialComponents.CardView">
+    <style name="ShoppingListItemStyle" parent="Widget.Material3.CardView.Elevated">
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_marginEnd">8dp</item>
         <item name="android:layout_marginTop">8dp</item>
-        <item name="android:layout_marginBottom">8dp</item>
-        <item name="elevation">3dp</item>
-        <item name="android:shadowDx">2</item>
-        <item name="android:shadowDy">2</item>
-        <item name="android:shadowRadius">2</item>
+        <item name="android:layout_marginBottom">0dp</item>
+        <item name="cardElevation">3dp</item>
+        <item name="cardBackgroundColor">@color/white</item>
         <item name="android:shadowColor">@color/shopping_gray</item>
+        <item name="addElevationShadow">true</item>
+        <item name="android:shadowDx">3</item>
+        <item name="android:shadowDy">3</item>
+        <item name="android:shadowRadius">20</item>
         <item name="cardCornerRadius">10dp</item>
     </style>
 </resources>

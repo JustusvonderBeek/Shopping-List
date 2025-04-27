@@ -2,6 +2,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+
         <variable
             name="description"
             type="com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription" />
@@ -16,15 +17,13 @@
             android:layout_height="wrap_content"
             android:paddingEnd="5dp"
             android:text='@{String.format("%d.", description.order + 1)}'
-            style="@style/WordListItemTransStyle"
-            />
+            style="@style/ListItemSubtitleStyle" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@{description.step}"
-            style="@style/WordListItemTransStyle"
-            />
+            style="@style/ListItemSubtitleStyle" />
 
     </LinearLayout>
 </layout>

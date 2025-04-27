@@ -5,11 +5,12 @@
     tools:context=".fragments.list_overview.ListOverviewFragment">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModel" />
     </data>
-    
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -19,8 +20,7 @@
             android:id="@+id/listOverviewRefresher"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            >
+            android:layout_weight="1">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/listOverviewList"
@@ -28,8 +28,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 tools:listitem="@layout/shopping_item"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

@@ -5,6 +5,7 @@
     tools:context=".fragments.list_picker.ListPickerFragment">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel" />
@@ -14,17 +15,15 @@
         android:id="@+id/contentWrapper"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/listPickerRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/shopping_list"
-            tools:itemCount="5"
-            />
+            tools:listitem="@layout/shopping_list_overview_item"
+            tools:itemCount="5" />
 
     </LinearLayout>
 </layout>

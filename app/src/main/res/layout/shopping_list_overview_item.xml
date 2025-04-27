@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
 
@@ -13,16 +12,11 @@
             type="com.cloudsheeptech.shoppinglist.fragments.list_overview.ShoppingListAdapter.ListClickListener" />
     </data>
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="@{() -> clickListener.onClick(list)}"
-        android:layout_marginTop="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:elevation="3dp"
-        android:shadowColor="@color/shopping_gray"
-        app:cardCornerRadius="10dp">
+        style="@style/ShoppingListItemStyle">
 
         <LinearLayout
             android:id="@+id/itemWrapper"
@@ -49,13 +43,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%s", list.title)}'
-                    style="@style/WordListItemVocabStyle" />
+                    style="@style/ListItemHeaderStyle" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%s", list.createdByName)}'
-                    style="@style/WordListItemTransStyle" />
+                    style="@style/ListItemSubtitleStyle" />
 
             </LinearLayout>
 
@@ -67,6 +61,6 @@
                 android:visibility="gone" />
 
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
 </layout>

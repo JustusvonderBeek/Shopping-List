@@ -69,13 +69,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%s", item.name)}'
-                    style="@style/WordListItemVocabStyle" />
+                    style="@style/ListItemHeaderStyle" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text='@{String.format("%s: %d", amountName, item.quantity)}'
-                    style="@style/WordListItemTransStyle" />
+                    style="@style/ListItemSubtitleStyle" />
 
             </LinearLayout>
 

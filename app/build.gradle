@@ -42,7 +42,7 @@ android {
         minSdk 29
         targetSdk 33
         versionCode 29
-        versionName "0.10.0"
+        versionName "0.11.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -141,9 +141,7 @@ dependencies {
 
     // Image Carousel
     implementation 'me.relex:circleindicator:2.1.6'
-    implementation 'org.imaginativeworld.whynotimagecarousel:whynotimagecarousel:2.1.0'
-    // TODO: REMOVE ABOVE WHEN UNUSED
-    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
     implementation 'com.tbuonomo:dotsindicator:5.1.0'
 
     // Camera X

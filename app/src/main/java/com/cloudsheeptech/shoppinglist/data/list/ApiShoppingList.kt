@@ -26,7 +26,7 @@ data class ApiShoppingList
         @Contextual
         var lastUpdated: OffsetDateTime,
         @JsonNames("items")
-        var items: MutableList<ApiItem>,
+        var items: MutableList<ApiItem> = mutableListOf(),
         @JsonNames("version")
         var version: Long,
     ) {

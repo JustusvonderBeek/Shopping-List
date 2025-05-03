@@ -10,7 +10,6 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.time.OffsetDateTime
@@ -28,6 +27,8 @@ class ShoppingListRemoteDataSource
             Json {
                 encodeDefaults = true
                 ignoreUnknownKeys = false
+                // Set empty/null values to the default values
+                coerceInputValues = true
                 serializersModule =
                     SerializersModule {
                         contextual(OffsetDateTime::class, OffsetDateTimeFormatHandler())
@@ -103,14 +104,20 @@ class ShoppingListRemoteDataSource
                         Log.e("ShoppingListRemoteDataSource", "Failed to read all lists from remote")
                         return@get
                     }
-                    val rawBody = response.bodyAsText(Charsets.UTF_8)
-                    if (rawBody.isEmpty() || rawBody == "null") {
-                        Log.e("ShoppingListRemoteDataSource", "Remote did not return any list body")
-                        return@get
+                    try {
+                        val rawBody = response.bodyAsText(Charsets.UTF_8)
+                        if (rawBody.isEmpty() || rawBody == "null") {
+                            Log.e("ShoppingListRemoteDataSource", "Remote did not return any list body")
+                            return@get
+                        }
+                        Log.d("ShoppingListRemoteDataSource", "Received: $rawBody")
+                        val decodedOnlineLists = json.decodeFromString<List<ApiShoppingList>>(rawBody)
+                        allRemoteLists.addAll(decodedOnlineLists)
+                    } catch (ex: SerializationException) {
+                        Log.e("ShoppingListRemoteDataSource", "Cannot decode remote lists $ex")
+                    } catch (ex: IllegalArgumentException) {
+                        Log.e("ShoppingListRemoteDataSource", "Received lists in wrong format: $ex")
                     }
-                    Log.d("ShoppingListRemoteDataSource", "Received: $rawBody")
-                    val decodedOnlineLists = json.decodeFromString<List<ApiShoppingList>>(rawBody)
-                    allRemoteLists.addAll(decodedOnlineLists)
                 }
             }
             return allRemoteLists

@@ -1,15 +1,12 @@
 package com.cloudsheeptech.shoppinglist.data.sharing
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Entity(tableName = "shared_table")
+@Entity(tableName = "shared_table", primaryKeys = ["ListId", "CreatedBy", "SharedWith"])
 data class ListShareDatabase(
-    @PrimaryKey(autoGenerate = true)
-    var ID: Long,
     var ListId: Long,
-    var createdBy: Long,
+    var CreatedBy: Long,
     var SharedWith: Long,
 )

@@ -39,15 +39,18 @@ import javax.inject.Singleton
 
 @Singleton
 @Database(
-    version = 34,
-    entities = [DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class,
+    version = 35,
+    entities = [
+        DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class,
         ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class,
-        ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class],
+        ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class,
+    ],
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 19, to = 20, ShoppingListDatabase.Database19To20Migration::class),
         AutoMigration(from = 20, to = 21, ShoppingListDatabase.Database20To21Migration::class),
+        AutoMigration(from = 34, to = 35),
     ],
 )
 @TypeConverters(value = [DatabaseTypeConverter::class])

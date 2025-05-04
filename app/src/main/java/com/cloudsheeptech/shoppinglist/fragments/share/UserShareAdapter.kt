@@ -9,19 +9,32 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.databinding.UserSharePreviewBinding
 
-class UserShareAdapter(val clickListener: UserShareClickListener, val unshareListener : UserShareClickListener) : ListAdapter<ShareUserPreview, UserShareAdapter.ListCreatorViewHolder>(
-    UserShareDiffCallback()
-) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListCreatorViewHolder {
-        return ListCreatorViewHolder.from(parent)
+class UserShareAdapter(
+    val shareListener: UserShareClickListener,
+    val unshareListener: UserShareClickListener,
+) : ListAdapter<ShareUserPreview, UserShareAdapter.ListCreatorViewHolder>(
+        UserShareDiffCallback(),
+    ) {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ListCreatorViewHolder = ListCreatorViewHolder.from(parent)
+
+    override fun onBindViewHolder(
+        holder: ListCreatorViewHolder,
+        position: Int,
+    ) {
+        holder.bind(shareListener, unshareListener, getItem(position))
     }
 
-    override fun onBindViewHolder(holder: ListCreatorViewHolder, position: Int) {
-        holder.bind(clickListener, unshareListener, getItem(position))
-    }
-
-    class ListCreatorViewHolder private constructor(val binding : UserSharePreviewBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(clickListener: UserShareClickListener, unshareListener: UserShareClickListener, item : ShareUserPreview) {
+    class ListCreatorViewHolder private constructor(
+        val binding: UserSharePreviewBinding,
+    ) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(
+            clickListener: UserShareClickListener,
+            unshareListener: UserShareClickListener,
+            item: ShareUserPreview,
+        ) {
             binding.creator = item
             binding.clickListener = clickListener
             binding.unshareClickListener = unshareListener
@@ -39,7 +52,7 @@ class UserShareAdapter(val clickListener: UserShareClickListener, val unshareLis
         }
 
         companion object {
-            fun from(parent : ViewGroup) : ListCreatorViewHolder {
+            fun from(parent: ViewGroup): ListCreatorViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val binding = UserSharePreviewBinding.inflate(layoutInflater, parent, false)
                 return ListCreatorViewHolder(binding)
@@ -47,17 +60,21 @@ class UserShareAdapter(val clickListener: UserShareClickListener, val unshareLis
         }
     }
 
-    class UserShareClickListener(val clickListener: (id : Long) -> Unit) {
-        fun onClick(creator : ShareUserPreview) = clickListener(creator.UserId)
+    class UserShareClickListener(
+        val clickListener: (id: Long) -> Unit,
+    ) {
+        fun onClick(creator: ShareUserPreview) = clickListener(creator.UserId)
     }
 
     class UserShareDiffCallback : DiffUtil.ItemCallback<ShareUserPreview>() {
-        override fun areItemsTheSame(oldItem: ShareUserPreview, newItem: ShareUserPreview): Boolean {
-            return oldItem.UserId == newItem.UserId && oldItem.Name == newItem.Name && oldItem.Shared == newItem.Shared
-        }
+        override fun areItemsTheSame(
+            oldItem: ShareUserPreview,
+            newItem: ShareUserPreview,
+        ): Boolean = oldItem.UserId == newItem.UserId && oldItem.Name == newItem.Name && oldItem.Shared == newItem.Shared
 
-        override fun areContentsTheSame(oldItem: ShareUserPreview, newItem: ShareUserPreview): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(
+            oldItem: ShareUserPreview,
+            newItem: ShareUserPreview,
+        ): Boolean = oldItem == newItem
     }
 }

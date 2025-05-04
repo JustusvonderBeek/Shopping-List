@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 34,
-    "identityHash": "1e2880e618c00eb3c1b08e9903c91739",
+    "identityHash": "b80d6522798588bd48972add729d57d0",
     "entities": [
       {
         "tableName": "list_table",
@@ -216,14 +216,8 @@
       },
       {
         "tableName": "shared_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ID` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `ListId` INTEGER NOT NULL, `createdBy` INTEGER NOT NULL, `SharedWith` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ListId` INTEGER NOT NULL, `CreatedBy` INTEGER NOT NULL, `SharedWith` INTEGER NOT NULL, PRIMARY KEY(`ListId`, `SharedWith`))",
         "fields": [
-          {
-            "fieldPath": "ID",
-            "columnName": "ID",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
           {
             "fieldPath": "ListId",
             "columnName": "ListId",
@@ -231,8 +225,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "createdBy",
-            "columnName": "createdBy",
+            "fieldPath": "CreatedBy",
+            "columnName": "CreatedBy",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -244,9 +238,10 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": true,
+          "autoGenerate": false,
           "columnNames": [
-            "ID"
+            "ListId",
+            "SharedWith"
           ]
         },
         "indices": [],
@@ -516,7 +511,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1e2880e618c00eb3c1b08e9903c91739')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b80d6522798588bd48972add729d57d0')"
     ]
   }
 }

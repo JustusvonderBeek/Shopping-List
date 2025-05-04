@@ -57,4 +57,10 @@ data class ApiShoppingList
             result = 31 * result + version.hashCode()
             return result
         }
+
+        fun compare(other: ApiShoppingList): Int {
+            if (this === other || other.version == this.version) return 0
+            if (other.version > this.version) return -1
+            return 1
+        }
     }

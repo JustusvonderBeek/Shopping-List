@@ -76,7 +76,7 @@ class ShoppingListRemoteDataSource
         ): ApiShoppingList? {
             var retrievedRemoteList: ApiShoppingList? = null
             withContext(Dispatchers.IO) {
-                networking.get("${UrlProviderEnum.SHOPPING_LIST_READ.url}/$listId?createdBy=$createdBy") { response ->
+                networking.get("${UrlProviderEnum.BASE_SHOPPING_LIST_URL.url}/$listId?createdBy=$createdBy") { response ->
                     if (response.status != HttpStatusCode.OK) {
                         Log.e(
                             "ShoppingListRemoteDataSource",

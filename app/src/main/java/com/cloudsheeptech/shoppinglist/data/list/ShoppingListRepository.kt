@@ -87,24 +87,68 @@ class ShoppingListRepository
             return newList
         }
 
+        private suspend fun createRemote(list: ApiShoppingList): Long {
+            try {
+                val listId = localDataSource.create(list)
+                return listId
+            } catch (ex: IllegalArgumentException) {
+                Log.w("ShoppingListRepository", "List already exists: $ex")
+            } catch (ex: Exception) {
+                Log.w("ShoppingListRepository", "Failed to create list: $ex")
+            }
+            return -1L
+        }
+
         suspend fun read(
             listId: Long,
             createdBy: Long,
         ): ApiShoppingList? {
-            var storedList: ApiShoppingList? = null
-            storedList = localDataSource.read(listId, createdBy)
-            // Only update the list when we have nothing stored locally
-            if (storedList == null) {
-                try {
-                    storedList = remoteApi.read(listId, createdBy)
-                } catch (ex: IllegalAccessException) {
-                    Log.w("ShoppingListRepository", "Ex: $ex")
-                } catch (ex: UserNotAuthenticatedException) {
-                    Log.w("ShoppingListRepository", "User not authenticated: $ex")
+            var latestList: ApiShoppingList? = null
+            try {
+                val storedList = localDataSource.read(listId, createdBy)
+                val remoteList = remoteApi.read(listId, createdBy)
+                if (storedList == null && remoteList == null) {
+                    Log.e("ShoppingListRepository", "List $listId from $createdBy not found")
+                    return null
+                } else if (storedList == null && remoteList != null) {
+                    latestList = remoteList
+                    Log.d("ShoppingListRepository", "List $listId from $createdBy not found locally. Creating new list")
+                    createRemote(latestList)
+                    return latestList
+                } else if (storedList != null && remoteList == null) {
+                    latestList = storedList
+                    Log.d("ShoppingListRepository", "List $listId from $createdBy not found online. Update skipped")
+                    return latestList
+                } else if (storedList != null && remoteList != null) {
+                    latestList = compareAndGetLatestList(storedList, remoteList)
                 }
+                // We don't want to propagate an update we just received back online
+                localDataSource.update(latestList!!)
+                Log.d(
+                    "ShoppingListRepository",
+                    "Updated List $listId from $createdBy to latest version ${latestList.version}",
+                )
+            } catch (ex: IllegalAccessException) {
+                Log.w("ShoppingListRepository", "User not allowed to acces list: $ex")
+            } catch (ex: UserNotAuthenticatedException) {
+                Log.w("ShoppingListRepository", "User not authenticated: $ex")
+            } catch (ex: Exception) {
+                Log.e("ShoppingListRepository", "Unknown error while reading list: $ex")
             }
-            return storedList
+            return latestList
         }
+
+        /**
+         * @return The list with the highest version. If both versions are equal list1 is returned
+         */
+        private fun compareAndGetLatestList(
+            list1: ApiShoppingList,
+            list2: ApiShoppingList,
+        ): ApiShoppingList =
+            when (list1.compare(list2)) {
+                -1 -> list2
+                else -> list1
+            }
 
         suspend fun readAllOwn(): List<ApiShoppingList> = localDataSource.readAll()
 

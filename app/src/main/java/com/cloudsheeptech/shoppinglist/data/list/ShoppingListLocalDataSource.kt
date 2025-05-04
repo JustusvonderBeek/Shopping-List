@@ -240,7 +240,7 @@ class ShoppingListLocalDataSource
                         apiItem.icon = itemInfo.icon
                         apiItem
                     }
-                offlineList!!.items.addAll(apiItems)
+                offlineList.items.addAll(apiItems)
             }
             return offlineList
         }

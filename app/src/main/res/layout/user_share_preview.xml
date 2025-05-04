@@ -22,15 +22,28 @@
         android:layout_marginBottom="8dp"
         android:orientation="horizontal">
 
-        <TextView
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_weight="1"
-            android:textSize="22sp"
-            android:gravity="center_vertical"
-            android:text="@{creator.name}"
-            android:onClick="@{() -> clickListener.onClick(creator)}"
-            />
+            android:onClick="@{() -> clickListener.onClick(creator)}">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{creator.name}"
+                style="@style/ListItemHeaderStyle"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{String.format("%d", creator.userId)}'
+                style="@style/ListItemSubtitleStyle"
+                />
+
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/preview_share_button"

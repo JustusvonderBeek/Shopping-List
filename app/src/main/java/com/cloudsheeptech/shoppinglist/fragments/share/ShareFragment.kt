@@ -16,7 +16,6 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ShareFragment : Fragment() {
-
     private lateinit var binding: FragmentShareBinding
     private val viewModel: ShareViewModel by viewModels()
 
@@ -25,30 +24,37 @@ class ShareFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
-
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_share, container, false)
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
-        val adapter = UserShareAdapter(UserShareAdapter.UserShareClickListener { userId ->
-            Log.d("ShareFragment", "Clicked on user $userId")
-            viewModel.share(userId)
-        }, UserShareAdapter.UserShareClickListener { userId ->
-            Log.d("ShareFragment", "Clicked on unshare user $userId")
-            viewModel.unshareForUser(userId)
-        })
+        val adapter =
+            UserShareAdapter(
+                UserShareAdapter.UserShareClickListener { userId ->
+                    Log.d("ShareFragment", "Clicked on user $userId")
+                    viewModel.share(userId)
+                },
+                UserShareAdapter.UserShareClickListener { userId ->
+                    Log.d("ShareFragment", "Clicked on unshare user $userId")
+                    viewModel.unshare(userId)
+                },
+            )
         binding.userPreviewList.adapter = adapter
 
-        viewModel.sharedPreview.observe(viewLifecycleOwner, Observer { users ->
-            users.let {
-                Log.d("ShareFragment", "Got list with ${users.size} users")
-                adapter.submitList(users)
-//                adapter.notifyDataSetChanged()
-            }
-        })
+        viewModel.sharedUsers.observe(
+            viewLifecycleOwner,
+            Observer { users ->
+                users.let {
+                    Log.d("ShareFragment", "Got list with ${users.size} users")
+                    adapter.submitList(users)
+                    adapter.notifyDataSetChanged()
+                }
+            },
+        )
 
 //        viewModel.searchedUsers.observe(viewLifecycleOwner, Observer { users ->
 //            users.let {
@@ -57,19 +63,24 @@ class ShareFragment : Fragment() {
 //            }
 //        })
 
-        viewModel.searchName.observe(viewLifecycleOwner, Observer { name ->
-            Log.d("ShareFragment", "Got search query $name")
-            viewModel.searchUser()
-        })
+        viewModel.searchString.observe(
+            viewLifecycleOwner,
+            Observer { name ->
+                Log.d("ShareFragment", "Got search query $name")
+                viewModel.searchUser()
+            },
+        )
 
-        viewModel.navigateUp.observe(viewLifecycleOwner, Observer { navigate ->
-            if (navigate) {
-                findNavController().navigateUp()
-                viewModel.onUpNavigated()
-            }
-        })
+        viewModel.navigateUp.observe(
+            viewLifecycleOwner,
+            Observer { navigate ->
+                if (navigate) {
+                    findNavController().navigateUp()
+                    viewModel.onUpNavigated()
+                }
+            },
+        )
 
         return binding.root
     }
-
 }

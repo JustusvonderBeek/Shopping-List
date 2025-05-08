@@ -81,7 +81,7 @@ class ShoppinglistFragment :
     ) {
         val selected = parent.getItemAtPosition(pos)
         Log.d("ShoppingListFragment", "Got: $selected")
-        viewModel.setOrdering(selected as String, requireContext())
+        viewModel.setOrderingInDatabase(selected as String, requireContext())
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -226,7 +226,7 @@ class ShoppinglistFragment :
             Observer { p ->
                 p?.let {
                     Log.d("ShoppingListFragment", "Found ordering: ${it.Ordering}")
-                    viewModel.setOrdering(it.Ordering, requireContext())
+                    viewModel.setOrdering(it.Ordering)
                     binding.orderSelectionSpinner.setSelection(it.Ordering.position)
                     Log.d("ShoppingListFragment", "${it.Ordering.position}")
                 }
@@ -308,12 +308,15 @@ class ShoppinglistFragment :
             },
         )
 
-        viewModel.scrollDown.observe(viewLifecycleOwner, Observer { position ->
-            if (position > 0) {
-                binding.itemList.scrollToPosition(position)
-                viewModel.onViewScrolledDown()
-            }
-        })
+        viewModel.scrollDown.observe(
+            viewLifecycleOwner,
+            Observer { position ->
+                if (position > 0) {
+                    binding.itemList.scrollToPosition(position)
+                    viewModel.onViewScrolledDown()
+                }
+            },
+        )
 
         val confirmClearDialog =
             AlertDialog
@@ -362,7 +365,7 @@ class ShoppinglistFragment :
                     findNavController().navigate(
                         ShoppinglistFragmentDirections.actionShoppinglistToCreateShoppinglistFragment(
                             rename,
-                            listId
+                            listId,
                         ),
                     )
                     viewModel.onListRenamed()

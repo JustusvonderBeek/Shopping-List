@@ -3,11 +3,10 @@ package com.cloudsheeptech.shoppinglist.fragments.list
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
-import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
@@ -109,53 +108,64 @@ class ShoppinglistViewModel
         private val _listInformation = listDao.getShoppingListLive(shoppingListId, createdBy)
         val listInformation: LiveData<DbShoppingList> get() = _listInformation
 
-        val orderedItemsInList =
-            itemsInList.switchMap {
-                Log.d("ShoppingListViewModel", "Ordering called")
-                liveData {
-                    when (ordering.value!!) {
-                        ORDERING.DEFAULT -> {
-                            emit(it)
-                        }
+        val orderedItemsInList = MediatorLiveData<List<AppItem>>()
 
-                        ORDERING.CHECKED_LAST -> {
-                            val sorted =
-                                it.sortedWith(
-                                    compareBy({ it.checked }, { it.name }),
-                                )
-                            emit(sorted)
-                        }
+        init {
+            orderedItemsInList.addSource(_ordering, { value ->
+                orderedItemsInList.value = getSortedList(orderedItemsInList.value ?: emptyList(), value)
+            })
+            orderedItemsInList.addSource(itemsInList, { value ->
+                orderedItemsInList.value = getSortedList(value, _ordering.value!!)
+            })
+        }
 
-                        ORDERING.ALPHABETICAL -> {
-                            val sorted =
-                                it.sortedBy {
-                                    it.name
-                                }
-                            emit(sorted)
-                        }
+        private fun getSortedList(
+            listToSort: List<AppItem>,
+            ordering: ORDERING,
+        ): List<AppItem> {
+            Log.d("ShoppingListViewModel", "Ordering called")
+            return when (ordering) {
+                ORDERING.DEFAULT -> {
+                    listToSort
+                }
 
-                        ORDERING.ALPHABETICAL_REVERSE -> {
-                            val sorted =
-                                it
-                                    .sortedBy {
-                                        it.name
-                                    }.reversed()
-                            emit(sorted)
-                        }
+                ORDERING.CHECKED_LAST -> {
+                    val sorted =
+                        listToSort.sortedWith(
+                            compareBy<AppItem>({ it.checked }, { it.name }),
+                        )
+                    sorted
+                }
 
-                        ORDERING.SUPERMARKET_ODER -> {
-                            val sorted =
-                                it.sortedWith(
-                                    compareBy(
-                                        { ItemClassifier.convertStringToItemClass(it.name) },
-                                        { it.name },
-                                    ),
-                                )
-                            emit(sorted)
+                ORDERING.ALPHABETICAL -> {
+                    val sorted =
+                        listToSort.sortedBy {
+                            it.name
                         }
-                    }
+                    sorted
+                }
+
+                ORDERING.ALPHABETICAL_REVERSE -> {
+                    val sorted =
+                        listToSort
+                            .sortedBy {
+                                it.name
+                            }.reversed()
+                    sorted
+                }
+
+                ORDERING.SUPERMARKET_ODER -> {
+                    val sorted =
+                        listToSort.sortedWith(
+                            compareBy(
+                                { ItemClassifier.convertStringToItemClass(it.name) },
+                                { it.name },
+                            ),
+                        )
+                    sorted
                 }
             }
+        }
 
         // ----
 
@@ -313,16 +323,16 @@ class ShoppinglistViewModel
             }
         }
 
-        private fun updateListPreference() {
+        private fun updateListPreference(order: ORDERING) {
             localCoroutine.launch {
-                updateOrCreatePreferenceInDatabase(_ordering.value!!)
+                updateOrCreatePreferenceInDatabase(order)
             }
         }
 
         fun resetOrdering() {
             Log.d("ShoppingListViewModel", "Reset ordering called")
             _ordering.value = ORDERING.DEFAULT
-            updateListPreference()
+            updateListPreference(_ordering.value!!)
         }
 
         private fun convertStringToOrder(
@@ -340,7 +350,7 @@ class ShoppinglistViewModel
             }
         }
 
-        fun setOrdering(
+        fun setOrderingInDatabase(
             order: String,
             context: Context,
         ) {
@@ -349,22 +359,16 @@ class ShoppinglistViewModel
                 Log.d("ShoppingListViewModel", "Ordering already applied")
                 return
             }
-            Log.d("ShoppingListViewModel", "Setting order to $orderEnum")
-            _ordering.value = orderEnum
-            updateListPreference()
+            updateListPreference(orderEnum)
         }
 
-        fun setOrdering(
-            order: ORDERING,
-            context: Context,
-        ) {
+        fun setOrdering(order: ORDERING) {
             if (order == _ordering.value) {
                 Log.d("ShoppingListViewModel", "Ordering already applied")
                 return
             }
             Log.d("ShoppingListViewMode", "Setting order to $order")
             _ordering.value = order
-            updateListPreference()
         }
 
         fun listFinished() {
@@ -410,6 +414,12 @@ class ShoppinglistViewModel
 
         fun onClearAllItemsPositiv() {
             _confirmClear.value = false
+            viewModelScope.launch {
+                shoppingListRepository.deleteAllCheckedItems(shoppingListId, createdBy)
+                withContext(Dispatchers.Main) {
+                    resetFinished()
+                }
+            }
         }
 
         fun onClearAllItemsNegative() {

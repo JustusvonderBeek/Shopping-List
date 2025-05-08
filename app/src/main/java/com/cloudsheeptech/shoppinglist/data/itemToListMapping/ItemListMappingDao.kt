@@ -31,8 +31,11 @@ interface ItemListMappingDao {
         createdBy: Long,
     )
 
-    @Query("DELETE FROM item_to_list_mapping WHERE ListID = :listId AND Checked = 1")
-    fun deleteCheckedMappingsForListId(listId: Long)
+    @Query("DELETE FROM item_to_list_mapping WHERE ListID = :listId AND createdBy = :createdBy AND Checked = 1")
+    fun deleteCheckedMappingsForListId(
+        listId: Long,
+        createdBy: Long,
+    )
 
     @Query("DELETE FROM item_to_list_mapping")
     fun deleteAllMappings()
@@ -62,15 +65,15 @@ interface ItemListMappingDao {
     fun getMappingForItemAndList(
         itemId: Long,
         listId: Long,
-        createdBy: Long
+        createdBy: Long,
     ): List<ListMapping> // FIXME: Why a list?
 
     @Query(
         "SELECT CASE " +
-                "WHEN (SELECT COUNT(*) FROM item_to_list_mapping WHERE ListID = :listId AND CreatedBy = :createdBy AND Checked = 1) > 0 " +
-                "THEN (SELECT COUNT(distinct Checked) FROM item_to_list_mapping WHERE ListID = :listId AND CreatedBy = :createdBy) " +
-                "ELSE 0 " +
-                "END AS count_distinct_values",
+            "WHEN (SELECT COUNT(*) FROM item_to_list_mapping WHERE ListID = :listId AND CreatedBy = :createdBy AND Checked = 1) > 0 " +
+            "THEN (SELECT COUNT(distinct Checked) FROM item_to_list_mapping WHERE ListID = :listId AND CreatedBy = :createdBy) " +
+            "ELSE 0 " +
+            "END AS count_distinct_values",
     )
     fun getIsListFinishedLive(
         listId: Long,

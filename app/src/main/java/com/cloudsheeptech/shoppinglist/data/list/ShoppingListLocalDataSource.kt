@@ -461,6 +461,20 @@ class ShoppingListLocalDataSource
             return updatedList
         }
 
+        suspend fun remoteCheckedItems(
+            listId: Long,
+            createdBy: Long,
+        ): ApiShoppingList {
+            val updatedList: ApiShoppingList
+            withContext(Dispatchers.IO) {
+                itemToListRepository.deleteAllCheckedMappingsForList(listId, createdBy)
+                updatedList = read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
+                updatedList.version++
+                update(updatedList)
+            }
+            return updatedList
+        }
+
         suspend fun addAll(
             listId: Long,
             createdBy: Long,

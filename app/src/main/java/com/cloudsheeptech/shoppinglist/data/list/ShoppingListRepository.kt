@@ -338,6 +338,18 @@ class ShoppingListRepository
             remoteApi.deleteShoppingList(listId)
         }
 
+        suspend fun deleteAllCheckedItems(
+            listId: Long,
+            createdBy: Long,
+        ) {
+            try {
+                val updatedList = localDataSource.remoteCheckedItems(listId, createdBy)
+                remoteApi.update(updatedList)
+            } catch (ex: Exception) {
+                Log.e("ShoppingListRepository", "Failed to delete all checked items: $ex")
+            }
+        }
+
         suspend fun deleteAll() {
             localDataSource.deleteAll()
             remoteApi.deleteAll()

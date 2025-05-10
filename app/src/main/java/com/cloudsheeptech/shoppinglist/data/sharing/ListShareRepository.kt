@@ -58,14 +58,15 @@ class ListShareRepository
             listId: Long,
             createdBy: Long,
             sharedWith: Long,
-        ) {
+        ): Boolean {
             val success = remoteDataSource.delete(listId, createdBy, sharedWith)
             if (!success) {
                 Log.e("ListShareRepository", "Unsharing $listId with $sharedWith online failed")
-                return
+                return false
             }
             localDataSource.delete(listId, createdBy, sharedWith)
             Log.d("ListShareRepository", "Unshared $listId with $sharedWith")
+            return true
         }
 
         suspend fun deleteAll(

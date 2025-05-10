@@ -228,7 +228,10 @@ class ShareViewModel
         private fun unshareListForUser(sharedWithId: Long) {
             localCoroutine.launch {
                 val user = appUserRepository.read() ?: return@launch
-                sharingRepository.delete(listId.value!!, user.OnlineID, sharedWithId)
+                val success = sharingRepository.delete(listId.value!!, user.OnlineID, sharedWithId)
+                if (!success) {
+                    // TODO: Show toast
+                }
             }
         }
 

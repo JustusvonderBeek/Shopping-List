@@ -49,11 +49,16 @@ class AppUserRepository
         // Delete the user offline and online
         suspend fun delete() {
             val localUser = appUserLocalSource.getUser() ?: return
+            var success = false
             try {
-                appUserRemoteSource.delete(localUser)
+                success = appUserRemoteSource.delete(localUser)
             } catch (ex: Exception) {
                 Log.w("AppUserRepository", "User not deleted online: $ex")
+            } finally {
+                if (!success) {
+                    Log.e("AppUserRepository", "User not deleted online, continue anyway")
+                }
+                appUserLocalSource.delete()
             }
-            appUserLocalSource.delete()
         }
     }

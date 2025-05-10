@@ -9,7 +9,6 @@ import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.time.OffsetDateTime
@@ -100,7 +99,7 @@ class AppUserRemoteDataSource
             val success =
                 withContext(Dispatchers.IO) {
                     try {
-                        remoteApi.DELETE("${UrlProviderEnum.BASE_USER_URL}/${user.OnlineID}") { resp ->
+                        remoteApi.DELETE("${UrlProviderEnum.BASE_USER_URL.url}/${user.OnlineID}") { resp ->
                             if (resp.status != HttpStatusCode.OK) {
                                 Log.w("AppUserRemoteDataSource", "Failed to delete user online!")
                                 // In case the server cannot be reached, the call throws a

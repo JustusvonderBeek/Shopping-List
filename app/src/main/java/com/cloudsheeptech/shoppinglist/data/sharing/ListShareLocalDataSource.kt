@@ -40,10 +40,13 @@ class ListShareLocalDataSource
             }
         }
 
-        suspend fun read(listId: Long): List<Long> {
+        suspend fun read(
+            listId: Long,
+            createdBy: Long,
+        ): List<Long> {
             val sharedWith = mutableListOf<Long>()
             withContext(Dispatchers.IO) {
-                val dbSharedWith = shareDao.getListSharedWith(listId)
+                val dbSharedWith = shareDao.getListSharedWith(listId, createdBy)
                 dbSharedWith.forEach { share -> sharedWith.add(share.SharedWith) }
             }
             return sharedWith

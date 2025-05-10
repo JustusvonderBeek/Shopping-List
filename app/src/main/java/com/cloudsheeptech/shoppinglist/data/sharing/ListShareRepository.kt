@@ -35,7 +35,10 @@ class ListShareRepository
             return false
         }
 
-        suspend fun read(listId: Long): List<Long> = localDataSource.read(listId)
+        suspend fun read(
+            listId: Long,
+            createdBy: Long,
+        ): List<Long> = localDataSource.read(listId, createdBy)
 
         fun readLive(
             listId: Long,

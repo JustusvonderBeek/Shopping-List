@@ -38,8 +38,11 @@ interface SharedDao {
         listId: Long,
     )
 
-    @Query("SELECT * FROM shared_table WHERE ListId = :listId")
-    fun getListSharedWith(listId: Long): List<ListShareDatabase>
+    @Query("SELECT * FROM shared_table WHERE ListId = :listId AND CreatedBy = :createdBy")
+    fun getListSharedWith(
+        listId: Long,
+        createdBy: Long,
+    ): List<ListShareDatabase>
 
     @Query("SELECT * FROM shared_table WHERE ListId = :listId AND CreatedBy = :createdBy")
     fun getListSharedWithLive(
@@ -48,7 +51,7 @@ interface SharedDao {
     ): LiveData<List<ListShareDatabase>>
 
     @Query(
-        "SELECT onlineId as UserId,username as Name, 1 as Shared FROM shared_table st JOIN online_user u ON st.SharedWith = u.onlineId WHERE st.ListId = :listId AND st.CreatedBy = :createdBy",
+        "SELECT u.onlineId as UserId, u.username as Name, 1 as Shared FROM shared_table st JOIN online_user u ON st.SharedWith = u.onlineId WHERE st.ListId = :listId AND st.CreatedBy = :createdBy",
     )
     fun getListPreviewSharedWith(
         listId: Long,

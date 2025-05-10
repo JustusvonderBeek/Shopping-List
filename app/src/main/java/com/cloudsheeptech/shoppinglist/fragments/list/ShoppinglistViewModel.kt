@@ -73,8 +73,8 @@ class ShoppinglistViewModel
         private val _navigateUp = MutableLiveData<Boolean>(false)
         val navigateUp: LiveData<Boolean> get() = _navigateUp
 
-        private val _navigateShare = MutableLiveData<Long>(-1)
-        val navigateShare: LiveData<Long> get() = _navigateShare
+        private val _navigateShare = MutableLiveData<Pair<Long, Long>>(-1L to -1L)
+        val navigateShare: LiveData<Pair<Long, Long>> get() = _navigateShare
 
         private val _hideKeyboard = MutableLiveData<Boolean>(false)
         val hideKeyboard: LiveData<Boolean> get() = _hideKeyboard
@@ -435,11 +435,11 @@ class ShoppinglistViewModel
         }
 
         private fun navigateToShare() {
-            _navigateShare.value = shoppingListId
+            _navigateShare.value = shoppingListId to createdBy
         }
 
         fun onShareNavigated() {
-            _navigateShare.value = -1
+            _navigateShare.value = -1L to -1L
         }
 
         private fun clearItemNameInput() {

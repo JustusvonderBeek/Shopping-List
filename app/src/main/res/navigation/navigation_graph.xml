@@ -79,6 +79,10 @@
             android:name="recipeId"
             app:argType="long"
             android:defaultValue="-1L" />
+        <argument
+            android:name="createdBy"
+            app:argType="long"
+            android:defaultValue="-1L" />
     </fragment>
     <fragment
         android:id="@+id/listPickerFragment"

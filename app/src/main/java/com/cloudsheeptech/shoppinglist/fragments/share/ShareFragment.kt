@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentShareBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +31,10 @@ class ShareFragment : Fragment() {
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_share, container, false)
 
+        val navArgs by navArgs<ShareFragmentArgs>()
+        savedInstanceState?.putLong("listId", navArgs.listId)
+        savedInstanceState?.putLong("createdBy", navArgs.createdBy)
+
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         val adapter =
@@ -45,7 +50,7 @@ class ShareFragment : Fragment() {
             )
         binding.userPreviewList.adapter = adapter
 
-        viewModel.sharedUsers.observe(
+        viewModel.combinedUsers.observe(
             viewLifecycleOwner,
             Observer { users ->
                 users.let {

@@ -6,8 +6,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
-import androidx.lifecycle.asLiveData
+import androidx.lifecycle.switchMap
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareRepository
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
@@ -17,8 +16,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -31,7 +28,7 @@ class ShareViewModel
         private val sharingRepository: ListShareRepository,
         private val recipeShareRepository: RecipeShareRepository,
         private val appUserRepository: AppUserRepository,
-        private val savedStateHandle: SavedStateHandle,
+        savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
         private val job = Job()
         private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
@@ -44,31 +41,45 @@ class ShareViewModel
         // Not yet used, since only the owner can share for now
         private val createdBy = savedStateHandle.getLiveData("createdBy", -1L)
 
-        // Load list or shared recipe data based on live data from store
-        private val offlineUsers: LiveData<List<ShareUserPreview>> =
-            listId
-                .asFlow()
-                .flatMapLatest { id ->
-                    if (id > 0L) {
-                        val currentUser = appUserRepository.read()
-                        if (currentUser == null) {
-                            return@flatMapLatest flow { emit(emptyList<ShareUserPreview>()) }
-                        }
-                        val listOfSharedIds = sharingRepository.readLive(id, currentUser.OnlineID)
-                        return@flatMapLatest listOfSharedIds.asFlow()
-                    }
-                    flow {
-                        emit(emptyList<ShareUserPreview>())
-                    }
-                }.asLiveData()
+        // Combine the latest listId,createdBy into a LiveData pair
+        private val listIdentifier =
+            MediatorLiveData<Pair<Long, Long>>().apply {
+                var currentListId: Long = -1L
+                var currentCreatedBy: Long = -1L
 
-        private val _searchedUsers = MutableLiveData<List<ShareUserPreview>>()
+                addSource(listId) { newId ->
+                    if (newId > 0L) {
+                        currentListId = newId
+                        if (currentCreatedBy > 0L) {
+                            value = currentListId to currentCreatedBy
+                        }
+                    }
+                }
+
+                addSource(createdBy) { newId ->
+                    if (newId > 0L) {
+                        currentCreatedBy = newId
+                        if (currentListId > 0L) {
+                            value = currentListId to currentCreatedBy
+                        }
+                    }
+                }
+            }
+
+        // The full list of all users which this list is currently shared with
+        private val sharedWithUsers: LiveData<List<ShareUserPreview>> =
+            listIdentifier.switchMap { (listId, createdBy) ->
+                sharingRepository.readLive(listId, createdBy)
+            }
+
+        // The list of users which is returned from the online search
+        private val _searchedUsers = MutableLiveData<List<ShareUserPreview>>(emptyList<ShareUserPreview>())
         val searchedUsers: LiveData<List<ShareUserPreview>> get() = _searchedUsers
 
         val searchString = MutableLiveData<String>("")
 
-        private val _sharedUsers = MediatorLiveData<List<ShareUserPreview>>()
-        val sharedUsers: LiveData<List<ShareUserPreview>> get() = _sharedUsers
+        private val _combinedUsers = MediatorLiveData<List<ShareUserPreview>>()
+        val combinedUsers: LiveData<List<ShareUserPreview>> get() = _combinedUsers
 
         // --- Navigation / UI States ---
 
@@ -76,58 +87,51 @@ class ShareViewModel
         val navigateUp: LiveData<Boolean> get() = _navigateUp
 
         init {
-            initPreview()
+            setupCombinedUserList()
         }
 
-        private fun initPreview() {
-            _sharedUsers.addSource(_searchedUsers) { onlineUsers ->
+        private fun setupCombinedUserList() {
+            _combinedUsers.addSource(sharedWithUsers) { sharedUsers ->
+                Log.d("ShareViewModel", "Shared changed...")
+                _combinedUsers.value = combineUserLists(_searchedUsers.value, sharedUsers)
+            }
+
+            _combinedUsers.addSource(_searchedUsers) { onlineUsers ->
                 Log.d("ShareViewModel", "Online changed...")
-                localCoroutine.launch {
-                    combineUserLists(onlineUsers, offlineUsers.value)
-                }
-            }
-            _sharedUsers.addSource(offlineUsers) { offlineUsers ->
-                Log.d("ShareViewModel", "Offline changed")
-                localCoroutine.launch {
-                    combineUserLists(_searchedUsers.value, offlineUsers)
-                }
+                _combinedUsers.value = combineUserLists(onlineUsers, sharedWithUsers.value)
             }
         }
 
-        private suspend fun combineUserLists(
+        private fun combineUserLists(
             onlinePreview: List<ShareUserPreview>?,
             offlinePreview: List<ShareUserPreview>?,
-        ) {
+        ): List<ShareUserPreview> {
             Log.d("ShareViewModel", "Combine called")
-            withContext(Dispatchers.IO) {
-                val combinedUsers = mutableListOf<ShareUserPreview>()
-                Log.d(
-                    "ShareViewModel",
-                    "Combine: Step before - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}",
-                )
-                offlinePreview?.let { combinedUsers.addAll(it) }
-                // If the offline user is already in the list, we know he was already shared
-                // Therefore don't add the online user anymore. Differentiate on UserID
-                Log.d(
-                    "ShareViewModel",
-                    "Combine: Step offline - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}",
-                )
-                onlinePreview?.let {
-                    it.forEach {
-                        // Compare on the UserID (overwritten in the class equals operator itself)
-                        if (!combinedUsers.contains(it)) {
-                            combinedUsers.add(it)
-                        }
+            val combinedUsers = mutableListOf<ShareUserPreview>()
+            Log.d(
+                "ShareViewModel",
+                "Combine: Step before - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}",
+            )
+            offlinePreview?.let { combinedUsers.addAll(it) }
+            // If the offline user is already in the list, we know he was already shared
+            // Therefore don't add the online user anymore. Differentiate on UserID
+            Log.d(
+                "ShareViewModel",
+                "Combine: Step offline - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}",
+            )
+            onlinePreview?.let {
+                it.forEach {
+                    // Compare on the UserID (overwritten in the class equals operator itself)
+                    if (!combinedUsers.contains(it)) {
+                        combinedUsers.add(it)
                     }
                 }
-                Log.d(
-                    "ShareViewModel",
-                    "Combine: Step online - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}",
-                )
-                withContext(Dispatchers.Main) {
-                    _sharedUsers.value = combinedUsers
-                }
             }
+            Log.d(
+                "ShareViewModel",
+                "Combine: Step online - length C:${combinedUsers.size}; On:${onlinePreview?.size}; Off:${offlinePreview?.size}",
+            )
+            return combinedUsers
         }
 
         private suspend fun searchUsersFromOnlineAndDatabase(name: String): List<ShareUserPreview> {
@@ -175,7 +179,7 @@ class ShareViewModel
                 val user = appUserRepository.read() ?: return@launch
                 val success = sharingRepository.create(listId.value!!, user.OnlineID, sharedWithId)
                 if (success) {
-                    _sharedUsers.value?.map { user ->
+                    _combinedUsers.value?.map { user ->
                         if (user.UserId == sharedWithId) {
                             user.Shared = true
                         }

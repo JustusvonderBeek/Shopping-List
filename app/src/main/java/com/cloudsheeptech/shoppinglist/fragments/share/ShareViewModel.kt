@@ -66,10 +66,39 @@ class ShareViewModel
                 }
             }
 
+        private val recipeIdentifier =
+            MediatorLiveData<Pair<Long, Long>>().apply {
+                var currentRecipeId: Long = -1L
+                var currentCreatedBy: Long = -1L
+
+                addSource(recipeId) { newId ->
+                    if (newId > 0L) {
+                        currentRecipeId = newId
+                        if (currentCreatedBy > 0L) {
+                            value = currentRecipeId to currentCreatedBy
+                        }
+                    }
+                }
+
+                addSource(createdBy) { newId ->
+                    if (newId > 0L) {
+                        currentCreatedBy = newId
+                        if (currentRecipeId > 0L) {
+                            value = currentRecipeId to currentCreatedBy
+                        }
+                    }
+                }
+            }
+
         // The full list of all users which this list is currently shared with
         private val sharedWithUsers: LiveData<List<ShareUserPreview>> =
             listIdentifier.switchMap { (listId, createdBy) ->
                 sharingRepository.readLive(listId, createdBy)
+            }
+
+        private val recipeSharedWithUsers: LiveData<List<ShareUserPreview>> =
+            recipeIdentifier.switchMap { (recipeId, createdBy) ->
+                recipeShareRepository.readLive(recipeId, createdBy)
             }
 
         // The list of users which is returned from the online search
@@ -99,6 +128,11 @@ class ShareViewModel
             _combinedUsers.addSource(_searchedUsers) { onlineUsers ->
                 Log.d("ShareViewModel", "Online changed...")
                 _combinedUsers.value = combineUserLists(onlineUsers, sharedWithUsers.value)
+            }
+
+            _combinedUsers.addSource(recipeSharedWithUsers) { sharedUsers ->
+                Log.d("ShareViewModel", "Shared changed...")
+                _combinedUsers.value = combineUserLists(_searchedUsers.value, sharedUsers)
             }
         }
 

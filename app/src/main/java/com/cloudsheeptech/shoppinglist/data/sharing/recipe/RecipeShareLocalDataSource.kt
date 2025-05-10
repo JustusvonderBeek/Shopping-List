@@ -3,6 +3,7 @@ package com.cloudsheeptech.shoppinglist.data.sharing.recipe
 import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
+import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -55,6 +56,11 @@ class RecipeShareLocalDataSource
             recipeId: Long,
             createdBy: Long,
         ): LiveData<List<RecipeShare>> = shareDao.getLive(recipeId, createdBy)
+
+        fun readLiveWithUser(
+            recipeId: Long,
+            createdBy: Long,
+        ): LiveData<List<ShareUserPreview>> = shareDao.getLiveWithUser(recipeId, createdBy)
 
         suspend fun delete(
             recipeId: Long,

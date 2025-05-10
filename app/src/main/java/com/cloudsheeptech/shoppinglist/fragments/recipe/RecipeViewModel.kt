@@ -84,8 +84,8 @@ class RecipeViewModel
         private val _navigateToEdit = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
         val navigateToEdit: LiveData<Pair<Long, Long>> get() = _navigateToEdit
 
-        private val _navigateToShare = MutableLiveData<Long>(-1)
-        val navigateToShare: LiveData<Long> get() = _navigateToShare
+        private val _navigateToShare = MutableLiveData<Pair<Long, Long>>(-1L to -1L)
+        val navigateToShare: LiveData<Pair<Long, Long>> get() = _navigateToShare
 
         private val _navigateToSelectList = MutableLiveData<Boolean>(false)
         val navigateToSelectList: LiveData<Boolean> get() = _navigateToSelectList
@@ -165,7 +165,7 @@ class RecipeViewModel
         }
 
         fun shareRecipe() {
-            _navigateToShare.value = recipeId
+            _navigateToShare.value = recipeId to createdBy
         }
 
         private fun navigateToSelectList() {
@@ -212,7 +212,7 @@ class RecipeViewModel
         }
 
         fun onShareNavigated() {
-            _navigateToShare.value = -1
+            _navigateToShare.value = -1L to -1L
         }
 
         fun navigateUp() {

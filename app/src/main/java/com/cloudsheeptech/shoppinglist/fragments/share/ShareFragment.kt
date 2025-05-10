@@ -34,6 +34,7 @@ class ShareFragment : Fragment() {
         val navArgs by navArgs<ShareFragmentArgs>()
         savedInstanceState?.putLong("listId", navArgs.listId)
         savedInstanceState?.putLong("createdBy", navArgs.createdBy)
+        savedInstanceState?.putLong("recipeId", navArgs.recipeId)
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this

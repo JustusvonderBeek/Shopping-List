@@ -175,11 +175,12 @@ class RecipeFragment :
 
         viewModel.navigateToShare.observe(
             viewLifecycleOwner,
-            Observer { navigate ->
-                if (navigate > 0L) {
+            Observer { (recipeId, createdBy) ->
+                if (recipeId > 0L && createdBy > 0L) {
                     findNavController().navigate(
                         RecipeFragmentDirections.actionReceiptToShareFragment(
-                            navigate,
+                            recipeId = recipeId,
+                            createdBy = createdBy,
                         ),
                     )
                     viewModel.onShareNavigated()

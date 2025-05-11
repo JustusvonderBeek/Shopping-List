@@ -29,7 +29,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:elevation="3dp"
-        android:shadowColor="@color/shopping_gray"
+        android:shadowColor="@color/app_gray_m_500"
         app:cardCornerRadius="10dp">
 
         <LinearLayout
@@ -95,7 +95,7 @@
                     android:padding="0dp"
                     app:elevation="0dp"
                     android:src="@drawable/ic_minus"
-                    app:backgroundTint="@color/decrease_orange" />
+                    app:backgroundTint="@color/app_red_500" />
 
                 <!--                <TextView-->
                 <!--                    android:layout_width="wrap_content"-->
@@ -114,7 +114,7 @@
                     android:onClick="@{() -> clickListener.onClick(item, 1)}"
                     app:elevation="0dp"
                     android:src="@drawable/ic_plus"
-                    app:backgroundTint="@color/add_green" />
+                    app:backgroundTint="@color/app_green_500" />
 
             </LinearLayout>
         </LinearLayout>

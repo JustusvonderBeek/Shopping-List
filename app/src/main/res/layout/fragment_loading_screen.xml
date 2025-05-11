@@ -26,13 +26,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Loading..."
-            android:textColor="@color/app_black" />
+            android:textAlignment="center"
+            android:textColor="@color/app_white" />
 
         <ProgressBar
             android:id="@+id/loadingSpinner"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:indeterminateTint="@color/highlight_green" />
+            android:indeterminateTint="@color/app_green_500" />
 
     </LinearLayout>
 

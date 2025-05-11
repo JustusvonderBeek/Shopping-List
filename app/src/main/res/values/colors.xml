@@ -1,15 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="shopping_green">#50A02C</color>
-    <color name="highlight_green">#84BF38</color>
-    <color name="shopping_gray">#dddddd</color>
-    <color name="decrease_orange">#FF5722</color>
-    <color name="shopping_red">#F52D1E</color>
-    <color name="add_green">#8BC34A</color>
+    <!-- Basics -->
     <color name="app_white">#FFFFFF</color>
-    <color name="app_dark_white">#f0f0f0</color>
     <color name="app_black">#000000</color>
 
-    <color name="black">#000000</color>
-    <color name="white">#FFFFFF</color>
+    <!-- Greens -->
+    <color name="app_green_900">#DFF8DD</color>
+    <color name="app_green_700">#B8E9B4</color>
+    <color name="app_green_500">#8EDC89</color>
+    <color name="app_green_300">#69D161</color>
+    <color name="app_green_0">#3DB435</color>
+    <color name="app_green_m_300">#299121</color>
+    <color name="app_green_m_500">#195B15</color>
+    <color name="app_green_m_700">#0E320B</color>
+    <color name="app_green_m_900">#071E05</color>
+
+    <!-- Greys -->
+    <color name="app_gray_900">#ECECE9</color>
+    <color name="app_gray_700">#D1D1CC</color>
+    <color name="app_gray_500">#B8B9B1</color>
+    <color name="app_gray_300">#A2A498</color>
+    <color name="app_gray_0">#838679</color>
+    <color name="app_gray_m_300">#58594F</color>
+    <color name="app_gray_m_500">#42443C</color>
+    <color name="app_gray_m_700">#20201D</color>
+    <color name="app_gray_m_900">#080807</color>
+
+    <color name="app_gray_900_trans">#ECECE9F0</color>
+    <color name="app_gray_700_trans">#D1D1CC</color>
+    <color name="app_gray_500_trans">#B8B9B1</color>
+    <color name="app_gray_300_trans">#A2A498</color>
+    <color name="app_gray_0_trans">#838679</color>
+    <color name="app_gray_m_300_trans">#58594F</color>
+    <color name="app_gray_m_500_trans">#42443C</color>
+    <color name="app_gray_m_700_trans">#20201D</color>
+    <color name="app_gray_m_900_trans">#080807</color>
+
+    <!-- Blues -->
+    <color name="app_blue_900">#E0EFFB</color>
+    <color name="app_blue_700">#B9DCF4</color>
+    <color name="app_blue_500">#7DBAE8</color>
+    <color name="app_blue_300">#589FD5</color>
+    <color name="app_blue_0">#338ACC</color>
+    <color name="app_blue_m_300">#24699E</color>
+    <color name="app_blue_m_500">#1A4D74</color>
+    <color name="app_blue_m_700">#092634</color>
+    <color name="app_blue_m_900">#031216</color>
+
+    <!-- Reds -->
+    <color name="app_red_900">#FDE7E7</color>
+    <color name="app_red_700">#F7A6A6</color>
+    <color name="app_red_500">#F27373</color>
+    <color name="app_red_300">#EA4848</color>
+    <color name="app_red_0">#DF2020</color>
+    <color name="app_red_m_300">#B31414</color>
+    <color name="app_red_m_500">#710E0E</color>
+    <color name="app_red_m_700">#380505</color>
+    <color name="app_red_m_900">#1B0404</color>
+
+    <!-- Yellow -->
+    <color name="app_yellow_900">#FBF6C1</color>
+    <color name="app_yellow_700">#F0ED94</color>
+    <color name="app_yellow_500">#E6E270</color>
+    <color name="app_yellow_300">#DDDD55</color>
+    <color name="app_yellow_0">#D2D22D</color>
+    <color name="app_yellow_m_300">#ADA825</color>
+    <color name="app_yellow_m_500">#817D18</color>
+    <color name="app_yellow_m_700">#454208</color>
+    <color name="app_yellow_m_900">#181602</color>
+
 </resources>

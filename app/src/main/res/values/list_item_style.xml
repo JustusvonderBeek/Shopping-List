@@ -7,8 +7,8 @@
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:layout_marginBottom">0dp</item>
         <item name="cardElevation">3dp</item>
-        <item name="cardBackgroundColor">@color/white</item>
-        <item name="android:shadowColor">@color/shopping_gray</item>
+        <item name="cardBackgroundColor">@color/app_white</item>
+        <item name="android:shadowColor">@color/app_gray_m_700</item>
         <item name="addElevationShadow">true</item>
         <item name="android:shadowDx">3</item>
         <item name="android:shadowDy">3</item>

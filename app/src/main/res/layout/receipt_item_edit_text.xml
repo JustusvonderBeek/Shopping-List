@@ -50,7 +50,7 @@
                 app:elevation="0dp"
                 android:onClick="@{() -> clickListener.onClick(ingredient, -1)}"
                 android:src="@drawable/ic_minus"
-                app:backgroundTint="@color/decrease_orange" />
+                app:backgroundTint="@color/app_red_500" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_width="wrap_content"
@@ -59,7 +59,7 @@
                 app:elevation="0dp"
                 android:onClick="@{() -> clickListener.onClick(ingredient, 1)}"
                 android:src="@drawable/ic_plus"
-                app:backgroundTint="@color/add_green" />
+                app:backgroundTint="@color/app_green_500" />
 
         </LinearLayout>
     </LinearLayout>

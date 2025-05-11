@@ -70,10 +70,10 @@
 
     <style name="EditTextWithoutUnderline" parent="ThemeOverlay.Material3.TextInputEditText">
         <item name="android:background">@null</item>
-        <item name="backgroundTint">#444444FF</item>
+        <item name="backgroundTint">@color/app_gray_700</item>
     </style>
 
     <style name="AppBottomNavCustomIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">@color/shopping_green</item>
+        <item name="android:color">@color/app_green_0</item>
     </style>
 </resources>

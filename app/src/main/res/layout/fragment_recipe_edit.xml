@@ -38,7 +38,7 @@
                 android:id="@+id/dotsIndicator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:dotsColor="@color/shopping_green"
+                app:dotsColor="@color/app_green_300"
                 app:dotsSize="14dp"
                 app:flow_wrapMode="chain"
                 android:layout_marginTop="8dp"

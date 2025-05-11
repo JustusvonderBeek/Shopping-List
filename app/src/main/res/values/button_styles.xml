@@ -2,18 +2,18 @@
 <resources>
 
     <style name="EnabledMaterialButton" parent="Widget.Material3.Button">
-        <item name="backgroundTint">@color/shopping_green</item>
+        <item name="backgroundTint">@color/app_green_0</item>
         <item name="cornerRadius">10dp</item>
     </style>
 
     <style name="DisabledMaterialButton" parent="Widget.Material3.Button">
-        <item name="backgroundTint">@color/shopping_red</item>
+        <item name="backgroundTint">@color/app_blue_500</item>
         <item name="android:textColor">@color/app_white</item>
         <item name="cornerRadius">10dp</item>
     </style>
 
     <style name="ShoppingListAppButton" parent="Widget.Material3.Button">
-        <item name="backgroundTint">@color/shopping_green</item>
+        <item name="backgroundTint">@color/app_green_0</item>
         <item name="cornerRadius">10dp</item>
         <item name="android:textColor">@color/app_white</item>
     </style>

@@ -2,7 +2,7 @@
 <resources>
 
     <style name="VocabularyTheme" parent="Theme.Material3.DynamicColors.DayNight">
-        <item name="colorPrimary">@color/shopping_green</item>
-        <item name="colorControlHighlight">@color/highlight_green</item>
+        <item name="colorPrimary">@color/app_green_0</item>
+        <item name="colorControlHighlight">@color/app_green_700</item>
     </style>
 </resources>

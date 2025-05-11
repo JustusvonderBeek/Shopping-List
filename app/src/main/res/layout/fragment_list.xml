@@ -56,6 +56,7 @@
 
                 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                     android:id="@+id/refresh_layout"
+                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -65,8 +66,16 @@
                         android:layout_height="match_parent"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/shopping_item"
-                        android:scrollbars="vertical" />
+                        android:scrollbars="vertical"
+                        />
+
                 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+                <include layout="@layout/ui_list_item_placeholder"
+                    android:id="@+id/emptyListPlaceholder"
+                    android:visibility="visible"
+                    />
+
             </LinearLayout>
 
             <LinearLayout
@@ -76,7 +85,7 @@
                 android:orientation="vertical"
                 android:gravity="center"
                 android:visibility="gone"
-                android:background="#BFFFFFFF">
+                android:background="@color/app_gray_0">
 
                 <ImageView
                     android:layout_width="50dp"
@@ -148,7 +157,7 @@
                     android:clickable="true"
                     app:elevation="0dp"
                     android:src="@drawable/ic_plus"
-                    android:backgroundTint="@color/add_green"
+                    android:backgroundTint="@color/app_green_300"
                     android:onClick="@{() -> viewModel.addItem()}" />
             </LinearLayout>
         </LinearLayout>

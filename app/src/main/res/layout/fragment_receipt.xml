@@ -38,7 +38,7 @@
                 android:id="@+id/dotsIndicator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:dotsColor="@color/shopping_green"
+                app:dotsColor="@color/app_green_300"
                 app:dotsSize="14dp"
                 app:flow_wrapMode="chain"
                 android:layout_marginTop="8dp"
@@ -73,7 +73,7 @@
                     android:text='@{String.format("%s: %d", recipeVM.portionsText, recipeVM.portions)}'
                     android:layout_weight="2"
                     android:textAlignment="textStart"
-                    android:gravity="center_vertical"
+                    android:gravity="center_vertical|start"
                     style="@style/ShoppingListNormalStyle" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -86,7 +86,7 @@
                     app:elevation="0dp"
                     android:onClick="@{() -> recipeVM.decreasePortions()}"
                     android:src="@drawable/ic_minus"
-                    app:backgroundTint="@color/decrease_orange" />
+                    app:backgroundTint="@color/app_red_500" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:layout_width="wrap_content"
@@ -99,7 +99,7 @@
                     app:elevation="0dp"
                     android:onClick="@{() -> recipeVM.increasePortions()}"
                     android:src="@drawable/ic_plus"
-                    app:backgroundTint="@color/add_green" />
+                    app:backgroundTint="@color/app_green_500" />
 
             </LinearLayout>
 

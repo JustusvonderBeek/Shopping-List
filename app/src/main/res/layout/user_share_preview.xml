@@ -52,6 +52,7 @@
             android:gravity="center"
             android:onClick="@{() -> clickListener.onClick(creator)}"
             android:text="@string/btn_share_list_user"
+            android:backgroundTint="@color/app_green_500"
             app:icon="@drawable/ic_share"
             />
 
@@ -63,7 +64,7 @@
             android:onClick="@{() -> unshareClickListener.onClick(creator)}"
             android:text="@string/btn_unshare_list_user"
             android:visibility="gone"
-            app:backgroundTint="#FF5722"
+            app:backgroundTint="@color/app_red_500"
             app:icon="@drawable/ic_unshare" />
 
     </LinearLayout>

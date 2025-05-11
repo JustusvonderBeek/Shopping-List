@@ -300,6 +300,19 @@ class ShoppinglistFragment :
             },
         )
 
+        viewModel.emptyList.observe(
+            viewLifecycleOwner,
+            Observer { empty ->
+                if (empty) {
+                    binding.refreshLayout.visibility = View.GONE
+                    binding.emptyListPlaceholder.visibility = View.VISIBLE
+                } else {
+                    binding.refreshLayout.visibility = View.VISIBLE
+                    binding.emptyListPlaceholder.visibility = View.GONE
+                }
+            },
+        )
+
         viewModel.finished.observe(
             viewLifecycleOwner,
             Observer { clicked ->

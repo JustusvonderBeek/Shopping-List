@@ -29,11 +29,12 @@ import javax.inject.Inject
 class ShoppinglistViewModel
     @Inject
     constructor(
-        val database: ShoppingListDatabase,
+        private val database: ShoppingListDatabase,
         val shoppingListRepository: ShoppingListRepository,
         private val appUserRepository: AppUserRepository,
         savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
+        // TODO: Replace with repository abstraction
         private val listDao = database.shoppingListDao()
         private val itemDao = database.itemDao()
         private val mappingDao = database.mappingDao()
@@ -68,6 +69,9 @@ class ShoppinglistViewModel
 
         private val _refreshing = MutableLiveData<Boolean>(false)
         val refreshing: LiveData<Boolean> get() = _refreshing
+
+        private val _emptyList = MutableLiveData<Boolean>(true)
+        val emptyList: LiveData<Boolean> get() = _emptyList
 
         // Navigation
         private val _navigateUp = MutableLiveData<Boolean>(false)
@@ -113,9 +117,11 @@ class ShoppinglistViewModel
         init {
             orderedItemsInList.addSource(_ordering, { value ->
                 orderedItemsInList.value = getSortedList(orderedItemsInList.value ?: emptyList(), value)
+                updateListEmpty()
             })
             orderedItemsInList.addSource(itemsInList, { value ->
                 orderedItemsInList.value = getSortedList(value, _ordering.value!!)
+                updateListEmpty()
             })
         }
 
@@ -165,6 +171,20 @@ class ShoppinglistViewModel
                     sorted
                 }
             }
+        }
+
+        private fun updateListEmpty() {
+            if (this.orderedItemsInList.value == null) {
+                Log.d("ShoppingListViewModel", "Cannot update list because value is null")
+                return
+            }
+            if (this.orderedItemsInList.value!!.isEmpty()) {
+                Log.d("ShoppingListViewModel", "List is empty")
+                _emptyList.value = true
+                return
+            }
+            Log.d("ShoppingListViewModel", "List is not empty")
+            _emptyList.value = false
         }
 
         // ----

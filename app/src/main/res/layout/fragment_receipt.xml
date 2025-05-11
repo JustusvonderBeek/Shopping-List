@@ -57,75 +57,78 @@
                 android:text="@={recipeVM.recipe.name}"
                 style="@style/ReceiptTitleStyle" />
 
-            <LinearLayout
-                android:id="@+id/portionConfigWrapper"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/receiptName"
-                app:layout_constraintStart_toStartOf="@id/receiptName"
-                app:layout_constraintEnd_toEndOf="@id/receiptName"
-                android:orientation="horizontal"
-                android:weightSum="2">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text='@{String.format("%s: %d", recipeVM.portionsText, recipeVM.portions)}'
-                    android:layout_weight="2"
-                    android:textAlignment="textStart"
-                    android:gravity="center_vertical|start"
-                    style="@style/ShoppingListNormalStyle" />
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_margin="1dp"
-                    android:clickable="true"
-                    android:padding="0dp"
-                    app:elevation="0dp"
-                    android:onClick="@{() -> recipeVM.decreasePortions()}"
-                    android:src="@drawable/ic_minus"
-                    app:backgroundTint="@color/app_red_500" />
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_margin="1dp"
-                    android:clickable="true"
-                    android:padding="0dp"
-                    android:layout_marginStart="8dp"
-                    app:elevation="0dp"
-                    android:onClick="@{() -> recipeVM.increasePortions()}"
-                    android:src="@drawable/ic_plus"
-                    app:backgroundTint="@color/app_green_500" />
-
-            </LinearLayout>
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/receiptIngredientListView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:layout_constraintTop_toBottomOf="@id/portionConfigWrapper"
-                app:layout_constraintStart_toStartOf="@id/portionConfigWrapper"
-                app:layout_constraintEnd_toEndOf="@id/portionConfigWrapper"
+                app:layout_constraintTop_toBottomOf="@id/receiptName"
+                app:layout_constraintStart_toStartOf="@id/receiptName"
+                app:layout_constraintEnd_toEndOf="@id/receiptName"
                 tools:listitem="@layout/receipt_item"
+                tools:itemCount="2"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-            <View
-                android:id="@+id/ingredientsAndDescDivider"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/portionConfigWrapperCard"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/receiptIngredientListView"
-                app:layout_constraintStart_toStartOf="@id/receiptIngredientListView"
-                app:layout_constraintEnd_toEndOf="@id/receiptIngredientListView"
-                android:background="@android:color/darker_gray" />
+                app:layout_constraintStart_toStartOf="@id/receiptName"
+                app:layout_constraintEnd_toEndOf="@id/receiptName"
+                app:cardBackgroundColor="@color/app_gray_900"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="10dp"
+                >
+
+                <LinearLayout
+                    android:id="@+id/portionConfigWrapper"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@id/receiptIngredientListView"
+                    app:layout_constraintStart_toStartOf="@id/receiptName"
+                    app:layout_constraintEnd_toEndOf="@id/receiptName"
+                    android:orientation="horizontal"
+                    android:padding="8dp"
+                    android:weightSum="2">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:text='@{String.format("%s: %d", recipeVM.portionsText, recipeVM.portions)}'
+                        android:layout_weight="2"
+                        android:textAlignment="textStart"
+                        android:gravity="center_vertical|start"
+                        style="@style/ShoppingListNormalStyle" />
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="1dp"
+                        android:clickable="true"
+                        android:padding="0dp"
+                        app:elevation="0dp"
+                        android:onClick="@{() -> recipeVM.decreasePortions()}"
+                        android:src="@drawable/ic_minus"
+                        app:backgroundTint="@color/app_red_500" />
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="1dp"
+                        android:clickable="true"
+                        android:padding="0dp"
+                        android:layout_marginStart="8dp"
+                        app:elevation="0dp"
+                        android:onClick="@{() -> recipeVM.increasePortions()}"
+                        android:src="@drawable/ic_plus"
+                        app:backgroundTint="@color/app_green_500" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:id="@+id/stepsHeaderText"
@@ -135,9 +138,9 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/steps_header"
                 android:textAlignment="viewStart"
-                app:layout_constraintEnd_toEndOf="@id/ingredientsAndDescDivider"
-                app:layout_constraintStart_toStartOf="@id/ingredientsAndDescDivider"
-                app:layout_constraintTop_toBottomOf="@id/ingredientsAndDescDivider" />
+                app:layout_constraintEnd_toEndOf="@id/receiptName"
+                app:layout_constraintStart_toStartOf="@id/receiptName"
+                app:layout_constraintTop_toBottomOf="@id/portionConfigWrapperCard" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/receiptDescriptionListView"
@@ -159,6 +162,7 @@
                 app:layout_constraintStart_toStartOf="@id/receiptDescriptionListView"
                 app:layout_constraintEnd_toEndOf="@id/receiptDescriptionListView"
                 android:onClick="@{() -> recipeVM.addRecipeToShoppingList()}"
+                android:backgroundTint="@color/app_green_500"
                 android:text="@string/btn_add_to_list" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -85,7 +85,7 @@
                 android:orientation="vertical"
                 android:gravity="center"
                 android:visibility="gone"
-                android:background="@color/app_gray_0">
+                android:background="@color/app_gray_700_trans">
 
                 <ImageView
                     android:layout_width="50dp"

@@ -26,15 +26,15 @@
     <color name="app_gray_m_700">#20201D</color>
     <color name="app_gray_m_900">#080807</color>
 
-    <color name="app_gray_900_trans">#ECECE9F0</color>
-    <color name="app_gray_700_trans">#D1D1CC</color>
-    <color name="app_gray_500_trans">#B8B9B1</color>
-    <color name="app_gray_300_trans">#A2A498</color>
-    <color name="app_gray_0_trans">#838679</color>
-    <color name="app_gray_m_300_trans">#58594F</color>
-    <color name="app_gray_m_500_trans">#42443C</color>
-    <color name="app_gray_m_700_trans">#20201D</color>
-    <color name="app_gray_m_900_trans">#080807</color>
+    <color name="app_gray_900_trans">#A0ECECE9</color>
+    <color name="app_gray_700_trans">#A0D1D1CC</color>
+    <color name="app_gray_500_trans">#A0B8B9B1</color>
+    <color name="app_gray_300_trans">#A0A2A498</color>
+    <color name="app_gray_0_trans">#A0838679</color>
+    <color name="app_gray_m_300_trans">#A058594F</color>
+    <color name="app_gray_m_500_trans">#A042443C</color>
+    <color name="app_gray_m_700_trans">#A020201D</color>
+    <color name="app_gray_m_900_trans">#A0080807</color>
 
     <!-- Blues -->
     <color name="app_blue_900">#E0EFFB</color>

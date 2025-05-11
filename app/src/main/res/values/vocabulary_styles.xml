@@ -50,7 +50,7 @@
 
     <style name="ReceiptTitleStyle" parent="Widget.AppCompat.TextView">
         <item name="android:textAlignment">center</item>
-        <item name="android:textSize">24sp</item>
+        <item name="android:textSize">26sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 

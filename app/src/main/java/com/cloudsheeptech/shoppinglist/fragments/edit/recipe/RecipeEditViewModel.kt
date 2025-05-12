@@ -128,14 +128,21 @@ class RecipeEditViewModel
             quantity: Int,
         ) {
             Log.d("ReceiptEditViewModel", "Changing quantity of ingredient $ingredient by $quantity")
+            var markedForDeletion = false
             val changedIngredients =
                 _receiptIngredientList.value?.map { ing ->
                     if (ing.id == ingredient) {
-                        ing.quantity = max(1, ing.quantity.plus(quantity))
+                        ing.quantity = max(0, ing.quantity.plus(quantity))
+                        if (ing.quantity == 0) {
+                            markedForDeletion = true
+                        }
                     }
                     ing
                 } ?: return
             _receiptIngredientList.value = changedIngredients
+            if (markedForDeletion) {
+                deleteIngredient(ingredient)
+            }
         }
 
         fun deleteIngredient(itemId: Long) {
@@ -167,9 +174,11 @@ class RecipeEditViewModel
                 Log.d("ReceiptEditViewModel", "Creating new recipe")
                 vmScope.launch {
                     val ingredients =
-                        _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
+                        _receiptIngredientList.value?.filter { x -> x.name.trim().isNotEmpty() }
+                            ?: emptyList()
                     val descriptions =
-                        receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
+                        receiptDescription.value?.filter { x -> x.step.trim().isNotEmpty() }
+                            ?: emptyList()
                     recipeRepository.create(title.value!!, 2, ingredients, descriptions, imageLocations)
                     withContext(Dispatchers.Main) {
                         navigateUp()
@@ -183,9 +192,11 @@ class RecipeEditViewModel
                     val updatedRecipe = storedRecipeAndImages.first
                     updatedRecipe.name = title.value ?: "Title"
                     updatedRecipe.ingredients =
-                        _receiptIngredientList.value?.filter { x -> x.name.isNotEmpty() } ?: emptyList()
+                        _receiptIngredientList.value?.filter { x -> x.name.trim().isNotEmpty() }
+                            ?: emptyList()
                     updatedRecipe.description =
-                        receiptDescription.value?.filter { x -> x.step.isNotEmpty() } ?: emptyList()
+                        receiptDescription.value?.filter { x -> x.step.trim().isNotEmpty() }
+                            ?: emptyList()
 
                     recipeRepository.update(updatedRecipe, imageLocations)
                     withContext(Dispatchers.Main) {

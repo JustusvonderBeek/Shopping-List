@@ -113,10 +113,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+            >
 
             <View
                 android:layout_width="match_parent"
@@ -125,30 +125,47 @@
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/shoppingItemSelectView"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/shopping_item_preview"
-                android:scrollbars="vertical"
-                android:visibility="gone" />
+            <View
+                android:id="@+id/visualBoxDrawer"
+                android:layout_width="100dp"
+                android:layout_height="5dp"
+                android:layout_gravity="center"
+                android:background="@drawable/drag_handle_bg"
+                />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:weightSum="2">
+                android:padding="4dp">
 
-                <com.google.android.material.textfield.TextInputEditText
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="5dp"
-                    android:hint="@string/item_name_input_hint"
-                    android:layout_weight="2"
-                    android:layout_gravity="center_vertical"
-                    android:text="@={viewModel.itemName}"
-                    style="@style/EditTextWithoutUnderline" />
+                    app:boxCornerRadiusBottomEnd="10dp"
+                    app:boxCornerRadiusBottomStart="10dp"
+                    app:boxCornerRadiusTopEnd="10dp"
+                    app:boxCornerRadiusTopStart="10dp"
+                    app:boxStrokeColor="@color/app_green_700"
+                    android:outlineAmbientShadowColor="@color/app_gray_0"
+                    android:layout_weight="1"
+                    android:shadowRadius="4"
+                    android:shadowDy="10"
+                    android:shadowDx="10"
+                    android:shadowColor="@color/app_gray_0"
+                    >
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="5dp"
+                        android:backgroundTintMode="add"
+                        android:hint="@string/item_name_input_hint"
+                        android:layout_gravity="center_vertical"
+                        android:text="@={viewModel.itemName}"
+                        style="@style/EditTextWithoutUnderline" />
+
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:layout_width="wrap_content"
@@ -156,10 +173,22 @@
                     android:layout_gravity="center_vertical"
                     android:clickable="true"
                     app:elevation="0dp"
+                    android:layout_margin="4dp"
                     android:src="@drawable/ic_plus"
                     android:backgroundTint="@color/app_green_300"
                     android:onClick="@{() -> viewModel.addItem()}" />
+
             </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/shoppingItemSelectView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                tools:listitem="@layout/shopping_item_preview"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:scrollbars="vertical"
+                android:visibility="gone" />
+
         </LinearLayout>
     </LinearLayout>
 </layout>

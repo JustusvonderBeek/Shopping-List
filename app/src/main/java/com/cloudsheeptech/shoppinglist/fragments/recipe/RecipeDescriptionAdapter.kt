@@ -32,6 +32,7 @@ class RecipeDescriptionAdapter : ListAdapter<ApiDescription, RecipeDescriptionAd
             val unevenColor = context.resources.getColor(R.color.app_gray_900, context.theme)
             val backgroundColor = if (bindingAdapterPosition % 2 == 0) evenColor else unevenColor
             binding.descriptionWrapperCard.setCardBackgroundColor(backgroundColor)
+            binding.descriptionWrapperCard.strokeColor = backgroundColor
             binding.executePendingBindings()
         }
 

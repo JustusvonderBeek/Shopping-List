@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
-import com.cloudsheeptech.shoppinglist.databinding.ReceiptItemEditTextBinding
+import com.cloudsheeptech.shoppinglist.databinding.RecipeItemEditTextBinding
 
 class RecipeIngredientEditAdapter(
     val clickListener: ReceiptIngredientEditClickListener,
@@ -24,7 +24,7 @@ class RecipeIngredientEditAdapter(
     }
 
     class ReceiptItemViewHolder private constructor(
-        val binding: ReceiptItemEditTextBinding,
+        val binding: RecipeItemEditTextBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             clickListener: ReceiptIngredientEditClickListener,
@@ -38,7 +38,7 @@ class RecipeIngredientEditAdapter(
         companion object {
             fun from(parent: ViewGroup): ReceiptItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val binding = ReceiptItemEditTextBinding.inflate(layoutInflater, parent, false)
+                val binding = RecipeItemEditTextBinding.inflate(layoutInflater, parent, false)
                 return ReceiptItemViewHolder(binding)
             }
         }

@@ -77,6 +77,7 @@
                 app:layout_constraintStart_toStartOf="@id/receiptName"
                 app:layout_constraintEnd_toEndOf="@id/receiptName"
                 app:cardBackgroundColor="@color/app_gray_900"
+                app:strokeColor="@color/app_gray_900"
                 android:layout_marginTop="8dp"
                 app:cardCornerRadius="10dp"
                 >
@@ -130,34 +131,24 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:id="@+id/stepsHeaderText"
-                style="@style/ShoppingListNormalStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/steps_header"
-                android:textAlignment="viewStart"
-                app:layout_constraintEnd_toEndOf="@id/receiptName"
-                app:layout_constraintStart_toStartOf="@id/receiptName"
-                app:layout_constraintTop_toBottomOf="@id/portionConfigWrapperCard" />
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/receiptDescriptionListView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:layout_constraintEnd_toEndOf="@id/stepsHeaderText"
-                app:layout_constraintStart_toStartOf="@id/stepsHeaderText"
-                app:layout_constraintTop_toBottomOf="@id/stepsHeaderText"
-                tools:listitem="@layout/receipt_description" />
+                app:layout_constraintEnd_toEndOf="@id/portionConfigWrapperCard"
+                app:layout_constraintStart_toStartOf="@id/portionConfigWrapperCard"
+                app:layout_constraintTop_toBottomOf="@id/portionConfigWrapperCard"
+                tools:listitem="@layout/receipt_description"
+                tools:itemCount="3"
+                />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/addToShoppingListButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 app:layout_constraintTop_toBottomOf="@id/receiptDescriptionListView"
                 app:layout_constraintStart_toStartOf="@id/receiptDescriptionListView"
                 app:layout_constraintEnd_toEndOf="@id/receiptDescriptionListView"

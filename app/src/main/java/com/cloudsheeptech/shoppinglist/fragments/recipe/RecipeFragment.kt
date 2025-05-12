@@ -19,7 +19,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.cloudsheeptech.shoppinglist.R
-import com.cloudsheeptech.shoppinglist.databinding.FragmentReceiptBinding
+import com.cloudsheeptech.shoppinglist.databinding.FragmentRecipeBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
@@ -29,7 +29,7 @@ class RecipeFragment :
     Fragment(),
     MenuProvider {
     private val viewModel: RecipeViewModel by activityViewModels<RecipeViewModel>()
-    private lateinit var binding: FragmentReceiptBinding
+    private lateinit var binding: FragmentRecipeBinding
 
     private val args: RecipeFragmentArgs by navArgs<RecipeFragmentArgs>()
 
@@ -71,7 +71,7 @@ class RecipeFragment :
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_receipt, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_recipe, container, false)
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 

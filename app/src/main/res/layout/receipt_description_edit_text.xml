@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
@@ -16,29 +17,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:paddingTop="8dp"
         android:weightSum="2">
 
         <EditText
             android:id="@+id/descriptionEditText"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:hint="@string/recipe_edit_description_hint"
             android:text="@={description.step}"
             android:layout_weight="2" />
 
-        <com.google.android.material.button.MaterialButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/deleteDescriptionButton"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:padding="0dp"
-            android:layout_margin="0dp"
-            android:minHeight="0dp"
-            android:minWidth="50dp"
-            android:text="X"
-            android:layout_weight="0"
-            android:layout_gravity="center"
-            android:backgroundTint="@color/app_white"
-            android:textColor="@color/app_black"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_delete"
+            android:backgroundTint="@color/app_red_500"
+            android:foregroundTint="@color/app_white"
+            app:elevation="0dp"
             android:onClick="@{() -> clickListener.onClick(description)}" />
 
     </LinearLayout>

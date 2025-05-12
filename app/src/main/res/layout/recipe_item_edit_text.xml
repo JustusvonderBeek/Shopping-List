@@ -16,38 +16,47 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="3">
+        android:orientation="horizontal">
 
-        <EditText
-            android:id="@+id/itemNameEditText"
-            android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:hint="@string/recipe_item_name_hint"
-            android:text="@={ingredient.name}"
-            android:layout_gravity="center"
-            android:layout_weight="3" />
+            android:layout_weight="1"
+            >
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text='@{String.format("%d", ingredient.quantity)}'
-            android:gravity="center"
-            android:layout_weight="0"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:textSize="18sp" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/itemNameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/recipe_item_name_hint"
+                android:text="@={ingredient.name}"
+                android:layout_gravity="center"
+                />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:text='@{String.format("%d", ingredient.quantity)}'-->
+<!--            android:gravity="center"-->
+<!--            android:paddingStart="10dp"-->
+<!--            android:paddingEnd="10dp"-->
+<!--            android:textSize="18sp" />-->
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginStart="4dp"
+            >
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:elevation="0dp"
+                android:layout_margin="4dp"
                 android:onClick="@{() -> clickListener.onClick(ingredient, -1)}"
                 android:src="@drawable/ic_minus"
                 app:backgroundTint="@color/app_red_500" />
@@ -55,8 +64,8 @@
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 app:elevation="0dp"
+                android:layout_margin="4dp"
                 android:onClick="@{() -> clickListener.onClick(ingredient, 1)}"
                 android:src="@drawable/ic_plus"
                 app:backgroundTint="@color/app_green_500" />

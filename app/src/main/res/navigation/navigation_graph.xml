@@ -99,7 +99,7 @@
         android:id="@+id/receipt"
         android:name="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeFragment"
         android:label="@string/receipt_title"
-        tools:layout="@layout/fragment_receipt">
+        tools:layout="@layout/fragment_recipe">
         <action
             android:id="@+id/action_recipes_to_shoppinglist"
             app:destination="@id/shoppinglist"

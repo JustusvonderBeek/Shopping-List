@@ -24,9 +24,11 @@
     </style>
 
     <style name="ShoppingListNormalStyle" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@font/inter</item>
         <item name="android:textAlignment">textStart</item>
         <item name="android:textSize">20sp</item>
         <item name="android:textStyle">normal</item>
+        <item name="fontWeight">400</item>
         <item name="android:layout_gravity">center_vertical</item>
     </style>
 

@@ -4,7 +4,7 @@
     <data>
 
         <variable
-            name="receipt"
+            name="recipe"
             type="com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe" />
 
         <variable
@@ -15,7 +15,7 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="@{() -> clickListener.onClick(receipt)}"
+        android:onClick="@{() -> clickListener.onClick(recipe)}"
         style="@style/ShoppingListItemStyle">
 
         <LinearLayout
@@ -27,8 +27,9 @@
             android:padding="8dp">
 
             <ImageView
-                android:layout_width="50dp"
-                android:layout_height="match_parent"
+                android:id="@+id/recipePreviewImage"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:layout_marginEnd="20dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/receipt_stock" />
@@ -42,13 +43,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text='@{String.format("%s", receipt.name)}'
+                    android:text='@{String.format("%s", recipe.name)}'
                     style="@style/ListItemHeaderStyle" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text='@{String.format("%s", receipt.createdByName)}'
+                    android:text='@{String.format("%s", recipe.createdByName)}'
                     style="@style/ListItemSubtitleStyle" />
 
             </LinearLayout>

@@ -50,7 +50,7 @@ import javax.inject.Singleton
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 19, to = 20, ShoppingListDatabase.Database19To20Migration::class),
         AutoMigration(from = 20, to = 21, ShoppingListDatabase.Database20To21Migration::class),
-        AutoMigration(from = 34, to = 35),
+        AutoMigration(from = 34, to = 35, AppDatabaseMigration.Database34To35Migration::class),
     ],
 )
 @TypeConverters(value = [DatabaseTypeConverter::class])

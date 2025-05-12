@@ -10,5 +10,5 @@ data class ApiIngredient(
     var name: String,
     val icon: String,
     var quantity: Int,
-    val quantityType: String,
+    val quantityType: String = "#",
 )

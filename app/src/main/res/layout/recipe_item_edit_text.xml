@@ -18,11 +18,27 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text='@{String.format("%d", ingredient.quantity)}'
+            android:gravity="center"
+            android:layout_marginStart="8dp"
+            style="@style/ShoppingListNormalStyle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text='@{String.format("%s", ingredient.quantityType)}'
+            android:gravity="center"
+            android:layout_marginStart="8dp"
+            style="@style/ShoppingListNormalStyle" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            >
+            android:layout_marginStart="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/itemNameEditText"
@@ -30,27 +46,16 @@
                 android:layout_height="match_parent"
                 android:hint="@string/recipe_item_name_hint"
                 android:text="@={ingredient.name}"
-                android:layout_gravity="center"
-                />
+                android:layout_gravity="center" />
 
         </com.google.android.material.textfield.TextInputLayout>
-
-<!--        <TextView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:text='@{String.format("%d", ingredient.quantity)}'-->
-<!--            android:gravity="center"-->
-<!--            android:paddingStart="10dp"-->
-<!--            android:paddingEnd="10dp"-->
-<!--            android:textSize="18sp" />-->
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
             android:orientation="horizontal"
-            android:layout_marginStart="4dp"
-            >
+            android:layout_marginStart="4dp">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_width="wrap_content"

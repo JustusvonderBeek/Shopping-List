@@ -72,8 +72,9 @@ class RecipeRepository
             return localReceipt.asLiveData()
         }
 
-        // TODO: Fix the different list type
-        fun readAllLive(): LiveData<List<DbRecipe>> = localDataSource.readAllLive()
+        fun readAllLive(): LiveData<List<Pair<DbRecipe, RecipeImage?>>> = localDataSource.readAllLive()
+
+        fun readAllLiveWithImages(): LiveData<List<Pair<DbRecipe, List<RecipeImage>>>> = localDataSource.readAllFlow()
 
         fun readAllImageLocationsLive(
             recipeId: Long,

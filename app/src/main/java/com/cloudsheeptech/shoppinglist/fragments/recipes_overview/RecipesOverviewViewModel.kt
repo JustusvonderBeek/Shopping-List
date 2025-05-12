@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
+import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,7 +32,9 @@ class RecipesOverviewViewModel
         val navigateToReceipt: LiveData<Triple<Long, Long, String>> get() = _navigateToReceipt
 
         private val _receipts = recipeRepository.readAllLive()
-        val receipts: LiveData<List<DbRecipe>> get() = _receipts
+        private val _recipesWithImages = recipeRepository.readAllLiveWithImages()
+        val receipts: LiveData<List<Pair<DbRecipe, RecipeImage?>>> get() = _receipts
+        val recipesWithImages: LiveData<List<Pair<DbRecipe, List<RecipeImage>>>> get() = _recipesWithImages
 
         private val _refreshing = MutableLiveData<Boolean>(false)
         val refreshing: LiveData<Boolean> get() = _refreshing

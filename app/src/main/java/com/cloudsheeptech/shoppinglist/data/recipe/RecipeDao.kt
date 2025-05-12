@@ -46,6 +46,9 @@ interface RecipeDao {
     @Query("SELECT * FROM recipes")
     fun getAllLive(): LiveData<List<DbRecipe>>
 
+    @Query("SELECT * FROM recipes")
+    fun getAllFlow(): Flow<List<DbRecipe>>
+
     @Query("SELECT id as recipeId, createdBy FROM recipes")
     fun getAllRecipeIds(): List<RecipeIdAndCreatedBy>
 

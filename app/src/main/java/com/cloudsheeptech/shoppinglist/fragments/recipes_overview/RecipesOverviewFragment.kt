@@ -20,12 +20,16 @@ import com.cloudsheeptech.shoppinglist.databinding.FragmentReceiptsOverviewBindi
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class RecipesOverviewFragment : Fragment(), MenuProvider {
-
+class RecipesOverviewFragment :
+    Fragment(),
+    MenuProvider {
     private lateinit var binding: FragmentReceiptsOverviewBinding
     private val viewModel: RecipesOverviewViewModel by viewModels()
 
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+    override fun onCreateMenu(
+        menu: Menu,
+        menuInflater: MenuInflater,
+    ) {
         menuInflater.inflate(R.menu.receipts_drop_down_menu, menu)
     }
 
@@ -40,8 +44,9 @@ class RecipesOverviewFragment : Fragment(), MenuProvider {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_receipts_overview, container, false)
@@ -51,10 +56,12 @@ class RecipesOverviewFragment : Fragment(), MenuProvider {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         val adapter =
-            RecipesListAdapter(RecipesListAdapter.ReceiptClickListener { id, from, title ->
-                Log.d("ReceiptsOverviewFragment", "Got receipt $id from $from")
-                viewModel.navigateToReceipt(id, from, title)
-            })
+            RecipesListAdapter(
+                RecipesListAdapter.ReceiptClickListener { id, from, title ->
+                    Log.d("ReceiptsOverviewFragment", "Got receipt $id from $from")
+                    viewModel.navigateToReceipt(id, from, title)
+                },
+            )
         binding.receiptOverviewList.adapter = adapter
 
         binding.receiptListOverviewRefresh.setOnRefreshListener {
@@ -62,45 +69,57 @@ class RecipesOverviewFragment : Fragment(), MenuProvider {
             viewModel.updateAllRecipes()
         }
 
-        viewModel.receipts.observe(viewLifecycleOwner, Observer { list ->
-            list?.let { x ->
-                adapter.submitList(x)
-            }
-        })
+        viewModel.recipesWithImages.observe(
+            viewLifecycleOwner,
+            Observer { list ->
+                list?.let { x ->
+                    adapter.submitList(x)
+                }
+            },
+        )
 
-        viewModel.navigateToCreateReceipt.observe(viewLifecycleOwner, Observer { navigate ->
-            if (navigate) {
-                findNavController().navigate(
-                    RecipesOverviewFragmentDirections.actionReceiptsOverviewToReceiptEditFragment(
-                        -1,
-                        -1
+        viewModel.navigateToCreateReceipt.observe(
+            viewLifecycleOwner,
+            Observer { navigate ->
+                if (navigate) {
+                    findNavController().navigate(
+                        RecipesOverviewFragmentDirections.actionReceiptsOverviewToReceiptEditFragment(
+                            -1,
+                            -1,
+                        ),
                     )
-                )
-                viewModel.onCreateReceiptNavigate()
-            }
-        })
+                    viewModel.onCreateReceiptNavigate()
+                }
+            },
+        )
 
-        viewModel.navigateToReceipt.observe(viewLifecycleOwner, Observer { idAndfromAndTitle ->
-            val id = idAndfromAndTitle.first
-            val from = idAndfromAndTitle.second
-            val title = idAndfromAndTitle.third
-            if (id > 0L) {
-                findNavController().navigate(
-                    RecipesOverviewFragmentDirections.actionReceiptsOverviewToReceipts(
-                        receiptId = id,
-                        createdBy = from,
-                        title = title
+        viewModel.navigateToReceipt.observe(
+            viewLifecycleOwner,
+            Observer { idAndfromAndTitle ->
+                val id = idAndfromAndTitle.first
+                val from = idAndfromAndTitle.second
+                val title = idAndfromAndTitle.third
+                if (id > 0L) {
+                    findNavController().navigate(
+                        RecipesOverviewFragmentDirections.actionReceiptsOverviewToReceipts(
+                            receiptId = id,
+                            createdBy = from,
+                            title = title,
+                        ),
                     )
-                )
-                viewModel.onReceiptNavigated()
-            }
-        })
+                    viewModel.onReceiptNavigated()
+                }
+            },
+        )
 
-        viewModel.refreshing.observe(viewLifecycleOwner, Observer { refresh ->
-            if (!refresh) {
-                binding.receiptListOverviewRefresh.isRefreshing = false
-            }
-        })
+        viewModel.refreshing.observe(
+            viewLifecycleOwner,
+            Observer { refresh ->
+                if (!refresh) {
+                    binding.receiptListOverviewRefresh.isRefreshing = false
+                }
+            },
+        )
 
         return binding.root
     }

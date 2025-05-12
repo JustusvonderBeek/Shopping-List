@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RecipeImageDao {
@@ -26,6 +27,12 @@ interface RecipeImageDao {
         recipeId: Long,
         createdBy: Long,
     ): LiveData<List<RecipeImage>>
+
+    @Query("SELECT * FROM recipe_images WHERE recipeId = :recipeId AND createdBy = :createdBy")
+    fun readFlow(
+        recipeId: Long,
+        createdBy: Long,
+    ): Flow<List<RecipeImage>>
 
     @Query("DELETE FROM recipe_images WHERE recipeId = :id AND createdBy = :createdBy")
     fun delete(

@@ -1,16 +1,20 @@
 package com.cloudsheeptech.shoppinglist.fragments.recipes_overview
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
+import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
 import com.cloudsheeptech.shoppinglist.databinding.RecipeOverviewItemBinding
 
 class RecipesListAdapter(
     val clickListener: ReceiptClickListener,
-) : ListAdapter<DbRecipe, RecipesListAdapter.ReceiptListViewHolder>(
+) : ListAdapter<Pair<DbRecipe, List<RecipeImage>>, RecipesListAdapter.ReceiptListViewHolder>(
         ItemDiffCallback(),
     ) {
     override fun onCreateViewHolder(
@@ -30,10 +34,24 @@ class RecipesListAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             clickListener: ReceiptClickListener,
-            receipt: DbRecipe,
+            recipeAndImage: Pair<DbRecipe, List<RecipeImage>>,
         ) {
-            binding.receipt = receipt
+            val recipe = recipeAndImage.first
+            val imagePath = recipeAndImage.second
+            binding.recipe = recipe
             binding.clickListener = clickListener
+            if (imagePath.isEmpty()) {
+                Log.d("ReceiptListViewHolder", "Loading default image")
+                Glide
+                    .with(binding.root.context)
+                    .load(R.drawable.receipt_stock)
+                    .into(binding.recipePreviewImage)
+            } else {
+                Glide
+                    .with(binding.root.context)
+                    .load(imagePath.get(0).fileLocation)
+                    .into(binding.recipePreviewImage)
+            }
             binding.executePendingBindings()
         }
 
@@ -52,15 +70,15 @@ class RecipesListAdapter(
         fun onClick(item: DbRecipe) = clickListener(item.id, item.createdBy, item.name)
     }
 
-    class ItemDiffCallback : DiffUtil.ItemCallback<DbRecipe>() {
+    class ItemDiffCallback : DiffUtil.ItemCallback<Pair<DbRecipe, List<RecipeImage>>>() {
         override fun areItemsTheSame(
-            oldItem: DbRecipe,
-            newItem: DbRecipe,
-        ): Boolean = oldItem.id == newItem.id && oldItem.name == newItem.name
+            oldItem: Pair<DbRecipe, List<RecipeImage>>,
+            newItem: Pair<DbRecipe, List<RecipeImage>>,
+        ): Boolean = oldItem.first.id == newItem.first.id && oldItem.first.name == newItem.first.name
 
         override fun areContentsTheSame(
-            oldItem: DbRecipe,
-            newItem: DbRecipe,
-        ): Boolean = oldItem == newItem
+            oldItem: Pair<DbRecipe, List<RecipeImage>>,
+            newItem: Pair<DbRecipe, List<RecipeImage>>,
+        ): Boolean = oldItem.first == newItem.first && oldItem.second.size == newItem.second.size
     }
 }

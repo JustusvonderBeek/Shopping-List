@@ -2,6 +2,9 @@ package com.cloudsheeptech.shoppinglist.data.recipe
 
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
@@ -12,6 +15,8 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -123,8 +128,8 @@ class RecipeLocalDataSource
             return withContext(Dispatchers.IO) {
                 val dbRecipe = recipeDao.get(onlineId, createdBy)
                 return@withContext dbRecipe != null
+            }
         }
-    }
 
         suspend fun create(
             name: String,
@@ -155,7 +160,7 @@ class RecipeLocalDataSource
             descriptions: List<ApiDescription>,
             images: List<String>,
             defaultPortion: Int,
-    ): ApiRecipe {
+        ): ApiRecipe {
             val newRecipe =
                 ApiRecipe(
                     onlineId = onlineId,
@@ -277,7 +282,30 @@ class RecipeLocalDataSource
             }
         }
 
-        fun readAllLive(): LiveData<List<DbRecipe>> = recipeDao.getAllLive()
+        fun readAllLive(): LiveData<List<Pair<DbRecipe, RecipeImage?>>> =
+            recipeDao.getAllLive().switchMap { recipes ->
+                val recipesLive = mutableListOf<Pair<DbRecipe, RecipeImage?>>()
+                recipes.map { recipe ->
+                    val imagesForRecipe = recipeImageDao.read(recipe.id, recipe.createdBy)
+                    recipesLive.add(Pair(recipe, imagesForRecipe[0]))
+                }
+                liveData {
+                    emit(recipesLive)
+                }
+            }
+
+        fun readAllFlow(): LiveData<List<Pair<DbRecipe, List<RecipeImage>>>> =
+            recipeDao
+                .getAllFlow()
+                .flatMapLatest { recipes ->
+                    combine(
+                        recipes.map { recipe ->
+                            recipeImageDao.readFlow(recipe.id, recipe.createdBy).map { images ->
+                                recipe to images
+                            }
+                        },
+                    ) { combinedList -> combinedList.toList() }
+            }.asLiveData(Dispatchers.IO)
 
         fun readAllImageLocationsLive(
             recipeId: Long,

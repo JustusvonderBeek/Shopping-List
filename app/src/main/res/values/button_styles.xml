@@ -13,7 +13,7 @@
     </style>
 
     <style name="ShoppingListAppButton" parent="Widget.Material3.Button">
-        <item name="backgroundTint">@color/app_green_0</item>
+        <item name="backgroundTint">@color/app_green_500</item>
         <item name="cornerRadius">10dp</item>
         <item name="android:textColor">@color/app_white</item>
     </style>

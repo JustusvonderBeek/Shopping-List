@@ -3,6 +3,9 @@
 
     <style name="ListItemBaseStyle" parent="Widget.AppCompat.TextView">
         <item name="android:textSize">24sp</item>
+        <item name="fontFamily">@font/inter</item>
+        <item name="fontStyle">normal</item>
+        <item name="fontWeight">400</item>
     </style>
 
     <style name="ListItemHeaderStyle" parent="ListItemBaseStyle">
@@ -70,10 +73,19 @@
 
     <style name="EditTextWithoutUnderline" parent="ThemeOverlay.Material3.TextInputEditText">
         <item name="android:background">@null</item>
-        <item name="backgroundTint">@color/app_gray_700</item>
+        <item name="fontFamily">@font/inter</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textFontWeight">1000</item>
+        <item name="backgroundTint">@color/app_gray_900</item>
+        <item name="backgroundTintMode">add</item>
+        <item name="android:layout_margin">0dp</item>
     </style>
 
     <style name="AppBottomNavCustomIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">@color/app_green_0</item>
+    </style>
+
+    <style name="AppClickActionButton" parent="ShapeAppearanceOverlay.Material3.FloatingActionButton">
+        <item name="backgroundTint">@color/app_green_300</item>
     </style>
 </resources>

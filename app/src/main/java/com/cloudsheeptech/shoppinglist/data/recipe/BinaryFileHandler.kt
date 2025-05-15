@@ -115,6 +115,10 @@ class BinaryFileHandler
             return binaryImages
         }
 
+        /**
+         * If the image is content:// URI, the file is stored locally, otherwise the original URI
+         * is returned
+         */
         suspend fun persistTemporaryImagesInLocalStorage(
             recipeId: Long,
             userId: Long,
@@ -207,11 +211,11 @@ class BinaryFileHandler
                 cursor.close()
                 if (!path.startsWith("file://")) {
                     path = "file://$path"
+                }
+                return path
             }
-            return path
+            return null
         }
-        return null
-    }
 
         suspend fun deleteImage(imageUri: String): Boolean {
             var success = true

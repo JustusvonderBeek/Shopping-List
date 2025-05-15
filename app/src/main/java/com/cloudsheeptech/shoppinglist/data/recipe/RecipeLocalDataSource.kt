@@ -305,7 +305,7 @@ class RecipeLocalDataSource
                             }
                         },
                     ) { combinedList -> combinedList.toList() }
-            }.asLiveData(Dispatchers.IO)
+                }.asLiveData(Dispatchers.IO)
 
         fun readAllImageLocationsLive(
             recipeId: Long,

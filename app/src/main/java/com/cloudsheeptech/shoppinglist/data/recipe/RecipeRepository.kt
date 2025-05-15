@@ -197,8 +197,15 @@ class RecipeRepository
                 if (updatedVersion < 0L) {
                     return
                 }
+                val imageLocations =
+                    binaryFileHandler.persistTemporaryImagesInLocalStorage(
+                        recipe.onlineId,
+                        recipe.createdBy.onlineId,
+                        recipeImages,
+                    )
+                localDataSource.updateImages(recipe.onlineId, recipe.createdBy.onlineId, imageLocations)
                 var success = false
-                val binaryImages = binaryFileHandler.readImagesFromFiles(recipeImages)
+                val binaryImages = binaryFileHandler.readImagesFromFiles(imageLocations)
                 try {
                     success = remoteDataSource.update(recipe, binaryImages)
                 } catch (ex: UserNotAuthenticatedException) {

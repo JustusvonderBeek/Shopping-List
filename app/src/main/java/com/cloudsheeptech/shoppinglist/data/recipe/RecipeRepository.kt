@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
+import io.ktor.client.network.sockets.SocketTimeoutException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -230,6 +231,8 @@ class RecipeRepository
                 )
             } catch (ex: IllegalArgumentException) {
                 Log.e("RecipeRepository", "Something went wrong with the given recipe to update: $ex")
+            } catch (ex: SocketTimeoutException) {
+                Log.e("RecipeRepository", "Timeout while communicating with the server: $ex")
             }
         }
 

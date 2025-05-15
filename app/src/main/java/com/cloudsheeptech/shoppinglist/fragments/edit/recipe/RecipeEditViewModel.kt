@@ -63,10 +63,19 @@ class RecipeEditViewModel
                     val recipeAndImages = recipeRepository.read(receiptId, createdBy) ?: return@launch
                     val storedRecipe = recipeAndImages.first
                     Log.d("ReceiptEditViewModel", "Loaded: $storedRecipe")
+                    val imageLocations =
+                        recipeRepository
+                            .readAllImageLocations(
+                                storedRecipe.onlineId,
+                                storedRecipe.createdBy.onlineId,
+                            ).map { image ->
+                                image.fileLocation
+                            }
                     withContext(Dispatchers.Main) {
                         receiptDescription.value = storedRecipe.description
                         _receiptIngredientList.value = storedRecipe.ingredients
                         title.value = storedRecipe.name
+                        _images.value = imageLocations
                     }
                 }
             } else {

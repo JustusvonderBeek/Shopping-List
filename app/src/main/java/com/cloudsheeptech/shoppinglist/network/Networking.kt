@@ -123,7 +123,7 @@ class Networking
                                     formData {
                                         append("object", data ?: "")
                                         if (binaryContent.isNotEmpty()) {
-                                            for (bytes in binaryContent) {
+                                            for ((i, bytes) in binaryContent.withIndex()) {
                                                 append(
                                                     "content",
                                                     bytes,
@@ -131,7 +131,7 @@ class Networking
                                                         append(HttpHeaders.ContentType, "image/png")
                                                         append(
                                                             HttpHeaders.ContentDisposition,
-                                                            "filename=\"test.png\"",
+                                                            "filename=\"$i.png\"",
                                                         )
                                                     },
                                                 )
@@ -195,9 +195,21 @@ class Networking
                             setBody(
                                 MultiPartFormDataContent(
                                     formData {
-                                        append("object", data)
-                                        for (bytes in binaryContent) {
-                                            append("content", bytes)
+                                        append("object", data ?: "")
+                                        if (binaryContent.isNotEmpty()) {
+                                            for ((i, bytes) in binaryContent.withIndex()) {
+                                                append(
+                                                    "content",
+                                                    bytes,
+                                                    Headers.build {
+                                                        append(HttpHeaders.ContentType, "image/png")
+                                                        append(
+                                                            HttpHeaders.ContentDisposition,
+                                                            "filename=\"$i.png\"",
+                                                        )
+                                                    },
+                                                )
+                                            }
                                         }
                                     },
                                 ),

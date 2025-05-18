@@ -151,7 +151,7 @@ class RecipeViewModel
                 if (createdBy != user.OnlineID) {
                     Log.i("RecipeViewModel", "Recipe is shared, deleting share and local recipe")
                     recipeShareRepository.delete(recipeId, createdBy, user.OnlineID)
-                    recipeRepository.delete(recipeId, user.OnlineID)
+                    recipeRepository.delete(recipeId, createdBy)
                 } else {
                     recipeRepository.delete(recipeId, createdBy)
                 }

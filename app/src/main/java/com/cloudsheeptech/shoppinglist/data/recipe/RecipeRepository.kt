@@ -246,7 +246,14 @@ class RecipeRepository
             receiptId: Long,
             createdBy: Long,
         ) {
-            remoteDataSource.delete(receiptId, createdBy)
-            localDataSource.delete(receiptId, createdBy)
+            try {
+                val success = remoteDataSource.delete(receiptId, createdBy)
+                if (!success) {
+                    Log.e("RecipeRepository", "Deleting recipe online failed")
+                }
+                localDataSource.delete(receiptId, createdBy)
+            } catch (ex: Exception) {
+                Log.e("RecipeRepository", "Unknown error while deleting recipe: $ex")
+            }
         }
     }

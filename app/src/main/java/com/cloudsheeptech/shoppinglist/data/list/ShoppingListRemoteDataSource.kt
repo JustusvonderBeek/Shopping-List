@@ -107,7 +107,7 @@ class ShoppingListRemoteDataSource
                     try {
                         val rawBody = response.bodyAsText(Charsets.UTF_8)
                         if (rawBody.isEmpty() || rawBody == "null") {
-                            Log.e("ShoppingListRemoteDataSource", "Remote did not return any list body")
+                            Log.i("ShoppingListRemoteDataSource", "No remote lists found")
                             return@get
                         }
                         Log.d("ShoppingListRemoteDataSource", "Received: $rawBody")

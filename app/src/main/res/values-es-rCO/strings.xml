@@ -61,4 +61,6 @@
     <string name="create_list_fragment_title">Update List Title</string>
     <string name="select_images_bot_dialog">Selectionar Fotos</string>
     <string name="take_images_bot_dialog">Hacer Fotos</string>
+    <string name="recipe_confirm_delete">Puedes eliminar este recipio?</string>
+    <string name="recipe_confirm_delete_title">Eliminar recipio</string>
 </resources>

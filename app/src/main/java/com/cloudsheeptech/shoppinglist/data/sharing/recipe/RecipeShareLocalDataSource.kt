@@ -24,10 +24,13 @@ class RecipeShareLocalDataSource
             recipeId: Long,
             createdBy: Long,
             sharedWith: Long,
-        ): RecipeShare {
-            var createdSharedWith: RecipeShare
+        ): RecipeShare? {
+            var createdSharedWith: RecipeShare? = null
             withContext(Dispatchers.IO) {
                 val user = userRepo.read() ?: throw IllegalStateException("user not initialized")
+                if (user.OnlineID != createdBy) {
+                    return@withContext
+                }
                 val recipe =
                     recipeRepo.read(recipeId, createdBy)
                         ?: throw IllegalArgumentException("recipe does not exist")

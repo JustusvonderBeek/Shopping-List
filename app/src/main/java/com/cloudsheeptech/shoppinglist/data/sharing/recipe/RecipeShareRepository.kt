@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.sharing.recipe
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import javax.inject.Inject
@@ -15,8 +16,19 @@ class RecipeShareRepository
             createdBy: Long,
             sharedWith: Long,
         ) {
-            val share = localDataSource.create(recipeId, createdBy, sharedWith)
-            remoteDataSource.create(share)
+            try {
+                val share = localDataSource.create(recipeId, createdBy, sharedWith)
+                if (share == null) {
+                    Log.e(
+                        "RecipeShareRepository",
+                        "Failed to create share, likely because recipe was not created locally and can therefore not be shared",
+                    )
+                    return
+                }
+                remoteDataSource.create(share)
+            } catch (ex: IllegalArgumentException) {
+                Log.e("RecipeShareRepository", "List $recipeId from $createdBy not from current user")
+            }
         }
 
         fun readLive(
@@ -29,15 +41,23 @@ class RecipeShareRepository
             createdBy: Long,
             sharedWith: Long,
         ) {
-            localDataSource.delete(recipeId, createdBy, sharedWith)
-            remoteDataSource.delete(recipeId, createdBy, sharedWith)
+            try {
+                localDataSource.delete(recipeId, createdBy, sharedWith)
+                remoteDataSource.delete(recipeId, createdBy, sharedWith)
+            } catch (ex: Exception) {
+                Log.e("RecipeShareRepository", "Failed to delete share: $ex")
+            }
         }
 
         suspend fun deleteAll(
             recipeId: Long,
             createdBy: Long,
         ) {
-            localDataSource.deleteAll(recipeId, createdBy)
-            remoteDataSource.deleteAll(recipeId)
+            try {
+                localDataSource.deleteAll(recipeId, createdBy)
+                remoteDataSource.deleteAll(recipeId)
+            } catch (ex: Exception) {
+                Log.e("RecipeShareRepository", "Failed to delete all shares: $ex")
+            }
         }
     }

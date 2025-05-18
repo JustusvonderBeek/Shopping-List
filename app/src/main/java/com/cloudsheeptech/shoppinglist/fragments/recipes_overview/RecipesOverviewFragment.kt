@@ -62,7 +62,7 @@ class RecipesOverviewFragment :
                     viewModel.navigateToReceipt(id, from, title)
                 },
             )
-        binding.receiptOverviewList.adapter = adapter
+        binding.recipesOverviewList.adapter = adapter
 
         binding.receiptListOverviewRefresh.setOnRefreshListener {
             Log.d("ReceiptsOverviewFragment", "Refresh called")
@@ -72,8 +72,13 @@ class RecipesOverviewFragment :
         viewModel.recipesWithImages.observe(
             viewLifecycleOwner,
             Observer { list ->
-                list?.let { x ->
-                    adapter.submitList(x)
+                if (list.isNullOrEmpty()) {
+                    binding.emptyRecipesPlaceholder.visibility = View.VISIBLE
+                    binding.recipesOverviewList.visibility = View.GONE
+                } else {
+                    binding.emptyRecipesPlaceholder.visibility = View.GONE
+                    binding.recipesOverviewList.visibility = View.VISIBLE
+                    adapter.submitList(list)
                 }
             },
         )

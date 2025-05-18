@@ -84,9 +84,14 @@ class ListOverviewFragment :
 
         viewModel.shoppingList.observe(
             viewLifecycleOwner,
-            Observer {
-                it?.let {
-                    adapter.submitList(it)
+            Observer { list ->
+                if (list.isNullOrEmpty()) {
+                    binding.emptyListsPlaceholder.visibility = View.VISIBLE
+                    binding.listOverviewRefresher.visibility = View.GONE
+                } else {
+                    binding.emptyListsPlaceholder.visibility = View.GONE
+                    binding.listOverviewRefresher.visibility = View.VISIBLE
+                    adapter.submitList(list)
 //                adapter.notifyDataSetChanged()
                 }
             },

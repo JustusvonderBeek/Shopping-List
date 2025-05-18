@@ -19,14 +19,24 @@
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/receiptListOverviewRefresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            >
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/receiptOverviewList"
+                android:id="@+id/recipesOverviewList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 tools:listitem="@layout/recipe_overview_item"
+                tools:itemCount="5"
+                android:visibility="gone"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <include android:id="@+id/emptyRecipesPlaceholder"
+                layout="@layout/ui_empty_recipe_placeholder"
+                android:visibility="visible"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

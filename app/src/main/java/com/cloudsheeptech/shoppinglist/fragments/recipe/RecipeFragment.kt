@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.fragments.recipe
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -159,6 +160,28 @@ class RecipeFragment :
                         defaultList,
                     )
 //                    recipeImageAdapterWithArrows.submitList(defaultList)
+                }
+            },
+        )
+
+        val confirmDeleteDialog =
+            AlertDialog
+                .Builder(context)
+                .setMessage(getString(R.string.recipe_confirm_delete))
+                .setTitle(getString(R.string.recipe_confirm_delete_title))
+                .setPositiveButton(getString(R.string.delete_list_dialog_yes)) { dialog, which ->
+                    viewModel.onDeleteConfirmed()
+                }.setNegativeButton(getString(R.string.delete_list_dialog_no)) { dialog, which ->
+                    viewModel.onDeleteCanceled()
+                }.create()
+
+        viewModel.confirmDelete.observe(
+            viewLifecycleOwner,
+            Observer { delete ->
+                if (delete) {
+                    confirmDeleteDialog.show()
+                } else {
+                    confirmDeleteDialog.dismiss()
                 }
             },
         )

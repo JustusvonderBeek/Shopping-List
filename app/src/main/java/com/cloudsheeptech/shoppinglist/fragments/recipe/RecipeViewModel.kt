@@ -12,6 +12,7 @@ import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
+import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShareRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -27,6 +28,7 @@ class RecipeViewModel
     @Inject
     constructor(
         private val recipeRepository: RecipeRepository,
+        private val recipeShareRepository: RecipeShareRepository,
         private val userRepository: AppUserRepository,
         private val listRepository: ShoppingListRepository,
         savedStateHandle: SavedStateHandle,
@@ -81,6 +83,9 @@ class RecipeViewModel
                 }
             }
 
+        private val _confirmDelete = MutableLiveData<Boolean>(false)
+        val confirmDelete: LiveData<Boolean> get() = _confirmDelete
+
         private val _navigateToEdit = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
         val navigateToEdit: LiveData<Pair<Long, Long>> get() = _navigateToEdit
 
@@ -134,14 +139,30 @@ class RecipeViewModel
             this.portionsText.value = text
         }
 
-        // TODO: Include a question if the receipt should really be deleted
         fun removeRecipe() {
+            _confirmDelete.value = true
+        }
+
+        fun onDeleteConfirmed() {
+            _confirmDelete.value = false
             vmScope.launch {
-                recipeRepository.delete(recipeId, createdBy)
+                // Differentiate between own and shared recipe
+                val user = userRepository.read() ?: throw IllegalStateException("user null after login")
+                if (createdBy != user.OnlineID) {
+                    Log.i("RecipeViewModel", "Recipe is shared, deleting share and local recipe")
+                    recipeShareRepository.delete(recipeId, createdBy, user.OnlineID)
+                    recipeRepository.delete(recipeId, user.OnlineID)
+                } else {
+                    recipeRepository.delete(recipeId, createdBy)
+                }
                 withContext(Dispatchers.Main) {
                     navigateUp()
                 }
             }
+        }
+
+        fun onDeleteCanceled() {
+            _confirmDelete.value = false
         }
 
         fun addRecipeToShoppingList() {

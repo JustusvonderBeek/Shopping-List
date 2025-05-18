@@ -89,8 +89,13 @@ android {
         debug {
             buildConfigField "String", "NETWORK_RETRY_COUNT", configProperties["NETWORK_RETRY_COUNT"]
             buildConfigField "String", "SERVER_URL", configProperties["SERVER_URL"]
-        }
 
+            kotlinOptions {
+                freeCompilerArgs += [
+                        "-Xdebug"
+                ]
+            }
+        }
     }
 
     compileOptions {

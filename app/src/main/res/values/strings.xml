@@ -78,4 +78,10 @@
     <string name="take_images_bot_dialog">Take Images</string>
     <string name="recipe_confirm_delete">Do you really want to delete this recipe?</string>
     <string name="recipe_confirm_delete_title">Delete Recipe</string>
+    <string name="recipe_unshareable_placeholder_title">This recipe cannot be shared</string>
+    <string name="recipe_unshareable_placeholder_description">You can only share recipes which were created by yourself.</string>
+    <string name="recipe_unshareable_placeholder_try_text">Try creating a new recipe and press share on this one.</string>
+    <string name="list_unshareable_placeholder_title">This list cannot be shared</string>
+    <string name="list_unshareable_placeholder_description">You can only share lists which you created yourself</string>
+    <string name="list_unshareable_placeholder_try_text">Try creating a new list and share this new one</string>
 </resources>

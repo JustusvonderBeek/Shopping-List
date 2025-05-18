@@ -77,6 +77,34 @@ class ShareFragment : Fragment() {
             },
         )
 
+        viewModel.unshareable.observe(
+            viewLifecycleOwner,
+            Observer { unshareable ->
+                when (unshareable) {
+                    SharePlaceholderEnum.SHAREABLE -> {
+                        binding.unshareableListPlaceholder.visibility = ViewGroup.GONE
+                        binding.unshareableRecipePlaceholder.visibility = ViewGroup.GONE
+                        binding.shareSearchUserText.visibility = ViewGroup.VISIBLE
+                        binding.userPreviewList.visibility = ViewGroup.VISIBLE
+                    }
+
+                    SharePlaceholderEnum.RECIPE_UNSHAREABLE -> {
+                        binding.unshareableRecipePlaceholder.visibility = ViewGroup.VISIBLE
+                        binding.unshareableListPlaceholder.visibility = ViewGroup.GONE
+                        binding.shareSearchUserText.visibility = ViewGroup.GONE
+                        binding.userPreviewList.visibility = ViewGroup.GONE
+                    }
+
+                    SharePlaceholderEnum.LIST_UNSHAREABLE -> {
+                        binding.unshareableRecipePlaceholder.visibility = ViewGroup.GONE
+                        binding.unshareableListPlaceholder.visibility = ViewGroup.VISIBLE
+                        binding.shareSearchUserText.visibility = ViewGroup.GONE
+                        binding.userPreviewList.visibility = ViewGroup.GONE
+                    }
+                }
+            },
+        )
+
         viewModel.navigateUp.observe(
             viewLifecycleOwner,
             Observer { navigate ->

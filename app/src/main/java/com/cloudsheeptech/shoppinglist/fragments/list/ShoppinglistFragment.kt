@@ -110,6 +110,7 @@ class ShoppinglistFragment :
 
         val shoppingListId = args.ListID
         val createdBy = args.CreatedBy
+
         Log.d("ShoppinglistFragment", "Navigated to list with ID $shoppingListId from $createdBy")
         if (shoppingListId < 0) {
             findNavController().navigateUp()

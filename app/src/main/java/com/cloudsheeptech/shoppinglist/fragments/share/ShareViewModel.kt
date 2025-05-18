@@ -102,7 +102,8 @@ class ShareViewModel
             }
 
         // The list of users which is returned from the online search
-        private val _searchedUsers = MutableLiveData<List<ShareUserPreview>>(emptyList<ShareUserPreview>())
+        private val _searchedUsers =
+            MutableLiveData<List<ShareUserPreview>>(emptyList<ShareUserPreview>())
         val searchedUsers: LiveData<List<ShareUserPreview>> get() = _searchedUsers
 
         val searchString = MutableLiveData<String>("")
@@ -112,11 +113,16 @@ class ShareViewModel
 
         // --- Navigation / UI States ---
 
+        private val _unshareable =
+            MediatorLiveData<SharePlaceholderEnum>(SharePlaceholderEnum.SHAREABLE)
+        val unshareable: LiveData<SharePlaceholderEnum> get() = _unshareable
+
         private val _navigateUp = MutableLiveData<Boolean>(false)
         val navigateUp: LiveData<Boolean> get() = _navigateUp
 
         init {
             setupCombinedUserList()
+            canBeShared()
         }
 
         private fun setupCombinedUserList() {
@@ -135,6 +141,21 @@ class ShareViewModel
                 _combinedUsers.value = combineUserLists(_searchedUsers.value, sharedUsers)
             }
         }
+
+        private fun canBeShared() {
+            _unshareable.addSource(createdBy) { createdBy ->
+                if (createdBy <= 0L) {
+                    return@addSource
+                }
+                val user = appUserRepository.read() ?: return@addSource
+                if (createdBy != user.OnlineID && recipeId.value != null && recipeId.value!! > 0L) {
+                    _unshareable.value = SharePlaceholderEnum.RECIPE_UNSHAREABLE
+                }
+                if (createdBy != user.OnlineID && listId.value != null && listId.value!! > 0L) {
+                    _unshareable.value = SharePlaceholderEnum.LIST_UNSHAREABLE
+            }
+        }
+    }
 
         private fun combineUserLists(
             onlinePreview: List<ShareUserPreview>?,

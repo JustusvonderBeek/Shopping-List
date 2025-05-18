@@ -73,4 +73,10 @@
     <string name="take_images_bot_dialog">Fotos machen</string>
     <string name="recipe_confirm_delete">Wollen sie das Rezept wirklich löschen?</string>
     <string name="recipe_confirm_delete_title">Rezept löschen</string>
+    <string name="recipe_unshareable_placeholder_title">Dieses Rezept kannst du nicht teilen</string>
+    <string name="recipe_unshareable_placeholder_description">Du kannst nur Rezepte teilen die du selber erstellt hast.</string>
+    <string name="recipe_unshareable_placeholder_try_text">Versuche ein neues Rezept zu erstellen und drücke dort auf teilen.</string>
+    <string name="list_unshareable_placeholder_title">Diese Liste kannst du nicht teilen</string>
+    <string name="list_unshareable_placeholder_description">Du kannst nur Listen teilen die du selber erstellt hast</string>
+    <string name="list_unshareable_placeholder_try_text">Versuche eine neue Liste zu erstellen und diese zu teilen</string>
 </resources>

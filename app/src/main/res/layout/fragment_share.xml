@@ -3,31 +3,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.cloudsheeptech.shoppinglist.fragments.share.ShareViewModel" />
     </data>
 
     <LinearLayout
+        android:id="@+id/shareLayoutWrapper"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <include
+            android:id="@+id/unshareableRecipePlaceholder"
+            layout="@layout/ui_unshareable_recipe"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/unshareableListPlaceholder"
+            layout="@layout/ui_unshareable_list"
+            android:visibility="gone" />
+
         <EditText
+            android:id="@+id/shareSearchUserText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:hint="@string/search_users_input_hint"
-            android:text="@={viewModel.searchString}"
-            />
+            android:text="@={viewModel.searchString}" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/userPreviewList"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            />
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </LinearLayout>
 </layout>

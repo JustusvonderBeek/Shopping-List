@@ -63,4 +63,7 @@
     <string name="take_images_bot_dialog">Hacer Fotos</string>
     <string name="recipe_confirm_delete">Puedes eliminar este recipio?</string>
     <string name="recipe_confirm_delete_title">Eliminar recipio</string>
+    <string name="recipe_unshareable_placeholder_title">No puedes compartir este rezeta</string>
+    <string name="recipe_unshareable_placeholder_description">Solo puedes compartir rezetas que tu cretaste</string>
+    <string name="recipe_unshareable_placeholder_try_text">Probas creir una nueva rezeta y compartir este</string>
 </resources>

@@ -112,12 +112,18 @@ class ShoppingListRepository
                     return null
                 } else if (storedList == null && remoteList != null) {
                     latestList = remoteList
-                    Log.d("ShoppingListRepository", "List $listId from $createdBy not found locally. Creating new list")
+                    Log.d(
+                        "ShoppingListRepository",
+                        "List $listId from $createdBy not found locally. Creating new list",
+                    )
                     createRemote(latestList)
                     return latestList
                 } else if (storedList != null && remoteList == null) {
                     latestList = storedList
-                    Log.d("ShoppingListRepository", "List $listId from $createdBy not found online. Update skipped")
+                    Log.d(
+                        "ShoppingListRepository",
+                        "List $listId from $createdBy not found online. Update skipped",
+                    )
                     return latestList
                 } else if (storedList != null && remoteList != null) {
                     latestList = compareAndGetLatestList(storedList, remoteList)
@@ -158,7 +164,8 @@ class ShoppingListRepository
                 // TODO: Write an integration method with the locally stored lists
                 allRemoteLists.forEach { remoteList ->
                     // Create if not exists, update if exists
-                    val exists = localDataSource.exists(remoteList.listId, remoteList.createdBy.onlineId)
+                    val exists =
+                        localDataSource.exists(remoteList.listId, remoteList.createdBy.onlineId)
                     Log.d(
                         "ShoppingListRepository",
                         "List ${remoteList.listId} from ${remoteList.createdBy.onlineId} exists: $exists",
@@ -316,9 +323,15 @@ class ShoppingListRepository
             itemId: Long,
             quantity: Long,
         ): Boolean {
-            val updatedLocalList = localDataSource.updateItemCount(listId, createdBy, itemId, quantity)
-            val migratedToNewId = update(updatedLocalList)
-            return migratedToNewId
+            try {
+                val updatedLocalList =
+                    localDataSource.updateItemCount(listId, createdBy, itemId, quantity)
+                val migratedToNewId = update(updatedLocalList)
+                return migratedToNewId
+            } catch (ex: IllegalArgumentException) {
+                Log.e("ShoppingListRepository", "List $listId from $createdBy not found")
+            }
+            return false
         }
 
         suspend fun updateTitle(

@@ -11,34 +11,30 @@
             type="com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewViewModel" />
     </data>
 
-    <LinearLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/listOverviewRefresher"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/listOverviewRefresher"
-            android:visibility="gone"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_height="match_parent">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/listOverviewList"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="match_parent"
                 tools:listitem="@layout/shopping_list_overview_item"
                 tools:itemCount="4"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            <include
+                android:id="@+id/emptyListsPlaceholder"
+                layout="@layout/ui_empty_lists_placeholder"
+                android:visibility="gone" />
 
-        <include android:id="@+id/emptyListsPlaceholder"
-            layout="@layout/ui_empty_lists_placeholder"
-            android:visibility="visible"
-            />
+        </FrameLayout>
 
-    </LinearLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </layout>

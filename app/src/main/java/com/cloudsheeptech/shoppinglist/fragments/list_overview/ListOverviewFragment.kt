@@ -87,12 +87,12 @@ class ListOverviewFragment :
             Observer { list ->
                 if (list.isNullOrEmpty()) {
                     binding.emptyListsPlaceholder.visibility = View.VISIBLE
-                    binding.listOverviewRefresher.visibility = View.GONE
+                    binding.listOverviewList.visibility = View.GONE
+                    adapter.submitList(emptyList())
                 } else {
                     binding.emptyListsPlaceholder.visibility = View.GONE
-                    binding.listOverviewRefresher.visibility = View.VISIBLE
+                    binding.listOverviewList.visibility = View.VISIBLE
                     adapter.submitList(list)
-//                adapter.notifyDataSetChanged()
                 }
             },
         )
@@ -101,7 +101,12 @@ class ListOverviewFragment :
             viewLifecycleOwner,
             Observer { navigate ->
                 if (navigate) {
-                    findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToCreateShoppinglistFragment(null, 0L))
+                    findNavController().navigate(
+                        ListOverviewFragmentDirections.actionOverviewToCreateShoppinglistFragment(
+                            null,
+                            0L,
+                        ),
+                    )
                     viewModel.onCreateListNavigated()
                 }
             },
@@ -115,7 +120,11 @@ class ListOverviewFragment :
                 val title = idAndFromAndTitle.third
                 if (id > 0L) {
                     findNavController().navigate(
-                        ListOverviewFragmentDirections.actionOverviewToShoppinglist(id, from, title),
+                        ListOverviewFragmentDirections.actionOverviewToShoppinglist(
+                            id,
+                            from,
+                            title,
+                        ),
                     )
                     viewModel.onShoppingListNavigated()
                 }

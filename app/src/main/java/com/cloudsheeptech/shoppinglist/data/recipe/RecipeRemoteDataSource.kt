@@ -150,6 +150,10 @@ class RecipeRemoteDataSource
                 // Maybe make adaptive parsing, but would require more sophisticated handling
                 try {
                     val fullBody = response.readBytes()
+                    if (fullBody.isEmpty()) {
+                        Log.i("RecipeRemoteDataSource", "No remote recipes found")
+                        return@withContext
+                    }
                     val multipartDataSource = ByteArrayDataSource(fullBody, contentType)
                     val multipart = MimeMultipart(multipartDataSource)
                     if (multipart.count < 1) {

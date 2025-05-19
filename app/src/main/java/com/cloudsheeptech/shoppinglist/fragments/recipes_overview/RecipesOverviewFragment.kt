@@ -75,6 +75,7 @@ class RecipesOverviewFragment :
                 if (list.isNullOrEmpty()) {
                     binding.emptyRecipesPlaceholder.visibility = View.VISIBLE
                     binding.recipesOverviewList.visibility = View.GONE
+                    adapter.submitList(emptyList())
                 } else {
                     binding.emptyRecipesPlaceholder.visibility = View.GONE
                     binding.recipesOverviewList.visibility = View.VISIBLE

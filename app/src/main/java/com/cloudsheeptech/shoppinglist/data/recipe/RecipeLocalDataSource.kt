@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -305,6 +306,7 @@ class RecipeLocalDataSource
                             }
                         },
                     ) { combinedList -> combinedList.toList() }
+                        .onStart { emit(emptyList()) }
                 }.asLiveData(Dispatchers.IO)
 
         fun readAllImageLocationsLive(

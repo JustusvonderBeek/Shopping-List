@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -35,6 +36,8 @@ class ShareFragment : Fragment() {
         savedInstanceState?.putLong("listId", navArgs.listId)
         savedInstanceState?.putLong("createdBy", navArgs.createdBy)
         savedInstanceState?.putLong("recipeId", navArgs.recipeId)
+
+        viewModel.setTitle(navArgs.title)
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
@@ -116,5 +119,14 @@ class ShareFragment : Fragment() {
         )
 
         return binding.root
+    }
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
+        super.onViewCreated(view, savedInstanceState)
+        val title = getString(R.string.share_fragment_name, viewModel.title.value)
+        (activity as AppCompatActivity).supportActionBar?.title = title
     }
 }

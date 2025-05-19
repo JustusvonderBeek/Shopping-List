@@ -38,7 +38,7 @@
     <string name="delete_list_dialog_title">Liste löschen</string>
     <string name="delete_list_dialog_yes">Ja, löschen</string>
     <string name="delete_list_dialog_no">Nein</string>
-    <string name="share_fragment_name">Diese Liste teilen</string>
+    <string name="share_fragment_name">Teile %1$s</string>
     <string name="share_btn_text">Teilen</string>
     <string name="delete_list_button_text">Liste Löschen</string>
     <string name="clear_items_in_list_button_text">Gekaufte Items entfernen</string>

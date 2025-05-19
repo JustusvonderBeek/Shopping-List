@@ -83,6 +83,9 @@
             android:name="createdBy"
             app:argType="long"
             android:defaultValue="-1L" />
+        <argument
+            android:name="title"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/listPickerFragment"

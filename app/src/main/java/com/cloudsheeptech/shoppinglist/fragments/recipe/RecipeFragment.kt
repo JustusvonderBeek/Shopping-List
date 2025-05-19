@@ -204,6 +204,7 @@ class RecipeFragment :
                         RecipeFragmentDirections.actionReceiptToShareFragment(
                             recipeId = recipeId,
                             createdBy = createdBy,
+                            title = viewModel.title.value!!,
                         ),
                     )
                     viewModel.onShareNavigated()

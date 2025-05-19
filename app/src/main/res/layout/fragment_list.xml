@@ -66,15 +66,14 @@
                         android:layout_height="match_parent"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/shopping_item"
-                        android:scrollbars="vertical"
-                        />
+                        android:scrollbars="vertical" />
 
                 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-                <include layout="@layout/ui_list_item_placeholder"
+                <include
+                    layout="@layout/ui_list_item_placeholder"
                     android:id="@+id/emptyListPlaceholder"
-                    android:visibility="visible"
-                    />
+                    android:visibility="visible" />
 
             </LinearLayout>
 
@@ -111,12 +110,12 @@
         </FrameLayout>
 
         <LinearLayout
+            android:id="@+id/bottomSheetLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:orientation="vertical"
-            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-            >
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
             <View
                 android:layout_width="match_parent"
@@ -130,8 +129,7 @@
                 android:layout_width="100dp"
                 android:layout_height="5dp"
                 android:layout_gravity="center"
-                android:background="@drawable/drag_handle_bg"
-                />
+                android:background="@drawable/drag_handle_bg" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -152,8 +150,7 @@
                     android:shadowRadius="4"
                     android:shadowDy="10"
                     android:shadowDx="10"
-                    android:shadowColor="@color/app_gray_0"
-                    >
+                    android:shadowColor="@color/app_gray_0">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:layout_width="match_parent"
@@ -168,6 +165,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/addItemActionButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
@@ -183,7 +181,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/shoppingItemSelectView"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="wrap_content"
                 tools:listitem="@layout/shopping_item_preview"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:scrollbars="vertical"

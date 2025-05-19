@@ -117,6 +117,8 @@ class ShareViewModel
             MediatorLiveData<SharePlaceholderEnum>(SharePlaceholderEnum.SHAREABLE)
         val unshareable: LiveData<SharePlaceholderEnum> get() = _unshareable
 
+        val title = MutableLiveData<String>("")
+
         private val _navigateUp = MutableLiveData<Boolean>(false)
         val navigateUp: LiveData<Boolean> get() = _navigateUp
 
@@ -153,9 +155,9 @@ class ShareViewModel
                 }
                 if (createdBy != user.OnlineID && listId.value != null && listId.value!! > 0L) {
                     _unshareable.value = SharePlaceholderEnum.LIST_UNSHAREABLE
+                }
             }
         }
-    }
 
         private fun combineUserLists(
             onlinePreview: List<ShareUserPreview>?,
@@ -295,6 +297,10 @@ class ShareViewModel
                 val user = appUserRepository.read() ?: return@launch
                 recipeShareRepository.delete(recipeId.value!!, user.OnlineID, sharedWithId)
             }
+        }
+
+        fun setTitle(title: String) {
+            this.title.value = title
         }
 
         fun navigateUp() {

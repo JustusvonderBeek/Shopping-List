@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.fragments.list
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
@@ -8,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -25,7 +27,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -37,6 +38,9 @@ class ShoppinglistFragment :
     private lateinit var binding: FragmentListBinding
     private val viewModel: ShoppinglistViewModel by viewModels()
 //    private val learningViewModel : RecipeViewModel by activityViewModels()
+
+    private var startTouchY = 0f
+    private var startTranslationY = 0f
 
     val args: ShoppinglistFragmentArgs by navArgs()
 
@@ -89,14 +93,6 @@ class ShoppinglistFragment :
         viewModel.resetOrdering()
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
-        super.onViewCreated(view, savedInstanceState)
-        (activity as AppCompatActivity).supportActionBar?.title = viewModel.title.value
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -119,10 +115,6 @@ class ShoppinglistFragment :
             findNavController().navigateUp()
         }
 
-        val database = ShoppingListDatabase.getInstance(requireContext())
-//        val viewModelFactory = ShoppingListViewModelFactory(database, shoppingListId, createdBy)
-
-//        viewModel = ViewModelProvider(this, viewModelFactory)[ShoppinglistViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = requireActivity()
 
@@ -280,6 +272,7 @@ class ShoppinglistFragment :
                         ShoppinglistFragmentDirections.actionShoppinglistToShareFragment(
                             listId = listId,
                             createdBy = createdBy,
+                            title = viewModel.title.value!!,
                         ),
                     )
                     viewModel.onShareNavigated()
@@ -388,9 +381,42 @@ class ShoppinglistFragment :
             },
         )
 
-        // Adding blur effect to the overlay view
-//        Blurry.with(requireContext()).radius(1200).sampling(10).color(Color.argb(255, 238, 237, 0)).onto(binding.rootLayout)
-
         return binding.root
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
+        super.onViewCreated(view, savedInstanceState)
+        (activity as AppCompatActivity).supportActionBar?.title = viewModel.title.value
+
+        val maxDragUp = binding.bottomSheetLayout.height.toFloat() // Drag up max by height
+        val maxTranslationY = maxDragUp - 30f
+        binding.visualBoxDrawer.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startTouchY = event.rawY
+                    startTranslationY = binding.bottomSheetLayout.translationY
+                    true
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    val dy = event.rawY - startTouchY
+                    val newTranslationY = (startTranslationY + dy).coerceIn(0f, 2000f)
+
+                    binding.bottomSheetLayout.translationY = newTranslationY
+                    true
+                }
+
+                else -> false
+            }
+        }
+    }
+
+    private fun dpToPx(dp: Float): Float {
+        val scale = resources.displayMetrics.density
+        return dp * scale
     }
 }

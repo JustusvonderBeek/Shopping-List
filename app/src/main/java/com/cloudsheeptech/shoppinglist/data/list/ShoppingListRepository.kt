@@ -7,6 +7,7 @@ import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
+import io.ktor.client.network.sockets.SocketTimeoutException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -200,18 +201,22 @@ class ShoppingListRepository
         suspend fun update(list: ApiShoppingList): Boolean {
             val onlineIdBeforeUpdate = list.createdBy.onlineId
             list.version++
-            localDataSource.update(list)
             var migratedListToNewId = false
             try {
+                localDataSource.update(list)
                 updateListOnlineAndRetryOnFailure(list)
                 if (list.createdBy.onlineId != onlineIdBeforeUpdate) {
                     migratedListToNewId = true
                     localDataSource.updateCreatedByForList(list.listId, list.createdBy.onlineId)
                 }
             } catch (ex: IllegalStateException) {
-                Log.w("ShoppingListRepository", "Ex: $ex")
+                Log.e("ShoppingListRepository", "Ex: $ex")
             } catch (ex: UserNotAuthenticatedException) {
-                Log.w("ShoppingListRepository", "User not authenticated: $ex")
+                Log.e("ShoppingListRepository", "User not authenticated: $ex")
+            } catch (ex: IllegalArgumentException) {
+                Log.e("ShoppingListRepository", "Failed to update list: $ex")
+            } catch (ex: SocketTimeoutException) {
+                Log.e("ShoppingListRepository", "Timeout while updating list: $ex")
             }
             return migratedListToNewId
         }
@@ -348,7 +353,7 @@ class ShoppingListRepository
             createdBy: Long,
         ) {
             localDataSource.delete(listId, createdBy)
-            remoteApi.deleteShoppingList(listId)
+            remoteApi.deleteShoppingList(listId, createdBy)
         }
 
         suspend fun deleteAllCheckedItems(

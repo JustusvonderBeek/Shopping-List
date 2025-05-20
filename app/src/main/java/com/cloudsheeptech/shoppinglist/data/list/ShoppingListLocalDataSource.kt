@@ -10,6 +10,7 @@ import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
+import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,7 @@ class ShoppingListLocalDataSource
     constructor(
         private val database: ShoppingListDatabase,
         private val userRepository: AppUserRepository,
+        private val onlineUserRepository: OnlineUserRepository,
         private val itemRepository: ItemRepository,
         private val itemToListRepository: ItemToListRepository,
     ) {
@@ -96,14 +98,12 @@ class ShoppingListLocalDataSource
         }
 
         // Ignore for now
-        private fun DbShoppingList.toApiList(): ApiShoppingList {
-            val creator =
-                userRepository.read() ?: throw IllegalStateException("user null after creation screen")
+        private fun DbShoppingList.toApiList(listCreator: ListCreator): ApiShoppingList {
             val apiList =
                 ApiShoppingList(
                     listId = this.listId,
                     title = this.title,
-                    createdBy = ListCreator(creator.OnlineID, creator.Username),
+                    createdBy = listCreator,
                     createdAt = this.lastUpdated,
                     lastUpdated = this.lastUpdated,
                     items = mutableListOf(),
@@ -220,7 +220,14 @@ class ShoppingListLocalDataSource
             var offlineList: ApiShoppingList? = null
             withContext(Dispatchers.IO) {
                 val shoppingListBase = listDao.getShoppingList(listId, createdBy) ?: return@withContext
-                offlineList = shoppingListBase.toApiList()
+                val user =
+                    userRepository.read() ?: throw IllegalStateException("user null after login")
+                var username = user.Username
+                if (user.OnlineID != createdBy) {
+                    val onlineUser = onlineUserRepository.read(createdBy)
+                    username = onlineUser?.username ?: ""
+                }
+                offlineList = shoppingListBase.toApiList(ListCreator(createdBy, username))
                 // Combine the mapping and item information to craft the item list
                 val mappings = itemToListRepository.read(listId, createdBy)
                 if (mappings.isEmpty()) {
@@ -468,7 +475,8 @@ class ShoppingListLocalDataSource
             val updatedList: ApiShoppingList
             withContext(Dispatchers.IO) {
                 itemToListRepository.deleteAllCheckedMappingsForList(listId, createdBy)
-                updatedList = read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
+                updatedList =
+                    read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
                 updatedList.version++
                 update(updatedList)
             }

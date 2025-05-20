@@ -156,12 +156,14 @@ class ShoppingListRemoteDataSource
             return success
         }
 
-        // Because we can only delete the lists that we created ourselves, the createdBy
-        // parameter is implicitly given and we don't need to include it here
-        suspend fun deleteShoppingList(listId: Long): Boolean {
+        // This will delete the sharing if any existed
+        suspend fun deleteShoppingList(
+            listId: Long,
+            createdBy: Long,
+        ): Boolean {
             var success = false
             withContext(Dispatchers.IO) {
-                networking.DELETE("${UrlProviderEnum.BASE_SHOPPING_LIST_URL.url}/$listId") { response ->
+                networking.DELETE("${UrlProviderEnum.BASE_SHOPPING_LIST_URL.url}/$listId?createdBy=$createdBy") { response ->
                     if (response.status != HttpStatusCode.OK) {
                         Log.e("ShoppingListRemoteDataSource", "Failed to delete list $listId at remote")
                         return@DELETE

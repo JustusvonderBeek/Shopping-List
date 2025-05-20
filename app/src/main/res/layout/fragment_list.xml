@@ -11,6 +11,7 @@
     </data>
 
     <LinearLayout
+        android:id="@+id/listAndBottomSheetWrapperLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -32,13 +33,13 @@
                     android:orientation="horizontal">
 
                     <TextView
+                        style="@style/ShoppingListSubtleStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/ordering_name"
-                        android:paddingStart="10dp"
                         android:layout_gravity="center"
-                        tools:ignore="RtlSymmetry"
-                        style="@style/ShoppingListSubtleStyle" />
+                        android:paddingStart="10dp"
+                        android:text="@string/ordering_name"
+                        tools:ignore="RtlSymmetry" />
 
                     <RelativeLayout
                         android:layout_width="match_parent"
@@ -56,23 +57,23 @@
 
                 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                     android:id="@+id/refresh_layout"
-                    android:visibility="gone"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/item_list"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:scrollbars="vertical"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        tools:listitem="@layout/shopping_item"
-                        android:scrollbars="vertical" />
+                        tools:listitem="@layout/shopping_item" />
 
                 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
                 <include
-                    layout="@layout/ui_list_item_placeholder"
                     android:id="@+id/emptyListPlaceholder"
+                    layout="@layout/ui_list_item_placeholder"
                     android:visibility="visible" />
 
             </LinearLayout>
@@ -81,31 +82,31 @@
                 android:id="@+id/blurLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
+                android:background="@color/app_gray_700_trans"
                 android:gravity="center"
-                android:visibility="gone"
-                android:background="@color/app_gray_700_trans">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <ImageView
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:src="@drawable/ic_check"
-                    android:layout_margin="10dp" />
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_check" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
                     android:text="@string/list_finished_header"
-                    android:textSize="24sp"
-                    android:layout_marginBottom="10dp" />
+                    android:textSize="24sp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/btn_list_finished"
                     android:gravity="center"
-                    android:textSize="20sp"
-                    android:onClick="@{() -> viewModel.listFinished()}" />
+                    android:onClick="@{() -> viewModel.listFinished()}"
+                    android:text="@string/btn_list_finished"
+                    android:textSize="20sp" />
             </LinearLayout>
         </FrameLayout>
 
@@ -117,74 +118,84 @@
             android:orientation="vertical"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:background="?android:attr/listDivider"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp" />
-
-            <View
-                android:id="@+id/visualBoxDrawer"
-                android:layout_width="100dp"
-                android:layout_height="5dp"
-                android:layout_gravity="center"
-                android:background="@drawable/drag_handle_bg" />
-
             <LinearLayout
+                android:id="@+id/alwaysShowBottomSheetLayoutWrapper"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="4dp">
+                android:orientation="vertical">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="0dp"
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="?android:attr/listDivider"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp" />
+
+                <View
+                    android:id="@+id/visualBoxDrawer"
+                    android:layout_width="100dp"
+                    android:layout_height="5dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/drag_handle_bg" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:boxCornerRadiusBottomEnd="10dp"
-                    app:boxCornerRadiusBottomStart="10dp"
-                    app:boxCornerRadiusTopEnd="10dp"
-                    app:boxCornerRadiusTopStart="10dp"
-                    app:boxStrokeColor="@color/app_green_700"
-                    android:outlineAmbientShadowColor="@color/app_gray_0"
-                    android:layout_weight="1"
-                    android:shadowRadius="4"
-                    android:shadowDy="10"
-                    android:shadowDx="10"
-                    android:shadowColor="@color/app_gray_0">
+                    android:orientation="horizontal"
+                    android:padding="4dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:layout_width="match_parent"
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="5dp"
-                        android:backgroundTintMode="add"
-                        android:hint="@string/item_name_input_hint"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxStrokeColor="@color/app_green_700"
+                        android:outlineAmbientShadowColor="@color/app_gray_0"
+                        android:layout_weight="1"
+                        android:shadowRadius="4"
+                        android:shadowDy="10"
+                        android:shadowDx="10"
+                        android:shadowColor="@color/app_gray_0">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="5dp"
+                            android:backgroundTintMode="add"
+                            android:hint="@string/item_name_input_hint"
+                            android:layout_gravity="center_vertical"
+                            android:text="@={viewModel.itemName}"
+                            style="@style/EditTextWithoutUnderline" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/addItemActionButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:text="@={viewModel.itemName}"
-                        style="@style/EditTextWithoutUnderline" />
+                        android:clickable="true"
+                        app:elevation="0dp"
+                        android:layout_margin="4dp"
+                        android:src="@drawable/ic_plus"
+                        android:backgroundTint="@color/app_green_300"
+                        android:onClick="@{() -> viewModel.addItem()}" />
 
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/addItemActionButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:clickable="true"
-                    app:elevation="0dp"
-                    android:layout_margin="4dp"
-                    android:src="@drawable/ic_plus"
-                    android:backgroundTint="@color/app_green_300"
-                    android:onClick="@{() -> viewModel.addItem()}" />
+                </LinearLayout>
 
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/shoppingItemSelectView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="150dp"
                 tools:listitem="@layout/shopping_item_preview"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:scrollbars="vertical"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:visibility="gone" />
 
         </LinearLayout>

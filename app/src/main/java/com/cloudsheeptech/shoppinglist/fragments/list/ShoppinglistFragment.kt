@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -41,6 +40,8 @@ class ShoppinglistFragment :
 
     private var startTouchY = 0f
     private var startTranslationY = 0f
+    private var initialBottomSheetWeight = 0f
+    private var initialListViewWeight = 0f
 
     val args: ShoppinglistFragmentArgs by navArgs()
 
@@ -392,31 +393,35 @@ class ShoppinglistFragment :
         super.onViewCreated(view, savedInstanceState)
         (activity as AppCompatActivity).supportActionBar?.title = viewModel.title.value
 
-        val maxDragUp = binding.bottomSheetLayout.height.toFloat() // Drag up max by height
-        val maxTranslationY = maxDragUp - 30f
-        binding.visualBoxDrawer.setOnTouchListener { v, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    startTouchY = event.rawY
-                    startTranslationY = binding.bottomSheetLayout.translationY
-                    true
-                }
-
-                MotionEvent.ACTION_MOVE -> {
-                    val dy = event.rawY - startTouchY
-                    val newTranslationY = (startTranslationY + dy).coerceIn(0f, 2000f)
-
-                    binding.bottomSheetLayout.translationY = newTranslationY
-                    true
-                }
-
-                else -> false
-            }
-        }
-    }
-
-    private fun dpToPx(dp: Float): Float {
-        val scale = resources.displayMetrics.density
-        return dp * scale
+//        val maxDragUp = 150f // The maximum size of the bottom sheet I want to have
+//        val minViewSize = binding.alwaysShowBottomSheetLayoutWrapper.height.toFloat()
+//        binding.visualBoxDrawer.setOnTouchListener { v, event ->
+//            when (event.actionMasked) {
+//                MotionEvent.ACTION_DOWN -> {
+//                    startTouchY = event.rawY
+//                    startTranslationY = binding.bottomSheetLayout.y
+//                    true
+//                }
+//
+//                MotionEvent.ACTION_MOVE -> {
+//                    val dy = event.rawY - startTouchY
+//                    // Positiv is downwards, negativ is upwards
+//                    var newTranslationY = (startTranslationY + dy).coerceIn(150f, 150f)
+//                    val newTopPosition = binding.bottomSheetLayout.y + newTranslationY
+//
+//                    if (newTopPosition > maxDragUp + minViewSize) {
+// //                        newTranslationY = 0f
+//                    }
+//                    if (newTopPosition < minViewSize) {
+// //                        newTranslationY = 0f
+//                    }
+//
+//                    binding.bottomSheetLayout.translationY = newTranslationY
+//                    true
+//                }
+//
+//                else -> false
+//            }
+//        }
     }
 }

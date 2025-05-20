@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
+import okhttp3.internal.toImmutableList
 import java.io.IOException
 import java.io.InputStream
 import java.net.ConnectException
@@ -143,7 +144,6 @@ class RecipeRemoteDataSource
 
         private suspend fun parseAllRecipesAndImagesInResponse(response: HttpResponse): List<Pair<ApiRecipe, List<ByteArray>>> {
             var recipesAndImages = mutableListOf<Pair<ApiRecipe, List<ByteArray>>>()
-            // TODO: Make read all recipes in response
             // TODO: Include file compression and decompression
             withContext(Dispatchers.IO) {
                 val contentType = response.headers["Content-Type"] ?: return@withContext
@@ -176,7 +176,7 @@ class RecipeRemoteDataSource
                                     Log.e("RecipeRemoteDataSource", "Received empty recipe object")
                                     return@withContext
                                 }
-                                val newRecipe = Pair(currentRecipe, rawImages)
+                                val newRecipe = Pair(currentRecipe, rawImages.toImmutableList())
                                 recipesAndImages.add(newRecipe)
                                 currentRecipe = null
                                 rawImages.clear()
@@ -217,7 +217,8 @@ class RecipeRemoteDataSource
                                 Log.e("RecipeRemoteDataSource", "Received empty recipe object")
                                 return@withContext
                             }
-                            val newRecipe = Pair(currentRecipe, rawImages)
+                            // Copy the elements so that we don't have the same images in all recipes
+                            val newRecipe = Pair(currentRecipe, rawImages.toImmutableList())
                             recipesAndImages.add(newRecipe)
                         }
                     }

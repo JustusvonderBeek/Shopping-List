@@ -151,6 +151,11 @@ class RecipeRepository
                     }
                     if (localDataSource.exists(recipe.onlineId, recipe.createdBy.onlineId)) {
                         localDataSource.update(recipe)
+                        localDataSource.updateImages(
+                            recipe.onlineId,
+                            recipe.createdBy.onlineId,
+                            imageFilePaths,
+                        )
                     } else {
                         localDataSource.create(
                             recipe.onlineId,

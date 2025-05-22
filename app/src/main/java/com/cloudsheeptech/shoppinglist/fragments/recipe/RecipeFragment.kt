@@ -153,13 +153,26 @@ class RecipeFragment :
                 } else {
                     val defaultList =
                         listOf(
-                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/22_262053270_0.png",
-                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/7_1006887184_0.png",
+                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/1_262053270_0.png",
                         )
                     recipeImageAdapter.updateImages(
                         defaultList,
                     )
 //                    recipeImageAdapterWithArrows.submitList(defaultList)
+                }
+            },
+        )
+
+        binding.refreshRecipeLayout.setOnRefreshListener {
+            Log.d("RecipeFragment", "Refreshing recipe")
+            viewModel.updateRecipe()
+        }
+
+        viewModel.refreshing.observe(
+            viewLifecycleOwner,
+            Observer { refreshing ->
+                if (!refreshing) {
+                    binding.refreshRecipeLayout.isRefreshing = false
                 }
             },
         )

@@ -38,7 +38,6 @@ class RecipeViewModel
 
         private var recipeId: Long = savedStateHandle["receiptId"] ?: -1L
         private var createdBy: Long = savedStateHandle["createdBy"] ?: -1L
-        private val listPickerRecipeId: Long = savedStateHandle["recipeIdForSelectedList"] ?: -1L
         val title = MutableLiveData<String>("Rezept")
         val portionsText = MutableLiveData("Portions")
 
@@ -86,6 +85,9 @@ class RecipeViewModel
         private val _confirmDelete = MutableLiveData<Boolean>(false)
         val confirmDelete: LiveData<Boolean> get() = _confirmDelete
 
+        private val _refreshing = MutableLiveData<Boolean>(false)
+        val refreshing: LiveData<Boolean> get() = _refreshing
+
         private val _navigateToEdit = MutableLiveData<Pair<Long, Long>>(Pair(-1L, -1L))
         val navigateToEdit: LiveData<Pair<Long, Long>> get() = _navigateToEdit
 
@@ -130,6 +132,16 @@ class RecipeViewModel
                 }
             }
         }
+
+        fun updateRecipe() {
+            _refreshing.value = true
+            vmScope.launch {
+                recipeRepository.readOnline(recipeId, createdBy)
+                withContext(Dispatchers.Main) {
+                    _refreshing.value = false
+                }
+        }
+    }
 
         fun setTitle(title: String) {
             this.title.value = title

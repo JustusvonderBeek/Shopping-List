@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.fragments.recipe
 
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
@@ -35,6 +36,7 @@ class RecipeImageAdapter(
         position: Int,
     ) {
         val path = imagePaths[position]
+        Log.d("RecipeImageAdapter", "Binding image $path")
         if (path.isNotEmpty()) {
             Glide
                 .with(holder.imageView.context)

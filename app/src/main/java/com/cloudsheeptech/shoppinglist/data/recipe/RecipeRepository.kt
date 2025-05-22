@@ -6,6 +6,8 @@ import androidx.lifecycle.asLiveData
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
 import io.ktor.client.network.sockets.SocketTimeoutException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -90,7 +92,18 @@ class RecipeRepository
         suspend fun readOnline(
             receiptId: Long,
             createdBy: Long,
-        ): ApiRecipe? = remoteDataSource.read(receiptId, createdBy)
+        ): ApiRecipe? {
+            val onlineRecipe: ApiRecipe? =
+                withContext(Dispatchers.IO) {
+                    val remoteRecipe = remoteDataSource.readFull(receiptId, createdBy)
+                    if (remoteRecipe.first == null) {
+                        return@withContext null
+                    }
+                    updateRecipe(remoteRecipe.first, remoteRecipe.second)
+                    return@withContext remoteRecipe.first
+                }
+            return onlineRecipe
+        }
 
         suspend fun readAllOwnRecipesOnline() {
             val allRelevantRecipeIds = localDataSource.readAllRecipeIds()
@@ -98,30 +111,44 @@ class RecipeRepository
                 val recipeId = recipe.recipeId
                 val createdBy = recipe.createdBy
                 val remoteRecipe = remoteDataSource.readFull(recipeId, createdBy)
-                if (remoteRecipe.first == null) {
+                updateRecipe(remoteRecipe.first, remoteRecipe.second)
+            }
+        }
+
+        private suspend fun updateRecipe(
+            recipe: ApiRecipe?,
+            images: List<ByteArray>,
+        ) {
+            withContext(Dispatchers.IO) {
+                if (recipe == null) {
                     Log.e(
                         "RecipeRepository",
-                        "Recipe $recipeId from $createdBy could not be read from remote",
+                        "Recipe could not be updated because it was null",
                     )
-                    return@forEach
+                    return@withContext
                 }
+                val recipeId = recipe.onlineId
+                val createdBy = recipe.createdBy.onlineId
                 Log.d(
                     "RecipeRepository",
                     "Successfully read recipe $recipeId from $createdBy from online endpoint",
                 )
-                val updatedVersion = localDataSource.update(remoteRecipe.first!!)
+                val updatedVersion = localDataSource.update(recipe)
                 if (updatedVersion != -1L) {
-                    Log.d(
+                    Log.i(
                         "RecipeRepository",
                         "Successfully updated recipe $recipeId from $createdBy in offline storage",
                     )
+                } else {
+                    Log.w("RecipeRepository", "Update of recipe $recipeId from $createdBy aborted")
+                    return@withContext
                 }
                 val updatedImageLocation = mutableListOf<String>()
-                remoteRecipe.second.forEachIndexed { index, image ->
+                images.forEachIndexed { index, image ->
                     val imageStoreFile =
                         binaryFileHandler.storeImageToFile(
                             image,
-                            "${recipeId}_${createdBy}_$index.png",
+                            "${recipeId}_${createdBy}_$index.img",
                         )
                     updatedImageLocation.add(imageStoreFile.toString())
                 }

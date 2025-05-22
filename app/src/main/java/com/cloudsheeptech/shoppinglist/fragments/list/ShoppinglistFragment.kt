@@ -86,7 +86,7 @@ class ShoppinglistFragment :
     ) {
         val selected = parent.getItemAtPosition(pos)
         Log.d("ShoppingListFragment", "Got: $selected")
-        viewModel.setOrderingInDatabase(selected as String, requireContext())
+        viewModel.setOrderingInDatabase(selected as String, requireContext().resources)
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -118,6 +118,9 @@ class ShoppinglistFragment :
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = requireActivity()
+
+        // Per default update the list once navigated
+        viewModel.updateShoppinglist()
 
         // TODO: Clean up this mess...
         val amountName = getString(R.string.list_item_amount_name)
@@ -222,7 +225,7 @@ class ShoppinglistFragment :
                     Log.d("ShoppingListFragment", "Found ordering: ${it.Ordering}")
                     viewModel.setOrdering(it.Ordering)
                     binding.orderSelectionSpinner.setSelection(it.Ordering.position)
-                    Log.d("ShoppingListFragment", "${it.Ordering.position}")
+                    Log.d("ShoppingListFragment", "${it.Ordering}")
                 }
             },
         )
@@ -333,7 +336,7 @@ class ShoppinglistFragment :
                 .setMessage(getString(R.string.clear_check_item_dialog))
                 .setTitle(getString(R.string.clear_item_dialog_title))
                 .setPositiveButton(getString(R.string.clear_item_dialog_yes)) { dialog, which ->
-                    viewModel.onClearAllItemsPositiv()
+                    viewModel.onClearAllItemsPositive()
                 }.setNegativeButton(getString(R.string.clear_item_dialog_no)) { dialog, which ->
                     viewModel.onClearAllItemsNegative()
                 }.create()

@@ -59,21 +59,34 @@ class ListShareRepository
             createdBy: Long,
             sharedWith: Long,
         ): Boolean {
-            val success = remoteDataSource.delete(listId, createdBy, sharedWith)
-            if (!success) {
-                Log.e("ListShareRepository", "Unsharing $listId with $sharedWith online failed")
-                return false
+            try {
+                val success = remoteDataSource.delete(listId, createdBy, sharedWith)
+                if (!success) {
+                    Log.e("ListShareRepository", "Unsharing $listId with $sharedWith online failed")
+                    return false
+                }
+                localDataSource.delete(listId, createdBy, sharedWith)
+                Log.d("ListShareRepository", "Unshared $listId with $sharedWith")
+                return true
+            } catch (ex: Exception) {
+                Log.e("ListShareRepository", "Unknown error while unsharing list: $ex")
             }
-            localDataSource.delete(listId, createdBy, sharedWith)
-            Log.d("ListShareRepository", "Unshared $listId with $sharedWith")
-            return true
+            return false
         }
 
         suspend fun deleteAll(
             listId: Long,
             createdBy: Long,
         ) {
-            localDataSource.deleteAll(listId, createdBy)
-            remoteDataSource.deleteAll(listId)
+            try {
+                val success = remoteDataSource.deleteAll(listId)
+                if (!success) {
+                    Log.e("ListShareRepository", "Failed to delete all shares online")
+                    return
+                }
+                localDataSource.deleteAll(listId, createdBy)
+            } catch (ex: Exception) {
+                Log.e("ListShareRepository", "Failed to delete all shares: $ex")
+            }
         }
     }

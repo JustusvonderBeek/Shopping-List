@@ -10,7 +10,6 @@ import androidx.lifecycle.map
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
 import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShareRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
@@ -49,7 +48,6 @@ class RecipeViewModel
 
         var recipe = recipeRepository.readLive(recipeId, createdBy)
 
-        private var imageLocations = MutableLiveData<List<RecipeImage>>(emptyList())
         private val _images: MutableLiveData<List<String>> =
             MutableLiveData(emptyList<String>())
         val images: LiveData<List<String>> get() = _images
@@ -136,12 +134,20 @@ class RecipeViewModel
         fun updateRecipe() {
             _refreshing.value = true
             vmScope.launch {
-                recipeRepository.readOnline(recipeId, createdBy)
-                withContext(Dispatchers.Main) {
-                    _refreshing.value = false
+                try {
+                    recipeRepository.readOnline(recipeId, createdBy)
+                    withContext(Dispatchers.Main) {
+                        _refreshing.value = false
+                    }
+                    val changedImages = recipeRepository.readAllImageLocations(recipeId, createdBy)
+                    withContext(Dispatchers.Main) {
+                        _images.value = changedImages.map { it.fileLocation }
+                    }
+                } catch (ex: Exception) {
+                    Log.e("RecipeViewModel", "Failed to update recipe online: $ex")
                 }
+            }
         }
-    }
 
         fun setTitle(title: String) {
             this.title.value = title

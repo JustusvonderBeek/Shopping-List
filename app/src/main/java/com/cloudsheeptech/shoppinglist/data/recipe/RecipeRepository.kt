@@ -172,7 +172,7 @@ class RecipeRepository
                         val fileLocation =
                             binaryFileHandler.storeImageToFile(
                                 image,
-                                "${recipe.onlineId}_${recipe.createdBy.onlineId}_$index.png",
+                                "${recipe.onlineId}_${recipe.createdBy.onlineId}_$index.img",
                             )
                         imageFilePaths.add(fileLocation.toString())
                     }
@@ -207,7 +207,7 @@ class RecipeRepository
                         val imageStoreFile =
                             binaryFileHandler.storeImageToFile(
                                 image,
-                                "${recipe.onlineId}_${recipe.createdBy.onlineId}_$index.png",
+                                "${recipe.onlineId}_${recipe.createdBy.onlineId}_$index.img",
                             )
                         updatedImageLocation.add(imageStoreFile.toString())
                     }

@@ -87,6 +87,8 @@ class RecipeFragment :
         val portionsText = getString(R.string.recipe_portions_text)
         viewModel.setPortionsText(portionsText)
 
+        viewModel.updateRecipe()
+
         val descriptionAdapter = RecipeDescriptionAdapter()
         binding.receiptDescriptionListView.adapter = descriptionAdapter
         val ingredientAdapter = RecipeIngredientAdapter()
@@ -153,7 +155,7 @@ class RecipeFragment :
                 } else {
                     val defaultList =
                         listOf(
-                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/1_262053270_0.png",
+                            "file:///data/user/0/com.cloudsheeptech.shoppinglist/files/1_1134997559_0.img",
                         )
                     recipeImageAdapter.updateImages(
                         defaultList,

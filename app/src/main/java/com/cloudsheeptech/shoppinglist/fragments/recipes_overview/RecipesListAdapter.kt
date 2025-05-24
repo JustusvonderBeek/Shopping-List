@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
@@ -50,6 +51,8 @@ class RecipesListAdapter(
                 Glide
                     .with(binding.root.context)
                     .load(imagePath.get(0).fileLocation)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
                     .into(binding.recipePreviewImage)
             }
             binding.executePendingBindings()

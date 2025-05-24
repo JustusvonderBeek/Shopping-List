@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.cloudsheeptech.shoppinglist.R
 
 class RecipeImageAdapter(
@@ -41,6 +42,8 @@ class RecipeImageAdapter(
             Glide
                 .with(holder.imageView.context)
                 .load(path) // Or just `path` if it's a URL
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 .into(holder.imageView)
         } else {
             // Prevent ugly scaling of Glide loading

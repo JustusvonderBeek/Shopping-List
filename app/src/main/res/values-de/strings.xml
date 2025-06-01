@@ -70,7 +70,7 @@
     <string name="start_screen_background_description">An image of vegetables, eggs, bread and other ingredients used to cook healty and delicious meals</string>
     <string name="create_list_fragment_title">Listenname ändern</string>
     <string name="select_images_bot_dialog">Bilder auswählen</string>
-    <string name="take_images_bot_dialog">Fotos machen</string>
+    <string name="take_images_bot_dialog">Fotos machen (WIP)</string>
     <string name="recipe_confirm_delete">Wollen sie das Rezept wirklich löschen?</string>
     <string name="recipe_confirm_delete_title">Rezept löschen</string>
     <string name="recipe_unshareable_placeholder_title">Dieses Rezept kannst du nicht teilen</string>
@@ -88,4 +88,6 @@
     <string name="recipe_overview_placeholder_title">Ziemlich leer hier</string>
     <string name="recipe_overview_placeholder_desc_1">Versuche ein neues Rezept anzulegen indem du auf den \'+\' Knopf klickst</string>
     <string name="recipe_overview_placeholder_desc_2">Oder schau nach ob jemand ein Rezept mit dir geteilt hat indem du nach unten wischst</string>
+    <string name="camera_finish_btn">Fertig</string>
+    <string name="camera_select_btn">Auswahl</string>
 </resources>

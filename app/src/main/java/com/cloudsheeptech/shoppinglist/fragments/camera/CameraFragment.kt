@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -20,12 +21,14 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentCameraxBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,6 +43,16 @@ class CameraFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private var activityResultLauncher: ActivityResultLauncher<Array<String>>? = null
+
+    private val pickMedia =
+        registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { uris ->
+            if (uris.isEmpty()) {
+                Log.d("ReceiptEditFragment", "No images selected")
+                return@registerForActivityResult
+            }
+            viewModel.setSelectedImages(uris)
+            viewModel.onPhotosSelected()
+        }
 
     companion object {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
@@ -69,6 +82,17 @@ class CameraFragment : Fragment() {
             },
         )
 
+        viewModel.selectPhotos.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it) {
+                    Log.d("CameraFragment", "Selecting photos")
+                    selectPhotos()
+                    viewModel.onPhotosSelected()
+                }
+            },
+        )
+
         viewModel.navigateUp.observe(
             viewLifecycleOwner,
             Observer { finish ->
@@ -76,6 +100,19 @@ class CameraFragment : Fragment() {
                     viewModel.onFinished()
                     makePhotoPathsAvailable()
                     findNavController().navigateUp()
+                }
+            },
+        )
+
+        viewModel.imagePaths.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it.isNotEmpty()) {
+                    Glide
+                        .with(requireContext())
+                        .load(it.first().toUri())
+                        .centerCrop()
+                        .into(binding.filterPhotoButton)
                 }
             },
         )
@@ -206,6 +243,11 @@ class CameraFragment : Fragment() {
                 putStringArrayList("uris", ArrayList(imagePaths))
             }
         parentFragmentManager.setFragmentResult("captured_image_uris", bundle)
+    }
+
+    private fun selectPhotos() {
+        Log.d("ReceiptEditFragment", "Select photo button clicked")
+        pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
     private fun requestPermissions() {

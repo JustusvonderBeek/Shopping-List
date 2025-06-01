@@ -18,25 +18,28 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <Button
+        <ImageButton
             android:id="@+id/filterPhotoButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_marginBottom="50dp"
             android:elevation="2dp"
-            android:text="Select"
+            android:text="@string/camera_select_btn"
+            android:src="@drawable/ic_image"
+            android:onClick="@{() -> viewModel.selectPhotos()}"
+            android:backgroundTint="@color/app_white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/vertical_centerline" />
 
         <Button
             android:id="@+id/image_capture_button"
-            android:layout_width="80dp"
+            android:layout_width="75dp"
             android:layout_height="80dp"
             android:layout_marginBottom="50dp"
             android:elevation="2dp"
-            android:text="Take Photo"
             android:onClick="@{() -> viewModel.takePhoto()}"
+            android:backgroundTint="@color/app_white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/vertical_centerline"
             app:layout_constraintEnd_toEndOf="@id/vertical_centerline" />
@@ -47,8 +50,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="50dp"
             android:elevation="2dp"
-            android:text="Finish"
+            android:text="@string/camera_finish_btn"
             android:onClick="@{() -> viewModel.finish()}"
+            android:backgroundTint="@color/app_white"
+            android:textColor="@color/app_black"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/vertical_centerline"
             app:layout_constraintEnd_toEndOf="parent" />

@@ -60,10 +60,12 @@
     <string name="start_screen_background_description">An image of vegetables, eggs, bread and other ingredients used to cook healty and delicious meals</string>
     <string name="create_list_fragment_title">Update List Title</string>
     <string name="select_images_bot_dialog">Selectionar Fotos</string>
-    <string name="take_images_bot_dialog">Hacer Fotos</string>
+    <string name="take_images_bot_dialog">Hacer Fotos (WIP)</string>
     <string name="recipe_confirm_delete">Puedes eliminar este recipio?</string>
     <string name="recipe_confirm_delete_title">Eliminar recipio</string>
     <string name="recipe_unshareable_placeholder_title">No puedes compartir este rezeta</string>
     <string name="recipe_unshareable_placeholder_description">Solo puedes compartir rezetas que tu cretaste</string>
     <string name="recipe_unshareable_placeholder_try_text">Probas creir una nueva rezeta y compartir este</string>
+    <string name="camera_finish_btn">Listo</string>
+    <string name="camera_select_btn">Selectionar</string>
 </resources>

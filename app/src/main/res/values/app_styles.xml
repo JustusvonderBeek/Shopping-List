@@ -90,4 +90,13 @@
     <style name="AppClickActionButton" parent="ShapeAppearanceOverlay.Material3.FloatingActionButton">
         <item name="backgroundTint">@color/app_green_300</item>
     </style>
+
+    <style name="AppPositiveActionButton" parent="ShapeAppearanceOverlay.Material3.FloatingActionButton">
+        <item name="backgroundTint">@color/app_green_500</item>
+    </style>
+
+    <style name="AppNegativeActionButton" parent="ShapeAppearanceOverlay.Material3.FloatingActionButton">
+        <item name="backgroundTint">@color/app_red_500</item>
+    </style>
+
 </resources>

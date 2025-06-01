@@ -271,7 +271,7 @@ class ShoppinglistFragment :
         viewModel.navigateShare.observe(
             viewLifecycleOwner,
             Observer { (listId, createdBy) ->
-                if (listId > 0 && createdBy > 0) {
+                if (listId > 0 && createdBy >= 0) {
                     findNavController().navigate(
                         ShoppinglistFragmentDirections.actionShoppinglistToShareFragment(
                             listId = listId,

@@ -146,14 +146,18 @@ class ShareViewModel
 
         private fun canBeShared() {
             _unshareable.addSource(createdBy) { createdBy ->
+                var createdByUser = false
                 if (createdBy <= 0L) {
-                    return@addSource
+                    // Cannot share recipe or list which was not created online
+                    createdByUser = false
+                } else {
+                    val user = appUserRepository.read() ?: return@addSource
+                    createdByUser = user.OnlineID == createdBy
                 }
-                val user = appUserRepository.read() ?: return@addSource
-                if (createdBy != user.OnlineID && recipeId.value != null && recipeId.value!! > 0L) {
+                if (!createdByUser && recipeId.value != null && recipeId.value!! > 0L) {
                     _unshareable.value = SharePlaceholderEnum.RECIPE_UNSHAREABLE
                 }
-                if (createdBy != user.OnlineID && listId.value != null && listId.value!! > 0L) {
+                if (!createdByUser && listId.value != null && listId.value!! > 0L) {
                     _unshareable.value = SharePlaceholderEnum.LIST_UNSHAREABLE
                 }
             }

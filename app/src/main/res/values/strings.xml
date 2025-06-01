@@ -87,4 +87,10 @@
     <string name="empty_list_placeholder_title">Didn\'t find anything to buy yet?</string>
     <string name="empty_list_placeholder_desc_1">Why don\'t you try out daily things like \'Milk\', \'Sugar\' or \'Eggs\'?</string>
     <string name="empty_list_placeholder_desc_2">Enter the item down below and press the \'+\' button</string>
+    <string name="list_overview_empty_placeholder_title">Pretty empty here</string>
+    <string name="list_overview_empty_placeholder_desc_1">Try adding something new by pressing the \'+\' button</string>
+    <string name="list_overview_empty_placeholder_desc_2">Or check if some lists are shared with you by swiping down</string>
+    <string name="recipe_overview_placeholder_title">Pretty empty here</string>
+    <string name="recipe_overview_placeholder_desc_1">Try adding something new by pressing the \'+\' button</string>
+    <string name="recipe_overview_placeholder_desc_2">Or check if some recipes are shared with you by swiping down</string>
 </resources>

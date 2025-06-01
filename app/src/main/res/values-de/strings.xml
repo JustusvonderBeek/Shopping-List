@@ -82,4 +82,10 @@
     <string name="empty_list_placeholder_title">Noch nichts zum Einkaufen gefunden?</string>
     <string name="empty_list_placeholder_desc_1">Probier\'s doch mal mit alltäglichen Sachen wie \'Milch\', \'Zucker\' oder \'Eier\'</string>
     <string name="empty_list_placeholder_desc_2">In die Box unten eingeben und den \'+\' Knopf drücken</string>
+    <string name="list_overview_empty_placeholder_title">Ziemlich leer hier</string>
+    <string name="list_overview_empty_placeholder_desc_1">Versuche eine neue Liste hinzuzufügen indem du auf den \'+\' Knopf klickst</string>
+    <string name="list_overview_empty_placeholder_desc_2">Oder schaue nach ob eine Liste mit dir geteilt wurde indem du nach unten wischst</string>
+    <string name="recipe_overview_placeholder_title">Ziemlich leer hier</string>
+    <string name="recipe_overview_placeholder_desc_1">Versuche ein neues Rezept anzulegen indem du auf den \'+\' Knopf klickst</string>
+    <string name="recipe_overview_placeholder_desc_2">Oder schau nach ob jemand ein Rezept mit dir geteilt hat indem du nach unten wischst</string>
 </resources>

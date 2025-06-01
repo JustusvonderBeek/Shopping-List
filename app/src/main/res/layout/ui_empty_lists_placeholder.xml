@@ -20,20 +20,20 @@
             style="@style/ShoppingListBoldStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pretty empty here" />
+            android:text="@string/list_overview_empty_placeholder_title" />
 
         <TextView
             style="@style/ShoppingListNormalStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:justificationMode="inter_word"
-            android:text="Try adding something new by pressing the '+' button" />
+            android:text="@string/list_overview_empty_placeholder_desc_1" />
 
         <TextView
             style="@style/ShoppingListNormalStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:justificationMode="inter_word"
-            android:text="Or check if some lists are shared with you by swiping down" />
+            android:text="@string/list_overview_empty_placeholder_desc_2" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

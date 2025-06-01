@@ -64,6 +64,12 @@ class MainActivity : AppCompatActivity() {
                     // the registration which would be BAD
                     botNav.visibility = View.GONE
                 }
+                R.id.createShoppinglistFragment, R.id.shoppinglist, R.id.configFragment -> {
+                    botNav.menu.findItem(R.id.fragment_overview).isChecked = true
+                }
+                R.id.receiptsOverview, R.id.receipt, R.id.listPickerFragment, R.id.receiptEditFragment -> {
+                    botNav.menu.findItem(R.id.receiptsOverview).isChecked = true
+                }
 
                 else -> {
                     botNav.visibility = View.VISIBLE

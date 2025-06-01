@@ -84,4 +84,7 @@
     <string name="list_unshareable_placeholder_title">This list cannot be shared</string>
     <string name="list_unshareable_placeholder_description">You can only share lists which you created yourself</string>
     <string name="list_unshareable_placeholder_try_text">Try creating a new list and share this new one</string>
+    <string name="empty_list_placeholder_title">Didn\'t find anything to buy yet?</string>
+    <string name="empty_list_placeholder_desc_1">Why don\'t you try out daily things like \'Milk\', \'Sugar\' or \'Eggs\'?</string>
+    <string name="empty_list_placeholder_desc_2">Enter the item down below and press the \'+\' button</string>
 </resources>

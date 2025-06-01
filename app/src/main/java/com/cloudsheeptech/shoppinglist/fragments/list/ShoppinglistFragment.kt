@@ -280,6 +280,8 @@ class ShoppinglistFragment :
                         ),
                     )
                     viewModel.onShareNavigated()
+                } else {
+                    Log.w("ShoppinglistFragment", "Cannot navigate to share list because $listId or $createdBy is invalid")
                 }
             },
         )

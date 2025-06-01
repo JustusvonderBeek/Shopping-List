@@ -1,48 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/app_gray_900_trans"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    >
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/list_placeholder_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Noch nichts zum einkaufen gefunden?"
+        android:text="@string/empty_list_placeholder_title"
         android:justificationMode="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:fontFamily="@font/inter"
-        android:textFontWeight="800"
+        style="@style/ShoppingListBoldStyle"
+        android:textSize="24sp"
         />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/list_placeholder_subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Probiers doch mal mit alltäglichen Dingen wie 'Milch', 'Brot' oder 'Eier'"
-        android:fontFamily="@font/inter"
-        android:textFontWeight="400"
-        android:textStyle="normal"
-        android:justificationMode="inter_word"
-        app:layout_constraintEnd_toEndOf="@+id/textView"
-        app:layout_constraintStart_toStartOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        android:text="@string/empty_list_placeholder_desc_1"
+        app:layout_constraintEnd_toEndOf="@+id/list_placeholder_title"
+        app:layout_constraintStart_toStartOf="@+id/list_placeholder_title"
+        app:layout_constraintTop_toBottomOf="@+id/list_placeholder_title"
+        style="@style/ShoppingListNormalStyle"
+        />
 
     <TextView
+        android:id="@+id/list_placeholder_explanation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Einfach unten eingeben und das '+' drücken"
-        android:fontFamily="@font/inter"
-        android:textFontWeight="400"
-        android:textStyle="normal"
+        android:text="@string/empty_list_placeholder_desc_2"
         android:justificationMode="inter_word"
-        app:layout_constraintEnd_toEndOf="@+id/textView"
-        app:layout_constraintStart_toStartOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+        app:layout_constraintEnd_toEndOf="@+id/list_placeholder_title"
+        app:layout_constraintStart_toStartOf="@+id/list_placeholder_title"
+        app:layout_constraintTop_toBottomOf="@+id/list_placeholder_subtitle"
+        style="@style/ShoppingListNormalStyle"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>

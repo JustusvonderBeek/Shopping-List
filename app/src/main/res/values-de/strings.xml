@@ -79,4 +79,7 @@
     <string name="list_unshareable_placeholder_title">Diese Liste kannst du nicht teilen</string>
     <string name="list_unshareable_placeholder_description">Du kannst nur Listen teilen die du selber erstellt hast</string>
     <string name="list_unshareable_placeholder_try_text">Versuche eine neue Liste zu erstellen und diese zu teilen</string>
+    <string name="empty_list_placeholder_title">Noch nichts zum Einkaufen gefunden?</string>
+    <string name="empty_list_placeholder_desc_1">Probier\'s doch mal mit alltäglichen Sachen wie \'Milch\', \'Zucker\' oder \'Eier\'</string>
+    <string name="empty_list_placeholder_desc_2">In die Box unten eingeben und den \'+\' Knopf drücken</string>
 </resources>

@@ -28,9 +28,12 @@
                 android:orientation="vertical">
 
                 <LinearLayout
+                    android:id="@+id/orderingSpinnerWrapperLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp"
+                    >
 
                     <TextView
                         style="@style/ShoppingListSubtleStyle"
@@ -67,7 +70,8 @@
                         android:layout_height="match_parent"
                         android:scrollbars="vertical"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        tools:listitem="@layout/shopping_item" />
+                        tools:listitem="@layout/shopping_item"
+                        tools:itemCount="3"/>
 
                 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -128,7 +132,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="2dp"
                     android:background="?android:attr/listDivider"
-                    android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp" />
 
                 <View
@@ -136,7 +139,9 @@
                     android:layout_width="100dp"
                     android:layout_height="5dp"
                     android:layout_gravity="center"
-                    android:background="@drawable/drag_handle_bg" />
+                    android:background="@drawable/drag_handle_bg"
+                    android:visibility="gone"
+                    />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -166,8 +171,7 @@
                             android:backgroundTintMode="add"
                             android:hint="@string/item_name_input_hint"
                             android:layout_gravity="center_vertical"
-                            android:text="@={viewModel.itemName}"
-                            style="@style/EditTextWithoutUnderline" />
+                            android:text="@={viewModel.itemName}" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -180,7 +184,7 @@
                         app:elevation="0dp"
                         android:layout_margin="4dp"
                         android:src="@drawable/ic_plus"
-                        android:backgroundTint="@color/app_green_300"
+                        style="@style/AppPositiveActionButton"
                         android:onClick="@{() -> viewModel.addItem()}" />
 
                 </LinearLayout>

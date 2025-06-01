@@ -272,7 +272,10 @@ class ShoppingListLocalDataSource
 
         fun readAllLive(): LiveData<List<DbShoppingList>> = listDao.getShoppingListsLive()
 
-        fun readAllListItemsLive(listId: Long) = itemRepository.readForListLive(listId)
+        fun readAllListItemsLive(
+            listId: Long,
+            createdBy: Long,
+        ) = itemRepository.readForListLive(listId, createdBy)
 
         /**
          * Function making the insertion and update process more easy.

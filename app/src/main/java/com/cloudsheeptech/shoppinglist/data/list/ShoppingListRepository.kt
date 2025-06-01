@@ -185,7 +185,10 @@ class ShoppingListRepository
         // This is only relevant for the overview, therefore the basic infos (title, creator) suffice
         fun readAllLive(): LiveData<List<DbShoppingList>> = localDataSource.readAllLive()
 
-        fun readAllListItemsLive(listId: Long): LiveData<List<AppItem>> = localDataSource.readAllListItemsLive(listId)
+        fun readAllListItemsLive(
+            listId: Long,
+            createdBy: Long,
+        ): LiveData<List<AppItem>> = localDataSource.readAllListItemsLive(listId, createdBy)
 
         suspend fun exist(
             listId: Long,

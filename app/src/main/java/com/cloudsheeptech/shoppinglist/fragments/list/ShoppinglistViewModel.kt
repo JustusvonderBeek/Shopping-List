@@ -94,7 +94,7 @@ class ShoppinglistViewModel
         // ---
 
         // The items in this list
-        private val itemsInList = shoppingListRepository.readAllListItemsLive(this.shoppingListId)
+        private val itemsInList = shoppingListRepository.readAllListItemsLive(this.shoppingListId, this.createdBy)
 
         private val _previewItems = MutableLiveData<List<DbItem>>()
         val previewItems: LiveData<List<DbItem>> get() = _previewItems

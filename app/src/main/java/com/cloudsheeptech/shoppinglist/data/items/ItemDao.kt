@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ItemDao {
-
     @Insert
     fun insertItem(dbItem: DbItem): Long
 
@@ -37,8 +36,13 @@ interface ItemDao {
     @Query("SELECT * FROM items WHERE id IN (:keys)")
     fun getItemsLive(keys: List<Long>): LiveData<List<DbItem>>
 
-    @Query("SELECT i.id, i.name, i.icon,m.Quantity as quantity ,m.Checked as checked,m.AddedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.ItemID WHERE m.ListID = :listId")
-    fun getItemsWithQuantityInListLive(listId: Long): LiveData<List<AppItem>>
+    @Query(
+        "SELECT i.id, i.name, i.icon,m.Quantity as quantity ,m.Checked as checked,m.AddedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.ItemID WHERE m.ListID = :listId AND m.CreatedBy = :createdBy",
+    )
+    fun getItemsWithQuantityInListLive(
+        listId: Long,
+        createdBy: Long,
+    ): LiveData<List<AppItem>>
 
     @Query("SELECT * FROM items WHERE name = :name")
     fun getItemFromName(name: String): DbItem?
@@ -54,5 +58,4 @@ interface ItemDao {
 
     @Query("SELECT COUNT(id) FROM items")
     fun getCurrentId(): Long
-
 }

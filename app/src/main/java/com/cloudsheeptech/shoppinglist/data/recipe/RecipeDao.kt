@@ -16,6 +16,9 @@ interface RecipeDao {
     @Update
     fun update(receipt: DbRecipe)
 
+    @Query("SELECT MAX(id) FROM recipes WHERE createdBy = :createdBy")
+    fun getLatestListId(createdBy: Long): Long
+
     @Query("DELETE FROM recipes WHERE id = :key AND createdBy = :createdBy")
     fun delete(
         key: Long,

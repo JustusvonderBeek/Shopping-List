@@ -2,12 +2,10 @@ package com.cloudsheeptech.shoppinglist.data.recipe
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import java.time.OffsetDateTime
 
-@Entity(tableName = "recipes")
+@Entity(tableName = "recipes", primaryKeys = ["id", "createdBy"])
 data class DbRecipe(
-    @PrimaryKey(autoGenerate = true)
     var id: Long,
     var name: String,
     var createdBy: Long,

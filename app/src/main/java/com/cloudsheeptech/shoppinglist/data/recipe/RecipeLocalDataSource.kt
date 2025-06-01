@@ -175,25 +175,30 @@ class RecipeLocalDataSource
                     description = descriptions,
                 )
             withContext(Dispatchers.IO) {
+                val user =
+                    userRepository.read()
+                        ?: throw IllegalStateException("user not set after login screen")
                 // TODO: Handle existing recipe in DB
-                val recipeId = recipeDao.insert(newRecipe.toDbReceipt())
-                newRecipe.onlineId = recipeId
-                val recipeImage =
-                    RecipeImage(
-                        recipeId = recipeId,
-                        createdBy = recipeCreator.onlineId,
-                        imageId = 0,
-                        fileLocation = "",
-                    )
-                images.forEachIndexed { index, uri ->
-                    recipeImage.imageId = index
-                    recipeImage.fileLocation = uri
-                    recipeImageDao.insert(recipeImage)
+                // In case the recipe comes from online, we don't want to change the id
+                if (onlineId == 0L && recipeCreator.onlineId == user.OnlineID) {
+                    newRecipe.onlineId = getUniqueRecipeID(recipeCreator.onlineId)
                 }
-                insertDescriptions(recipeId, recipeCreator.onlineId, descriptions)
-                insertIngredients(recipeId, recipeCreator.onlineId, ingredients)
+                recipeDao.insert(newRecipe.toDbReceipt())
+                updateImages(newRecipe.onlineId, recipeCreator.onlineId, images)
+                insertDescriptions(newRecipe.onlineId, recipeCreator.onlineId, descriptions)
+                insertIngredients(newRecipe.onlineId, recipeCreator.onlineId, ingredients)
             }
             return newRecipe
+        }
+
+        private suspend fun getUniqueRecipeID(createdBy: Long): Long {
+            // Starting the local listIds with 1
+            var latestId = 1L
+            withContext(Dispatchers.IO) {
+                latestId = recipeDao.getLatestListId(createdBy).plus(1L)
+            }
+            Log.d("RecipeLocalDataSource", "Generated new recipe Id: $latestId")
+            return latestId
         }
 
         suspend fun read(

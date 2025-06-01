@@ -52,6 +52,9 @@ class RecipeEditFragment : Fragment() {
                         viewModel.deleteDescription(order)
                     }
                 },
+                {
+                    viewModel.addDescription()
+                },
             )
         binding.descriptionRecyclerView.adapter = receiptDescAdapter
 

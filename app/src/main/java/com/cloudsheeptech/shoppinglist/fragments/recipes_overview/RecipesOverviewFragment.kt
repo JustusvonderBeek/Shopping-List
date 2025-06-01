@@ -73,6 +73,7 @@ class RecipesOverviewFragment :
             viewLifecycleOwner,
             Observer { list ->
                 if (list.isNullOrEmpty()) {
+                    adapter.submitList(emptyList())
                     binding.emptyRecipesPlaceholder.visibility = View.VISIBLE
                     binding.recipesOverviewList.visibility = View.GONE
                     adapter.submitList(emptyList())

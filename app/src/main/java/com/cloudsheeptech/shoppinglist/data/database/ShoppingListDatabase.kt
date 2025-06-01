@@ -39,7 +39,7 @@ import javax.inject.Singleton
 
 @Singleton
 @Database(
-    version = 35,
+    version = 36,
     entities = [
         DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class,
         ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class,

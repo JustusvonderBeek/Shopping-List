@@ -5,7 +5,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.databinding.ReceiptItemBinding
 
@@ -27,11 +26,11 @@ class RecipeIngredientAdapter : ListAdapter<ApiIngredient, RecipeIngredientAdapt
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(ingredient: ApiIngredient) {
             binding.apiIngredient = ingredient
-            val context = binding.root.context
-            val evenColor = context.resources.getColor(R.color.app_green_700, context.theme)
-            val unevenColor = context.resources.getColor(R.color.app_green_900, context.theme)
-            val backgroundColor = if (bindingAdapterPosition % 2 == 0) evenColor else unevenColor
-            binding.recipeItemCard.setCardBackgroundColor(backgroundColor)
+//            val context = binding.root.context
+//            val evenColor = context.resources.getColor(R.color.app_green_700, context.theme)
+//            val unevenColor = context.resources.getColor(R.color.app_green_900, context.theme)
+//            val backgroundColor = if (bindingAdapterPosition % 2 == 0) evenColor else unevenColor
+//            binding.recipeItemCard.setCardBackgroundColor(backgroundColor)
             binding.executePendingBindings()
         }
 

@@ -19,7 +19,8 @@
         android:layout_marginBottom="4dp"
         app:cardElevation="1dp"
         app:cardCornerRadius="10dp"
-        style="@style/ShoppingListItemStyle">
+        style="@style/ShoppingListItemStyle"
+        >
 
         <LinearLayout
             android:id="@+id/itemWrapper"
@@ -46,14 +47,17 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:text='@{String.format("%d %s", apiIngredient.quantity, apiIngredient.quantityType)}'
-                style="@style/RecipeSubtleTextStyle" />
+                style="@style/RecipeSubtleTextStyle"
+                android:layout_marginStart="16dp"
+                />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center_vertical"
                 android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:textAlignment="viewEnd"
                 android:text='@{String.format("%s", apiIngredient.name)}'
                 style="@style/ShoppingListNormalStyle" />
 

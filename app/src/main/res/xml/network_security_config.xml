@@ -3,7 +3,7 @@
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">shop.cloudsheeptech.com</domain>
         <trust-anchors>
-            <certificates src="@raw/shoppinglist"/>
+            <certificates src="@raw/servercert"/>
             <certificates src="system"/>
         </trust-anchors>
     </domain-config>

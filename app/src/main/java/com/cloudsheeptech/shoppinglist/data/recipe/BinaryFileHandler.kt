@@ -163,6 +163,7 @@ class BinaryFileHandler
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.WRITE,
                         )
+                        Log.i("BinaryFileHandler", "Stored image $fileName to $newImagePath")
                     } catch (ex: NoSuchFileException) {
                         Log.e("BinaryFileHandler", "Failed to create file $newImagePath: $ex")
                     } catch (ex: IOException) {

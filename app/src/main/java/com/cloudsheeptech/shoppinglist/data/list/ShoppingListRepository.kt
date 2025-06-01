@@ -348,7 +348,18 @@ class ShoppingListRepository
             title: String,
         ): Boolean {
             localDataSource.updateTitle(listId, createdBy, title)
-            return true
+            if (createdBy == 0L) {
+                Log.i("ShoppingListRepository", "User not registered online, skipping remote update")
+                return true
+            }
+            try {
+                val updatedList = read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
+                updateListOnlineAndRetryOnFailure(updatedList)
+                return true
+            } catch (ex: Exception) {
+                Log.e("ShoppingListRepository", "Failed to update list remote: $ex")
+            }
+            return false
         }
 
         suspend fun delete(

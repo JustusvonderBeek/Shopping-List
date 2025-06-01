@@ -28,12 +28,13 @@ class CreateShoppinglistFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        binding = DataBindingUtil.inflate(
-            inflater,
-            R.layout.fragment_create_shoppinglist,
-            container,
-            false
-        )
+        binding =
+            DataBindingUtil.inflate(
+                inflater,
+                R.layout.fragment_create_shoppinglist,
+                container,
+                false,
+            )
 
 //        val database = ShoppingListDatabase.getInstance(requireContext())
 //        val viewModelFactory = CreateShoppinglistViewModelFactory(database)
@@ -64,9 +65,13 @@ class CreateShoppinglistFragment : Fragment() {
         viewModel.navigateBack.observe(
             viewLifecycleOwner,
             Observer { navigate ->
-                if (navigate) {
+                if (navigate != BackNavigation.NONE) {
                     viewModel.onBackNavigated()
-                    findNavController().navigateUp()
+                    if (navigate == BackNavigation.TO_OVERVIEW) {
+                        findNavController().popBackStack(R.id.fragment_overview, false)
+                    } else {
+                        findNavController().navigateUp()
+                    }
                 }
             },
         )

@@ -42,7 +42,8 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.navHostFragment)
         // Create a custom backstack for reach top-level destination.
         val appBarConfig =
-            AppBarConfiguration.Builder(setOf(R.id.fragment_overview, R.id.receiptsOverview))
+            AppBarConfiguration
+                .Builder(setOf(R.id.fragment_overview, R.id.receiptsOverview))
                 .build()
         setupActionBarWithNavController(navController, appBarConfig)
         botNav.setupWithNavController(navController)
@@ -68,22 +69,18 @@ class MainActivity : AppCompatActivity() {
                     botNav.visibility = View.VISIBLE
                 }
             }
-
         }
-
-        // Dirty hack to avoid storing application context in this object class
-//        Networking.registerApplicationDir(application.filesDir.absolutePath, database)
 
         // Create notifications
         createNotificationChannel()
 //        RemindersManager.startReminder(applicationContext)
 
         val content: View = findViewById(android.R.id.content)
-        content.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
-            override fun onPreDraw(): Boolean {
-                return appUserRepository.loaded()
-            }
-        })
+        content.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean = appUserRepository.loaded()
+            },
+        )
     }
 
     override fun onSupportNavigateUp(): Boolean {

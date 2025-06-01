@@ -27,6 +27,7 @@ import java.net.SocketTimeoutException
 import java.time.Duration
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.net.ssl.SSLHandshakeException
 
 /*
 * This class captures the authentication logic of the application,
@@ -76,6 +77,8 @@ class Networking
                     Log.e("Networking", "Failed to send GET request to $finalRequestUrl: $ex")
                 } catch (ex: SocketTimeoutException) {
                     Log.e("Networking", "Timeout while reading from remote: $ex")
+                } catch (ex: SSLHandshakeException) {
+                    Log.e("Networking", "SSL handshake failed during GET: $ex")
                 }
             }
         }
@@ -102,6 +105,8 @@ class Networking
                     Log.e("Networking", "failed to send POST request to $finalRequestUrl: $ex")
                 } catch (ex: SocketTimeoutException) {
                     Log.e("Networking", "POST request to $finalRequestUrl timed out: $ex")
+                } catch (ex: SSLHandshakeException) {
+                    Log.e("Networking", "SSL handshake failed during POST: $ex")
                 }
             }
         }
@@ -152,6 +157,8 @@ class Networking
                     )
                 } catch (ex: SocketTimeoutException) {
                     Log.e("Networking", "MULTIFORM_POST request to $finalRequestUrl timed out: $ex")
+                } catch (ex: SSLHandshakeException) {
+                    Log.e("Networking", "SSL handshake failed during M_POST: $ex")
                 }
             }
         }
@@ -177,6 +184,8 @@ class Networking
                     responseHandler(response)
                 } catch (ex: ConnectException) {
                     Log.w("Networking", "Failed to send PUT request to $finalRequestUrl: $ex")
+                } catch (ex: SSLHandshakeException) {
+                    Log.e("Networking", "SSL handshake failed during PUT: $ex")
                 }
             }
         }
@@ -221,6 +230,8 @@ class Networking
                     responseHandler(response)
                 } catch (ex: ConnectException) {
                     Log.w("Networking", "Failed to send PUT request to $finalRequestUrl: $ex")
+                } catch (ex: SSLHandshakeException) {
+                    Log.e("Networking", "SSL handshake failed during PUT: $ex")
                 }
             }
         }
@@ -243,6 +254,8 @@ class Networking
                     responseHandler(response)
                 } catch (ex: ConnectException) {
                     Log.w("Networking", "Failed to send PATH request to $finalRequestUrl: $ex")
+                } catch (ex: SSLHandshakeException) {
+                    Log.e("Networking", "SSL handshake failed during PATCH: $ex")
                 }
             }
         }
@@ -261,6 +274,8 @@ class Networking
                     responseHandler(response)
                 } catch (ex: ConnectException) {
                     Log.w("Networking", "Failed to send DELETE request to $finalRequestUrl: $ex")
+                } catch (ex: SSLHandshakeException) {
+                    Log.e("Networking", "SSL handshake failed during DELETE: $ex")
                 }
             }
         }

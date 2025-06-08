@@ -3,22 +3,22 @@
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">shop.cloudsheeptech.com</domain>
         <trust-anchors>
-            <certificates src="@raw/shoppinglist"/>
-            <certificates src="system"/>
+            <certificates src="@raw/shoppinglist" />
+            <certificates src="system" />
         </trust-anchors>
     </domain-config>
-    <domain-config cleartextTrafficPermitted="false">
+    <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">192.168.0.200</domain>
         <trust-anchors>
-            <certificates src="@raw/servercert"/>
-            <certificates src="system"/>
+            <certificates src="@raw/servercert" />
+            <certificates src="system" />
         </trust-anchors>
     </domain-config>
-    <domain-config cleartextTrafficPermitted="false">
+    <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">10.0.2.2</domain>
         <trust-anchors>
-            <certificates src="@raw/shoppinglist_local"/>
-            <certificates src="system"/>
+            <certificates src="@raw/shoppinglist_local" />
+            <certificates src="system" />
         </trust-anchors>
     </domain-config>
 </network-security-config>

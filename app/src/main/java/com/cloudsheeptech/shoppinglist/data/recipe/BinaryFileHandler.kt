@@ -1,6 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.recipe
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.provider.MediaStore
 import android.util.Log
 import androidx.core.net.toFile
@@ -150,6 +151,8 @@ class BinaryFileHandler
                                 rawImage,
                                 scaledBitmapWidth,
                                 scaledBitmapHeight,
+                                Bitmap.CompressFormat.JPEG,
+                                outputQuality = 87,
                             )
                         rawImage = compressedImage
                     }
@@ -165,14 +168,26 @@ class BinaryFileHandler
         override suspend fun storeImageToFile(
             imageByteArray: ByteArray,
             fileName: String,
+            compression: Boolean,
         ): URI {
             val createdUri =
                 withContext(Dispatchers.IO) {
                     val imagePath = context.filesDir.absolutePath
                     val newImagePath = Path(imagePath, fileName)
                     try {
+                        var compressedImage = imageByteArray
+                        if (compression) {
+                            compressedImage =
+                                compressionHandler.scaleImageToSize(
+                                    imageByteArray,
+                                    scaledBitmapWidth,
+                                    scaledBitmapHeight,
+                                    Bitmap.CompressFormat.JPEG,
+                                    outputQuality = 87,
+                                )
+                        }
                         newImagePath.writeBytes(
-                            imageByteArray,
+                            compressedImage,
                             StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.WRITE,
@@ -188,7 +203,7 @@ class BinaryFileHandler
             return createdUri
         }
 
-        suspend fun deleteImagesForRecipe(imageUris: List<String>): Int {
+        override suspend fun deleteImagesForRecipe(imageUris: List<String>): Int {
             var deletedImages = 0
             for (uri in imageUris) {
                 if (deleteImage(uri)) {
@@ -232,7 +247,7 @@ class BinaryFileHandler
             return null
         }
 
-        suspend fun deleteImage(imageUri: String): Boolean {
+        override suspend fun deleteImage(imageUri: String): Boolean {
             var success = true
             withContext(Dispatchers.IO) {
                 var realImageUri: String? = imageUri

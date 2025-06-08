@@ -48,11 +48,6 @@ class RecipeRepository
                 )
             localDataSource.updateImages(recipe.onlineId, recipe.createdBy.onlineId, updatedImages)
             val binaryImages = binaryFileHandler.readImagesFromFiles(updatedImages)
-//            val compressedImages = mutableListOf<ByteArray>()
-//            for (image in binaryImages) {
-//                val compressedImage = compressionHandler.compress(image)
-//                compressedImages.add(compressedImage)
-//            }
             val success = remoteDataSource.create(recipe, binaryImages)
             if (!success) {
                 Log.e("RecipeRepository", "Creating recipe online failed")
@@ -174,6 +169,7 @@ class RecipeRepository
                 val recipe = recipeAndImages.first
                 val images = recipeAndImages.second
                 if (recipe.createdBy.onlineId != currentUser.OnlineID) {
+                    // Recipe from remote, created by someone else
                     val imageFilePaths = mutableListOf<String>()
                     images.forEachIndexed { index, image ->
                         val fileLocation =
@@ -202,6 +198,7 @@ class RecipeRepository
                         )
                     }
                 } else {
+                    // Own recipe
                     val updatedVersion = localDataSource.update(recipe)
                     if (updatedVersion != -1L) {
                         Log.d(

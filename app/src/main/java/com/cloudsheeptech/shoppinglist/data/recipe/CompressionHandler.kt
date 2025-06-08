@@ -26,6 +26,8 @@ class CompressionHandler
             image: ByteArray,
             targetWidth: Int,
             targetHeight: Int,
+            outputFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG,
+            outputQuality: Int = 85,
         ): ByteArray {
             val byteInputStream = ByteArrayInputStream(image)
             val exifInterface = ExifInterface(byteInputStream)
@@ -41,7 +43,8 @@ class CompressionHandler
             val scaledBitmap = fixedBitmap.scale(newWidth, newHeight)
 
             val outputStream = ByteArrayOutputStream()
-            scaledBitmap.compress(Bitmap.CompressFormat.PNG, 90, outputStream)
+            // Convert all images to JPEG to reduce file size
+            scaledBitmap.compress(outputFormat, outputQuality, outputStream)
 
             return outputStream.toByteArray()
         }

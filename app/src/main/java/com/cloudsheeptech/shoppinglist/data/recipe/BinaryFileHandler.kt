@@ -23,7 +23,11 @@ class BinaryFileHandler
     @Inject
     constructor(
         @ApplicationContext private val context: Context,
+        private val compressionHandler: CompressionHandler,
     ) : IBinaryFileHandler {
+        private val scaledBitmapWidth = 512
+        private val scaledBitmapHeight = 512
+
         private fun loadFileFromContent(location: String): ByteArray? {
             if (location.isEmpty() || !location.startsWith("content://")) {
                 return null
@@ -123,6 +127,7 @@ class BinaryFileHandler
             recipeId: Long,
             userId: Long,
             images: List<String>,
+            compression: Boolean = false,
         ): List<String> {
             return withContext(Dispatchers.IO) {
                 val updatedImagePaths = mutableListOf<String>()
@@ -133,11 +138,20 @@ class BinaryFileHandler
                         updatedImagePaths.add(image)
                         continue
                     }
-                    val rawImage = resolveContentTypeAndReadImage(image)
+                    var rawImage = resolveContentTypeAndReadImage(image)
                     if (rawImage == null) {
                         Log.i("BinaryFileHandler", "Failed to load image $image, skipping step")
                         updatedImagePaths.add(image)
                         continue
+                    }
+                    if (compression) {
+                        val compressedImage =
+                            compressionHandler.scaleImageToSize(
+                                rawImage,
+                                scaledBitmapWidth,
+                                scaledBitmapHeight,
+                            )
+                        rawImage = compressedImage
                     }
                     val newPath =
                         storeImageToFile(rawImage, "${recipeId}_${userId}_$updatedImageIndex.img")

@@ -18,6 +18,7 @@ class RecipeRepository
         private val localDataSource: RecipeLocalDataSource,
         private val remoteDataSource: RecipeRemoteDataSource,
         private val binaryFileHandler: BinaryFileHandler,
+        private val compressionHandler: CompressionHandler,
         private val userRepository: AppUserRepository,
     ) {
         private fun updateRecipeCreatedBy(recipe: ApiRecipe) {
@@ -43,9 +44,15 @@ class RecipeRepository
                     recipe.onlineId,
                     recipe.createdBy.onlineId,
                     images,
+                    true,
                 )
             localDataSource.updateImages(recipe.onlineId, recipe.createdBy.onlineId, updatedImages)
             val binaryImages = binaryFileHandler.readImagesFromFiles(updatedImages)
+//            val compressedImages = mutableListOf<ByteArray>()
+//            for (image in binaryImages) {
+//                val compressedImage = compressionHandler.compress(image)
+//                compressedImages.add(compressedImage)
+//            }
             val success = remoteDataSource.create(recipe, binaryImages)
             if (!success) {
                 Log.e("RecipeRepository", "Creating recipe online failed")

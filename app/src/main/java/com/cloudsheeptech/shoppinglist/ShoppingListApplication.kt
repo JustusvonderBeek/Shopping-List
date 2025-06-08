@@ -13,6 +13,7 @@ import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.data.recipe.BinaryFileHandler
+import com.cloudsheeptech.shoppinglist.data.recipe.CompressionHandler
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.sharing.ListShareRepository
@@ -95,6 +96,9 @@ class ShoppingListApplication : Application() {
 
     @Inject
     lateinit var binaryFileHandler: BinaryFileHandler
+
+    @Inject
+    lateinit var compressionHandler: CompressionHandler
 
     // ------ Testing Utilities -------
 

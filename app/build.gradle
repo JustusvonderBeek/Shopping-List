@@ -204,6 +204,9 @@ dependencies {
     // Images
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     implementation 'jp.wasabeef:blurry:4.0.1'
+    // Compression Library LZ4
+    implementation 'org.lz4:lz4-java:1.8.0'
+    implementation "androidx.exifinterface:exifinterface:1.4.1"
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.2"

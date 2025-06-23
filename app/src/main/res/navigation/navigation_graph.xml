@@ -30,7 +30,7 @@
     </fragment>
     <fragment
         android:id="@+id/shoppinglist"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.list.ShoppingListFragment"
         android:label="@string/nav_list_title">
         <argument
             android:name="ListID"

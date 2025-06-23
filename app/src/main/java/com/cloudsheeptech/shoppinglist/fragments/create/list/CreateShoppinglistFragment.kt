@@ -13,7 +13,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentCreateShoppinglistBinding
-import com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistFragmentArgs
+import com.cloudsheeptech.shoppinglist.fragments.list.ShoppingListFragmentArgs
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -21,7 +21,7 @@ class CreateShoppinglistFragment : Fragment() {
     private lateinit var binding: FragmentCreateShoppinglistBinding
     private val viewModel: CreateShoppinglistViewModel by viewModels()
 
-    val args: ShoppinglistFragmentArgs by navArgs()
+    val args: ShoppingListFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater,

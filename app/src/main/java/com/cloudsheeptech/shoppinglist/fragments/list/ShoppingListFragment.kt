@@ -30,12 +30,12 @@ import com.cloudsheeptech.shoppinglist.databinding.FragmentListBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ShoppinglistFragment :
+class ShoppingListFragment :
     Fragment(),
     MenuProvider,
     AdapterView.OnItemSelectedListener {
     private lateinit var binding: FragmentListBinding
-    private val viewModel: ShoppinglistViewModel by viewModels()
+    private val viewModel: ShoppingListViewModel by viewModels()
 //    private val learningViewModel : RecipeViewModel by activityViewModels()
 
     private var startTouchY = 0f
@@ -43,7 +43,7 @@ class ShoppinglistFragment :
     private var initialBottomSheetWeight = 0f
     private var initialListViewWeight = 0f
 
-    val args: ShoppinglistFragmentArgs by navArgs()
+    val args: ShoppingListFragmentArgs by navArgs()
 
     override fun onCreateMenu(
         menu: Menu,
@@ -175,6 +175,7 @@ class ShoppinglistFragment :
             viewLifecycleOwner,
             Observer {
                 Log.d("ShoppingListFragment", "List changed")
+                Log.d("ShoppingListFragment", "New list: ${it.hashCode()}")
                 it?.let {
                     adapter.submitList(it)
                     // Necessary to apply the ordering directly
@@ -273,7 +274,7 @@ class ShoppinglistFragment :
             Observer { (listId, createdBy) ->
                 if (listId > 0 && createdBy >= 0) {
                     findNavController().navigate(
-                        ShoppinglistFragmentDirections.actionShoppinglistToShareFragment(
+                        ShoppingListFragmentDirections.actionShoppinglistToShareFragment(
                             listId = listId,
                             createdBy = createdBy,
                             title = viewModel.title.value!!,
@@ -281,7 +282,10 @@ class ShoppinglistFragment :
                     )
                     viewModel.onShareNavigated()
                 } else {
-                    Log.w("ShoppinglistFragment", "Cannot navigate to share list because $listId or $createdBy is invalid")
+                    Log.w(
+                        "ShoppinglistFragment",
+                        "Cannot navigate to share list because $listId or $createdBy is invalid",
+                    )
                 }
             },
         )
@@ -377,7 +381,7 @@ class ShoppinglistFragment :
             Observer { (rename, listId) ->
                 if (rename.isNotEmpty() && listId > 0L) {
                     findNavController().navigate(
-                        ShoppinglistFragmentDirections.actionShoppinglistToCreateShoppinglistFragment(
+                        ShoppingListFragmentDirections.actionShoppinglistToCreateShoppinglistFragment(
                             rename,
                             listId,
                         ),

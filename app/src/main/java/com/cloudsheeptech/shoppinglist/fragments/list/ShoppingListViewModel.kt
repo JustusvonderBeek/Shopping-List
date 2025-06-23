@@ -27,7 +27,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class ShoppinglistViewModel
+class ShoppingListViewModel
     @Inject
     constructor(
         database: ShoppingListDatabase,
@@ -94,7 +94,8 @@ class ShoppinglistViewModel
         // ---
 
         // The items in this list
-        private val itemsInList = shoppingListRepository.readAllListItemsLive(this.shoppingListId, this.createdBy)
+        private val itemsInList =
+            shoppingListRepository.readAllListItemsLive(this.shoppingListId, this.createdBy)
 
         private val _previewItems = MutableLiveData<List<DbItem>>()
         val previewItems: LiveData<List<DbItem>> get() = _previewItems
@@ -106,12 +107,18 @@ class ShoppinglistViewModel
 
         init {
             orderedItemsInList.addSource(_ordering, { value ->
-                orderedItemsInList.value = getSortedList(orderedItemsInList.value ?: emptyList(), value)
-                updateListEmpty()
+                val orderedList = getSortedList(orderedItemsInList.value ?: emptyList(), value)
+                if (orderedList != orderedItemsInList.value) {
+                    orderedItemsInList.value = orderedList
+                    updateListEmpty()
+                }
             })
             orderedItemsInList.addSource(itemsInList, { value ->
-                orderedItemsInList.value = getSortedList(value, _ordering.value!!)
-                updateListEmpty()
+                val orderedList = getSortedList(value, _ordering.value!!)
+                if (orderedList != orderedItemsInList.value) {
+                    orderedItemsInList.value = orderedList
+                    updateListEmpty()
+                }
             })
         }
 
@@ -228,6 +235,7 @@ class ShoppinglistViewModel
             itemId: Int,
             quantity: Long = 1L,
         ) {
+            Log.d("ShoppingListViewModel", "List has ${orderedItemsInList.hasActiveObservers()}")
             localCoroutine.launch {
                 val migratedToNewId =
                     shoppingListRepository.updateItemCount(

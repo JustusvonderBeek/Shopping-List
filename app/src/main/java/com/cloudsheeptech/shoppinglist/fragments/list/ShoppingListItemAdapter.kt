@@ -19,9 +19,8 @@ class ShoppingListItemAdapter(
     private val listPK: Pair<Long, Long>,
     private val shoppingListRepository: ShoppingListRepository,
 ) : ListAdapter<AppItem, ShoppingListItemAdapter.WordListItemViewHolder>(
-    WordDiffCallback()
-) {
-
+        WordDiffCallback(),
+    ) {
     suspend fun deleteItemAt(position: Int) {
         Log.i("WordListItemAdapter", "Remove item at $position")
         withContext(Dispatchers.IO) {
@@ -31,25 +30,28 @@ class ShoppingListItemAdapter(
         }
     }
 
-    override fun getItemId(position: Int): Long {
-        return currentList[position].id
-    }
+    override fun getItemId(position: Int): Long = currentList[position].id
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordListItemViewHolder {
-        return WordListItemViewHolder.from(parent)
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): WordListItemViewHolder = WordListItemViewHolder.from(parent)
 
-    override fun onBindViewHolder(holder: WordListItemViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: WordListItemViewHolder,
+        position: Int,
+    ) {
         holder.bind(clickListener, checkboxClickListener, getItem(position), amountName)
     }
 
-    class WordListItemViewHolder private constructor(val binding: ShoppingItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    class WordListItemViewHolder private constructor(
+        val binding: ShoppingItemBinding,
+    ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             clickListener: ShoppingItemClickListener,
             checkClickListener: ShoppingItemCheckboxClickListener,
             item: AppItem,
-            amountName: String
+            amountName: String,
         ) {
             binding.item = item
             binding.amountName = amountName
@@ -58,8 +60,9 @@ class ShoppingListItemAdapter(
             // When pressing the checkbox itself also update
             binding.itemCheckbox.setOnCheckedChangeListener { _, checked ->
 //                Log.d("ShoppingListItemAdapter", "Checkbox itself pressed")
-                if (item.checked != checked)
+                if (item.checked != checked) {
                     checkClickListener.onClick(item)
+                }
             }
 //            Glide.with(binding.root).load(R.drawable.ic_item).into(binding.itemIcon)
             binding.executePendingBindings()
@@ -74,21 +77,30 @@ class ShoppingListItemAdapter(
         }
     }
 
-    class ShoppingItemClickListener(val clickListener: (wordId: Int, count: Int) -> Unit) {
-        fun onClick(item: AppItem, count: Int) = clickListener(item.id.toInt(), count)
+    class ShoppingItemClickListener(
+        val clickListener: (wordId: Int, count: Int) -> Unit,
+    ) {
+        fun onClick(
+            item: AppItem,
+            count: Int,
+        ) = clickListener(item.id.toInt(), count)
     }
 
-    class ShoppingItemCheckboxClickListener(val clickListener: (itemId: Int) -> Unit) {
+    class ShoppingItemCheckboxClickListener(
+        val clickListener: (itemId: Int) -> Unit,
+    ) {
         fun onClick(item: AppItem) = clickListener(item.id.toInt())
     }
 
     class WordDiffCallback : DiffUtil.ItemCallback<AppItem>() {
-        override fun areItemsTheSame(oldItem: AppItem, newItem: AppItem): Boolean {
-            return oldItem.id == newItem.id && oldItem.name == newItem.name && oldItem.icon == newItem.icon
-        }
+        override fun areItemsTheSame(
+            oldItem: AppItem,
+            newItem: AppItem,
+        ): Boolean = oldItem.id == newItem.id
 
-        override fun areContentsTheSame(oldItem: AppItem, newItem: AppItem): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(
+            oldItem: AppItem,
+            newItem: AppItem,
+        ): Boolean = oldItem == newItem
     }
 }

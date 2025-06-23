@@ -301,8 +301,12 @@ class ShoppingListRepository
             createdBy: Long,
             itemId: Long,
         ) {
-            val updatedLocalList = localDataSource.removeItem(listId, createdBy, itemId)
-            update(updatedLocalList)
+            try {
+                val updatedLocalList = localDataSource.removeItem(listId, createdBy, itemId)
+//                update(updatedLocalList)
+                updateListOnlineAndRetryOnFailure(updatedLocalList)
+            } catch (ex: Exception) {
+            }
         }
 
         // TODO: Fix the signature of this function (ApiIngredients -> DbItems ??? )
@@ -320,9 +324,19 @@ class ShoppingListRepository
             createdBy: Long,
             itemId: Long,
         ): Boolean {
-            val updatedLocalList = localDataSource.toggleItem(listId, createdBy, itemId)
-            val migratedToNewId = update(updatedLocalList)
-            return migratedToNewId
+            try {
+                val updatedLocalList = localDataSource.toggleItem(listId, createdBy, itemId)
+                updateListOnlineAndRetryOnFailure(updatedLocalList)
+                //                val migratedToNewId = update(updatedLocalList)
+//                return migratedToNewId
+            } catch (ex: IllegalArgumentException) {
+                Log.e("ShoppingListRepository", "List $listId from $createdBy not found")
+            } catch (ex: UserNotAuthenticatedException) {
+                Log.e("ShoppingListRepository", "User not authenticated: $ex")
+            } catch (ex: Exception) {
+                Log.e("ShoppingListRepository", "Failed to toggle item: $ex")
+            }
+            return false
         }
 
         suspend fun updateItemCount(
@@ -334,10 +348,13 @@ class ShoppingListRepository
             try {
                 val updatedLocalList =
                     localDataSource.updateItemCount(listId, createdBy, itemId, quantity)
-                val migratedToNewId = update(updatedLocalList)
-                return migratedToNewId
+//                val migratedToNewId = update(updatedLocalList)
+                updateListOnlineAndRetryOnFailure(updatedLocalList)
+//                return migratedToNewId
             } catch (ex: IllegalArgumentException) {
                 Log.e("ShoppingListRepository", "List $listId from $createdBy not found")
+            } catch (ex: UserNotAuthenticatedException) {
+                Log.e("ShoppingListRepository", "User not authenticated: $ex")
             }
             return false
         }
@@ -353,7 +370,8 @@ class ShoppingListRepository
                 return true
             }
             try {
-                val updatedList = read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
+                val updatedList =
+                    read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
                 updateListOnlineAndRetryOnFailure(updatedList)
                 return true
             } catch (ex: Exception) {
@@ -366,8 +384,12 @@ class ShoppingListRepository
             listId: Long,
             createdBy: Long,
         ) {
-            localDataSource.delete(listId, createdBy)
-            remoteApi.deleteShoppingList(listId, createdBy)
+            try {
+                localDataSource.delete(listId, createdBy)
+                remoteApi.deleteShoppingList(listId, createdBy)
+            } catch (ex: Exception) {
+                Log.e("ShoppingListRepository", "Failed to delete list: $ex")
+            }
         }
 
         suspend fun deleteAllCheckedItems(

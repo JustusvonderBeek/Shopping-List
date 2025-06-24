@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.list.ShoppinglistViewModel" />
+            type="com.cloudsheeptech.shoppinglist.fragments.list.ShoppingListViewModel" />
     </data>
 
     <LinearLayout
@@ -32,8 +32,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="4dp"
-                    >
+                    android:layout_marginTop="4dp">
 
                     <TextView
                         style="@style/ShoppingListSubtleStyle"
@@ -71,7 +70,7 @@
                         android:scrollbars="vertical"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/shopping_item"
-                        tools:itemCount="3"/>
+                        tools:itemCount="3" />
 
                 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -140,8 +139,7 @@
                     android:layout_height="5dp"
                     android:layout_gravity="center"
                     android:background="@drawable/drag_handle_bg"
-                    android:visibility="gone"
-                    />
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

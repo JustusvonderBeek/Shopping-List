@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import java.time.OffsetDateTime
 
 @Dao
 interface ShoppingListDao {
@@ -14,6 +15,15 @@ interface ShoppingListDao {
 
     @Update
     fun updateList(list: DbShoppingList)
+
+    @Query(
+        "UPDATE list_table SET lastUpdated = :now, version = version + 1 WHERE listId = :listId AND createdBy = :createdBy",
+    )
+    fun markUpdated(
+        listId: Long,
+        createdBy: Long,
+        now: OffsetDateTime = OffsetDateTime.now(),
+    )
 
     @Query("DELETE FROM list_table WHERE listId = :key AND createdBy = :createdBy")
     fun deleteList(

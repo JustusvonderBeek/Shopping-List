@@ -278,7 +278,8 @@ class ShoppingListRepository
         ) {
             try {
                 val updatedLocalList = localDataSource.insertItem(listId, createdBy, item)
-                update(updatedLocalList)
+//                update(updatedLocalList)
+                updateListOnlineAndRetryOnFailure(updatedLocalList)
             } catch (ex: IllegalArgumentException) {
                 Log.e("ShoppingListRepository", "List $listId from $createdBy not found")
             } catch (ex: IllegalStateException) {
@@ -293,7 +294,8 @@ class ShoppingListRepository
             itemId: Long,
         ) {
             val updatedLocalList = localDataSource.insertExistingItem(listId, createdBy, itemId)
-            update(updatedLocalList)
+//            update(updatedLocalList)
+            updateListOnlineAndRetryOnFailure(updatedLocalList)
         }
 
         suspend fun removeItem(

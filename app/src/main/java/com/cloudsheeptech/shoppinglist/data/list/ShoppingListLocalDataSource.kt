@@ -15,7 +15,6 @@ import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.max
@@ -338,7 +337,6 @@ class ShoppingListLocalDataSource
                     // FIXME: Instead of saving the update as truth, compare and make more
                     // detailed comparison
                     val (dbList, items) = updatedList.toDbList()
-                    dbList.lastUpdated = OffsetDateTime.now()
                     listDao.updateList(dbList)
                     itemToListRepository.deleteAllMappingsForList(
                         updatedList.listId,
@@ -428,10 +426,9 @@ class ShoppingListLocalDataSource
                 val existingList =
                     read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
                 existingList.items.add(item.toApiItem())
-                existingList.lastUpdated = OffsetDateTime.now()
-                existingList.version++
                 update(existingList)
-                updatedList = existingList
+                updatedList =
+                    read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
             }
             return updatedList
         }
@@ -461,11 +458,9 @@ class ShoppingListLocalDataSource
             val updatedList: ApiShoppingList
             withContext(Dispatchers.IO) {
                 itemToListRepository.delete(itemId, listId, createdBy)
+                listDao.markUpdated(listId, createdBy)
                 val existingList =
                     read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
-                existingList.lastUpdated = OffsetDateTime.now()
-                existingList.version++
-                update(existingList)
                 updatedList = existingList
             }
             return updatedList
@@ -478,10 +473,9 @@ class ShoppingListLocalDataSource
             val updatedList: ApiShoppingList
             withContext(Dispatchers.IO) {
                 itemToListRepository.deleteAllCheckedMappingsForList(listId, createdBy)
+                listDao.markUpdated(listId, createdBy)
                 updatedList =
                     read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
-                updatedList.version++
-                update(updatedList)
             }
             return updatedList
         }
@@ -518,6 +512,7 @@ class ShoppingListLocalDataSource
                         )
                     itemToListRepository.create(newMapping)
                 }
+                listDao.markUpdated(listId, createdBy)
                 updatedList = read(listId, createdBy)
                     ?: throw IllegalStateException("updated list does not exist")
             }
@@ -541,6 +536,7 @@ class ShoppingListLocalDataSource
                 }
                 itemMapping.Checked = itemMapping.Checked xor true
                 itemToListRepository.update(itemMapping)
+                listDao.markUpdated(listId, createdBy)
                 updatedList =
                     read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
             }
@@ -571,6 +567,7 @@ class ShoppingListLocalDataSource
                 } else {
                     itemToListRepository.update(itemMapping)
                 }
+                listDao.markUpdated(listId, createdBy)
                 updatedList =
                     read(listId, createdBy) ?: throw IllegalArgumentException("list does not exist")
             }
@@ -588,6 +585,7 @@ class ShoppingListLocalDataSource
                         ?: throw IllegalArgumentException("list does not exist in the database")
                 existingList.title = title
                 listDao.updateList(existingList)
+                listDao.markUpdated(listId, createdBy)
             }
         }
 
@@ -609,6 +607,7 @@ class ShoppingListLocalDataSource
             withContext(Dispatchers.IO) {
                 listDao.deleteList(listId, createdBy)
                 itemToListRepository.deleteAllMappingsForList(listId, createdBy)
+                listDao.markUpdated(listId, createdBy)
             }
         }
     }

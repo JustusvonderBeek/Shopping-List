@@ -80,7 +80,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
             jniDebuggable false
-            renderscriptDebuggable false
             signingConfig signingConfigs.release
 
             buildConfigField "String", "NETWORK_RETRY_COUNT", configProperties["NETWORK_RETRY_COUNT"]

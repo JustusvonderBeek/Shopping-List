@@ -352,6 +352,28 @@ class ShoppingListLocalDataSource
             return updatedVersion
         }
 
+        private fun mergeListBestEffort(
+            oldList: ApiShoppingList,
+            newList: ApiShoppingList,
+        ): ApiShoppingList {
+            if (oldList.listId != newList.listId) {
+                throw IllegalArgumentException("Cannot merge lists with different ids")
+            }
+            if (oldList.createdBy.onlineId != newList.createdBy.onlineId) {
+                throw IllegalArgumentException("Cannot merge lists with different creator ids")
+            }
+            val oldItems = oldList.items
+            val mergedItems = mutableListOf<ApiItem>()
+            val itemContainedInNewList = newList.items.toSet()
+            for (item in oldItems) {
+                if (!itemContainedInNewList.contains(item)) {
+                    mergedItems.add(item)
+                }
+            }
+            val mergedList = newList.copy(items = mergedItems)
+        return mergedList
+    }
+
         suspend fun updateCreatedByForList(
             listId: Long,
             createdBy: Long,

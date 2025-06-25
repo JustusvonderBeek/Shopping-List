@@ -22,10 +22,9 @@ class ShoppingListItemAdapter(
         WordDiffCallback(),
     ) {
     suspend fun deleteItemAt(position: Int) {
-        Log.i("WordListItemAdapter", "Remove item at $position")
         withContext(Dispatchers.IO) {
             val item = currentList[position]
-            Log.d("ShoppingListItemAdapter", "Removing item ${item.name}")
+            Log.d("ShoppingListItemAdapter", "Removing item ${item.name} at $position")
             shoppingListRepository.removeItem(listPK.first, listPK.second, item.id)
         }
     }

@@ -75,8 +75,10 @@ class ShoppingListRepository
                 if (!success) {
                     updateListCreatedBy(newList)
                     if (newList.createdBy.onlineId != createdByBeforeOnlineOperation.onlineId) {
-                        localDataSource.delete(newListId, createdByBeforeOnlineOperation.onlineId)
-                        localDataSource.create(newList)
+                        localDataSource.updateCreatedByForList(
+                            newList.createdBy.onlineId,
+                            createdByBeforeOnlineOperation.onlineId,
+                        )
                     }
                     remoteApi.create(newList)
                 }
@@ -88,16 +90,15 @@ class ShoppingListRepository
             return newList
         }
 
-        private suspend fun createRemote(list: ApiShoppingList): Long {
+        private suspend fun createRemote(list: ApiShoppingList): Boolean {
             try {
-                val listId = localDataSource.create(list)
-                return listId
+                return remoteApi.create(list)
             } catch (ex: IllegalArgumentException) {
                 Log.w("ShoppingListRepository", "List already exists: $ex")
             } catch (ex: Exception) {
                 Log.w("ShoppingListRepository", "Failed to create list: $ex")
             }
-            return -1L
+            return false
         }
 
         suspend fun read(

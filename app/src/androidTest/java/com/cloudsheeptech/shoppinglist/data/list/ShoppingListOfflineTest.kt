@@ -119,17 +119,17 @@ class ShoppingListOfflineTest {
 
             val newList =
                 createApiShoppingList(creatorId = testUser!!.OnlineID)
-            val insertedId = localShoppingListDataSource.create(newList)
+            val insertedId = localShoppingListDataSource.createOrUpdate(newList)
             Assert.assertEquals(1L, insertedId)
 
             val secondList = createApiShoppingList("second title", creatorId = testUser.OnlineID)
-            val secondInsertedId = localShoppingListDataSource.create(secondList)
+            val secondInsertedId = localShoppingListDataSource.createOrUpdate(secondList)
             Assert.assertEquals(2L, secondInsertedId)
 
             secondList.listId = secondInsertedId
             var exception = false
             try {
-                localShoppingListDataSource.create(secondList)
+                localShoppingListDataSource.createOrUpdate(secondList)
             } catch (ex: IllegalArgumentException) {
                 exception = true
             }
@@ -144,7 +144,7 @@ class ShoppingListOfflineTest {
                     createApiItem(num, addedBy = remoteCreatorId)
                 listWithItems.items.add(item)
             }
-            val thirdInsertedId = localShoppingListDataSource.create(listWithItems)
+            val thirdInsertedId = localShoppingListDataSource.createOrUpdate(listWithItems)
             // remote user and therefore keep the list id
             // Also check if the lists with equal ids can be stored side by side
             Assert.assertEquals(1L, thirdInsertedId)
@@ -187,7 +187,7 @@ class ShoppingListOfflineTest {
                 listWithItems.items.add(item)
             }
 
-            val insertedId = localShoppingListDataSource.create(listWithItems)
+            val insertedId = localShoppingListDataSource.createOrUpdate(listWithItems)
             Assert.assertEquals(1L, insertedId)
             listWithItems.listId = insertedId
 
@@ -227,7 +227,7 @@ class ShoppingListOfflineTest {
                 listWithItems.items.add(item)
             }
 
-            val insertedId = localShoppingListDataSource.create(listWithItems)
+            val insertedId = localShoppingListDataSource.createOrUpdate(listWithItems)
             Assert.assertEquals(1L, insertedId)
             listWithItems.listId = insertedId
 
@@ -291,7 +291,7 @@ class ShoppingListOfflineTest {
                 listWithItems.items.add(item)
             }
 
-            val insertedId = localShoppingListDataSource.create(listWithItems)
+            val insertedId = localShoppingListDataSource.createOrUpdate(listWithItems)
             Assert.assertEquals(1L, insertedId)
             listWithItems.listId = insertedId
 
@@ -348,7 +348,7 @@ class ShoppingListOfflineTest {
                 items.add(item)
             }
             listWithItems.items.addAll(items)
-            val insertedId = localDataSource.create(listWithItems)
+            val insertedId = localDataSource.createOrUpdate(listWithItems)
             Assert.assertEquals(1L, insertedId)
             listWithItems.listId = insertedId
             val retrievedList =
@@ -396,7 +396,7 @@ class ShoppingListOfflineTest {
                 items.add(item)
             }
             listWithItems.items.addAll(items)
-            val insertedId = localDataSource.create(listWithItems)
+            val insertedId = localDataSource.createOrUpdate(listWithItems)
             Assert.assertEquals(1L, insertedId)
             listWithItems.listId = insertedId
             val retrievedList =
@@ -434,7 +434,7 @@ class ShoppingListOfflineTest {
                     createApiItem(num)
                 listWithItems.items.add(item)
             }
-            val insertedId = localDataSource.create(listWithItems)
+            val insertedId = localDataSource.createOrUpdate(listWithItems)
             Assert.assertEquals(1L, insertedId)
             listWithItems.listId = insertedId
             val retrievedList =

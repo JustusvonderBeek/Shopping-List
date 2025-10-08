@@ -68,7 +68,7 @@ class ShoppingListRepository
                 )
             updateListCreatedBy(newList)
             val createdByBeforeOnlineOperation = newList.createdBy
-            val newListId = localDataSource.create(newList)
+            val newListId = localDataSource.createOrUpdate(newList)
             newList.listId = newListId
             try {
                 val success = remoteApi.create(newList)
@@ -173,7 +173,7 @@ class ShoppingListRepository
                         "List ${remoteList.listId} from ${remoteList.createdBy.onlineId} exists: $exists",
                     )
                     if (!exists) {
-                        localDataSource.create(remoteList)
+                        localDataSource.createOrUpdate(remoteList)
                     } else {
                         localDataSource.update(remoteList)
                     }

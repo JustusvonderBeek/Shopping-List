@@ -35,13 +35,13 @@ protobuf {
 
 android {
     namespace 'com.cloudsheeptech.shoppinglist'
-    compileSdk 34
+    compileSdkVersion 36
 
     defaultConfig {
         applicationId "com.cloudsheeptech.shoppinglist"
         minSdk 29
-        targetSdk 33
-        versionCode 29
+        targetSdk 36
+        versionCode 30
         versionName "0.11.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

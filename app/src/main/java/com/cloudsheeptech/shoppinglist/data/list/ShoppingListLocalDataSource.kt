@@ -20,6 +20,7 @@ import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.max
@@ -46,13 +47,13 @@ class ShoppingListLocalDataSource
 
         /**
          * This function creates a new shopping list in the local database
-         * @return The id of the newly created list
+         * @return The id of the newly created list or the version if updated
          * @exception IllegalArgumentException in case the list already exists
          * @exception IllegalStateException in case creating the list in the db failed
          */
         @Throws(IllegalArgumentException::class, IllegalStateException::class)
         suspend fun createOrUpdate(listForCreationOrUpdate: ApiShoppingList): Long {
-            var listIdAfterInsertionOrUpdate = listForCreationOrUpdate.listId
+            var listIdAfterInsertionOrVersion = listForCreationOrUpdate.listId
             withContext(Dispatchers.IO) {
                 // Differentiate between new and existing list
                 if (listDao.exists(
@@ -60,13 +61,16 @@ class ShoppingListLocalDataSource
                         listForCreationOrUpdate.createdBy.onlineId,
                     )
                 ) {
-                    listIdAfterInsertionOrUpdate = update(listForCreationOrUpdate)
+                    listIdAfterInsertionOrVersion = update(listForCreationOrUpdate)
                     return@withContext
                 }
 
                 // Update the id to the latest available ID if the list was created locally
                 val listForCreation = listForCreationOrUpdate.copy()
-                listIdAfterInsertionOrUpdate = createListIdForNewLocalList(listForCreation)
+                listIdAfterInsertionOrVersion = createListIdForNewLocalList(listForCreation)
+                if (listIdAfterInsertionOrVersion < 0L) {
+                    listIdAfterInsertionOrVersion = listForCreation.listId
+                }
 
                 // We split the list from one single object into 2 parts: basic list and items
                 val (listForCreationInDatabaseFormat, itemsForCreationInDatabaseFormat) = listForCreation.toDbList()
@@ -74,31 +78,31 @@ class ShoppingListLocalDataSource
                 if (totalTableRows == -1L) {
                     Log.e(
                         "ShoppingListLocalDataSource",
-                        "Failed to insert list ${listForCreation.listId}",
+                        "Failed to insert list '${listForCreation.title}': ${listForCreation.listId}",
                     )
-                    throw IllegalStateException("Failed to insert list ${listForCreation.listId}")
+                    throw IllegalStateException("Failed to insert list '${listForCreation.title}': ${listForCreation.listId}")
                 }
                 Log.i(
                     "ShoppingListHandler",
-                    "Stored new list ${listForCreationInDatabaseFormat.listId} '${listForCreationInDatabaseFormat.title}' in database",
+                    "Stored new list '${listForCreationInDatabaseFormat.title}': ${listForCreationInDatabaseFormat.listId} in database",
                 )
 
                 // Insert the items in case we received a remote list which is already populated
                 insertItems(itemsForCreationInDatabaseFormat, listForCreation)
                 Log.d(
                     "ShoppingListHandler",
-                    "Inserted list $listIdAfterInsertionOrUpdate from ${listForCreationOrUpdate.createdBy.onlineId} with ${itemsForCreationInDatabaseFormat.size} items successfully into database",
+                    "Inserted list '${listForCreationOrUpdate.title}': ${listForCreationOrUpdate.listId} from ${listForCreationOrUpdate.createdBy.onlineId} with ${itemsForCreationInDatabaseFormat.size} items successfully into database",
                 )
             }
-            return listIdAfterInsertionOrUpdate
+            return listIdAfterInsertionOrVersion
         }
 
         private suspend fun createListIdForNewLocalList(list: ApiShoppingList): Long {
             if (!isNewList(list) || !isListFromLocalUser(list)) {
-            return -1L
-        }
-        list.listId = getUniqueShoppingListID(list.createdBy.onlineId)
-        return list.listId
+                return -1L
+            }
+            list.listId = getUniqueShoppingListID(list.createdBy.onlineId)
+            return list.listId
         }
 
         private suspend fun getUniqueShoppingListID(createdBy: Long): Long {
@@ -256,7 +260,7 @@ class ShoppingListLocalDataSource
          * @throws IllegalArgumentException if the list does not exist
          */
         @Throws(IllegalArgumentException::class)
-        suspend fun update(updatedList: ApiShoppingList): Long {
+        private suspend fun update(updatedList: ApiShoppingList): Long {
             if (updatedList.listId == 0L) {
                 throw IllegalArgumentException("list does not exist in the database")
             }
@@ -266,12 +270,15 @@ class ShoppingListLocalDataSource
                         listDao.getShoppingList(updatedList.listId, updatedList.createdBy.onlineId)
                             ?: throw IllegalArgumentException("list does not exist in the database")
 
+                    // Increase version number
+                    updatedList.version = updatedList.version.plus(1L)
+
+                    // Updated last edited time
+                    updatedList.lastUpdated = OffsetDateTime.now()
+
                     // Fix the createdBy == 0 if the user is already logged in online
-                    val user =
-                        userRepository.read() ?: throw IllegalStateException("user null after login")
-                    if (existingList.createdBy == 0L && user.OnlineID != 0L) {
-                        updatedList.createdBy.onlineId = user.OnlineID
-                    }
+                    val moveListToNewId =
+                        updateCreatedByForLocallyCreatedLists(existingList, updatedList)
 
                     if (updatedList.version <= existingList.version) {
                         // TODO: For this to work, we need delta information what happened since the last updates
@@ -284,21 +291,48 @@ class ShoppingListLocalDataSource
 
                     // FIXME: Instead of saving the update as truth, compare and make more
                     // detailed comparison
-                    val (dbList, items) = updatedList.toDbList()
-                    listDao.updateList(dbList)
+                    val (updatedListInDbFormat, updatedItemsInDbFormat) = updatedList.toDbList()
+                    // Write me a function that compares the existing list with the updatedList and
+                    // returns what parts are changed
+                    listDao.updateList(updatedListInDbFormat)
+
                     itemToListRepository.deleteAllMappingsForList(
                         updatedList.listId,
                         updatedList.createdBy.onlineId,
                     )
-                    insertItems(items, updatedList)
+                    insertItems(updatedItemsInDbFormat, updatedList)
                     Log.d(
                         "ShoppingListHandler",
-                        "Updated list ${updatedList.listId} with ${items.size} items in database",
+                        "Updated list ${updatedList.listId} with ${updatedItemsInDbFormat.size} items in database",
                     )
-                    return@withContext dbList.version.plus(1L)
+
+                    if (moveListToNewId) {
+                        // Delete list for old userId = 0
+                        listDao.deleteList(updatedList.listId, 0L)
+                    }
+
+                    return@withContext updatedListInDbFormat.version
                 }
             return updatedVersion
         }
+
+        private fun updateCreatedByForLocallyCreatedLists(
+            existingList: DbShoppingList,
+            updatedList: ApiShoppingList,
+        ): Boolean {
+            val user =
+                userRepository.read() ?: throw IllegalStateException("user null after login")
+            var moveListToNewId = false
+            if (existingList.createdBy == 0L && user.OnlineID != 0L) {
+                updatedList.createdBy.onlineId = user.OnlineID
+                Log.i(
+                    "ShoppingListLocalDataSource",
+                    "Updated createdBy from ${existingList.createdBy} to ${user.OnlineID} for list '${existingList.title}': ${existingList.listId}",
+                )
+                moveListToNewId = true
+            }
+        return moveListToNewId
+    }
 
         private fun mergeListBestEffort(
             oldList: ApiShoppingList,

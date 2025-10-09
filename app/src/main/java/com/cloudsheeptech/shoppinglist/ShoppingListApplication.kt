@@ -127,4 +127,10 @@ class ShoppingListApplication : Application() {
     fun isShoppingListRepositoryInitialized() = ::shoppingListRepository.isInitialized
 
     fun isBinaryFileHandlerInitialized() = ::binaryFileHandler.isInitialized
+
+    fun isOnlineUserLocalDSInitialized() = ::onlineUserLocalDataSource.isInitialized
+
+    fun isOnlineUserRemoteDSInitialized() = ::onlineUserRemoteDataSource.isInitialized
+
+    fun isOnlineUserRepositoryInitialized() = ::onlineUserRepository.isInitialized
 }

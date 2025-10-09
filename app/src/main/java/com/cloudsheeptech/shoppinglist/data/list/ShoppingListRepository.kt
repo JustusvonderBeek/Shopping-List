@@ -131,7 +131,7 @@ class ShoppingListRepository
                     latestList = compareAndGetLatestList(storedList, remoteList)
                 }
                 // We don't want to propagate an update we just received back online
-                localDataSource.update(latestList!!)
+                localDataSource.createOrUpdate(latestList!!)
                 Log.d(
                     "ShoppingListRepository",
                     "Updated List $listId from $createdBy to latest version ${latestList.version}",
@@ -175,7 +175,7 @@ class ShoppingListRepository
                     if (!exists) {
                         localDataSource.createOrUpdate(remoteList)
                     } else {
-                        localDataSource.update(remoteList)
+                        localDataSource.createOrUpdate(remoteList)
                     }
                 }
             } catch (ex: Exception) {
@@ -207,7 +207,7 @@ class ShoppingListRepository
             list.version++
             var migratedListToNewId = false
             try {
-                localDataSource.update(list)
+                localDataSource.createOrUpdate(list)
                 updateListOnlineAndRetryOnFailure(list)
                 if (list.createdBy.onlineId != onlineIdBeforeUpdate) {
                     migratedListToNewId = true

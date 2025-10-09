@@ -11,6 +11,9 @@ import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
+import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
@@ -34,6 +37,9 @@ object TestUtil {
         createLocalShoppingListDataSource()
         createRemoteShoppingListDataSource()
         createShoppingListRepository()
+        createOnlineUserLocalDS()
+        createOnlineUserRemoteDS()
+        createOnlineUserRepository()
     }
 
     suspend fun initializeUser(
@@ -84,7 +90,8 @@ object TestUtil {
             val localUserDS = createLocalAppUserDS()
 
             val userDataPayloadProvider = UserCreationDataProvider(localUserDS)
-            val tokenProvider = ShoppingListAuthenticationTokenProvider(userDataPayloadProvider)
+            val tokenProvider =
+                ShoppingListAuthenticationTokenProvider(userDataPayloadProvider, "tmp/")
             networking = Networking(tokenProvider)
             shoppingListApplication.userCreationPayloadProvider = userDataPayloadProvider
             shoppingListApplication.tokenProvider = tokenProvider
@@ -175,10 +182,19 @@ object TestUtil {
             val appUserRepository = createAppUserRepository()
             val itemRepository = createItemRepository()
             val itemToListRepository = createItemToListRepository()
+            val localUserDs = AppUserLocalDataSource(database)
+            val payloadProvider = UserCreationDataProvider(localUserDs)
+            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp")
+            val networking = Networking(tokenProvider)
+            val onlineUserLocalDataSource = OnlineUserLocalDataSource(database)
+            val onlineUserRemoteDataSource = OnlineUserRemoteDataSource(networking)
+            val onlineUserRepository =
+                OnlineUserRepository(onlineUserLocalDataSource, onlineUserRemoteDataSource)
             localShoppingListDataSource =
                 ShoppingListLocalDataSource(
                     database,
                     appUserRepository,
+                    onlineUserRepository,
                     itemRepository,
                     itemToListRepository,
                 )
@@ -218,5 +234,43 @@ object TestUtil {
             shoppingListApplication.shoppingListRepository = shoppingListRepository
         }
         return shoppingListRepository
+    }
+
+    private fun createOnlineUserLocalDS(): OnlineUserLocalDataSource {
+        val onlineUserLocalDataSource: OnlineUserLocalDataSource?
+        if (shoppingListApplication.isOnlineUserLocalDSInitialized()) {
+            onlineUserLocalDataSource = shoppingListApplication.onlineUserLocalDataSource
+        } else {
+            val database = createDatabase()
+            onlineUserLocalDataSource = OnlineUserLocalDataSource(database)
+            shoppingListApplication.onlineUserLocalDataSource = onlineUserLocalDataSource
+        }
+        return onlineUserLocalDataSource
+    }
+
+    private fun createOnlineUserRemoteDS(): OnlineUserRemoteDataSource {
+        val onlineUserRemoteDataSource: OnlineUserRemoteDataSource?
+        if (shoppingListApplication.isOnlineUserRemoteDSInitialized()) {
+            onlineUserRemoteDataSource = shoppingListApplication.onlineUserRemoteDataSource
+        } else {
+            val networking = createNetworking()
+            onlineUserRemoteDataSource = OnlineUserRemoteDataSource(networking)
+            shoppingListApplication.onlineUserRemoteDataSource = onlineUserRemoteDataSource
+        }
+        return onlineUserRemoteDataSource
+    }
+
+    private fun createOnlineUserRepository(): OnlineUserRepository {
+        val onlineUserRepository: OnlineUserRepository?
+        if (shoppingListApplication.isOnlineUserRepositoryInitialized()) {
+            onlineUserRepository = shoppingListApplication.onlineUserRepository
+        } else {
+            val localOnlineUserDataSource = createOnlineUserLocalDS()
+            val remoteOnlineUserDataSource = createOnlineUserRemoteDS()
+            onlineUserRepository =
+                OnlineUserRepository(localOnlineUserDataSource, remoteOnlineUserDataSource)
+            shoppingListApplication.onlineUserRepository = onlineUserRepository
+        }
+        return onlineUserRepository
     }
 }

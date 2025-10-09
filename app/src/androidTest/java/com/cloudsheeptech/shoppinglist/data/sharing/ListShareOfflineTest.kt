@@ -10,6 +10,9 @@ import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
+import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
@@ -29,7 +32,7 @@ class ListShareOfflineTest {
         val database = ShoppingListDatabase.getInstance(application)
         val localUserDs = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserDs)
-        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp")
         val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)
@@ -39,8 +42,18 @@ class ListShareOfflineTest {
         val itemRepo = ItemRepository(localItemDs)
         val localItemToListDs = ItemToListLocalDataSource(database)
         val itemToListRepository = ItemToListRepository(localItemToListDs)
+        val onlineUserLocalDataSource = OnlineUserLocalDataSource(database)
+        val onlineUserRemoteDataSource = OnlineUserRemoteDataSource(networking)
+        val onlineUserRepository =
+            OnlineUserRepository(onlineUserLocalDataSource, onlineUserRemoteDataSource)
         val localDataSource =
-            ShoppingListLocalDataSource(database, userRepository, itemRepo, itemToListRepository)
+            ShoppingListLocalDataSource(
+                database,
+                userRepository,
+                onlineUserRepository,
+                itemRepo,
+                itemToListRepository,
+            )
         val remoteDataSource = ShoppingListRemoteDataSource(networking, userRepository)
         val slRepo = ShoppingListRepository(localDataSource, remoteDataSource, userRepository)
         val listShareDS = ListShareLocalDataSource(database, userRepository, slRepo)
@@ -59,7 +72,7 @@ class ListShareOfflineTest {
             val application = ApplicationProvider.getApplicationContext<Application>()
             val database = ShoppingListDatabase.getInstance(application)
             val shareDao = database.sharedDao()
-            val allShared = shareDao.getListSharedWith(list.listId)
+            val allShared = shareDao.getListSharedWith(list.listId, list.createdBy.onlineId)
             assert(allShared.isNotEmpty())
             Assert.assertEquals(1, allShared.size)
             Assert.assertEquals(list.listId, allShared[0].ListId)
@@ -85,7 +98,7 @@ class ListShareOfflineTest {
             listShare.create(list.listId, 1234L, 54321L)
             listShare.create(list.listId, 1235L, 54321L)
 
-            val shared = listShare.read(list.listId)
+            val shared = listShare.read(list.listId, list.createdBy.onlineId)
             Assert.assertEquals(2, shared.size)
             Assert.assertEquals(1234L, shared[0])
             Assert.assertEquals(1235L, shared[1])
@@ -102,12 +115,12 @@ class ListShareOfflineTest {
             listShare.create(list.listId, 1234L, 54321L)
             listShare.create(list.listId, 1235L, 54321L)
 
-            val shared = listShare.read(list.listId)
+            val shared = listShare.read(list.listId, list.createdBy.onlineId)
             Assert.assertEquals(2, shared.size)
             shared.dropLast(1)
             listShare.update(list.listId, 1234L, listOf(54321L))
 
-            val sharedAfterRemove = listShare.read(list.listId)
+            val sharedAfterRemove = listShare.read(list.listId, list.createdBy.onlineId)
             Assert.assertEquals(1, sharedAfterRemove.size)
         }
 
@@ -122,11 +135,11 @@ class ListShareOfflineTest {
             listShare.create(list.listId, 1234L, 54321L)
             listShare.create(list.listId, 1235L, 54321L)
 
-            val shared = listShare.read(list.listId)
+            val shared = listShare.read(list.listId, list.createdBy.onlineId)
             Assert.assertEquals(2, shared.size)
 
             listShare.deleteAll(list.listId, 1234L)
-            val sharedAfterRemove = listShare.read(list.listId)
+            val sharedAfterRemove = listShare.read(list.listId, list.createdBy.onlineId)
             Assert.assertEquals(0, sharedAfterRemove.size)
         }
 }

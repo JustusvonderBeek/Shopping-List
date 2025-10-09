@@ -10,7 +10,6 @@ import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationT
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -39,17 +38,19 @@ class NetworkingTest {
         }
 
     @Test
-    fun testSimpleGet() = runTest(timeout = 500.seconds) {
-        val userProvider = TestDataProvider()
-        val tokenProvider = ShoppingListAuthenticationTokenProvider(userProvider)
-        val networkingHandler = ShoppingListNetworkHandler(tokenProvider)
+    fun testSimpleGet() =
+        runTest(timeout = 500.seconds) {
+            val userProvider = TestDataProvider()
+            val tokenProvider = ShoppingListAuthenticationTokenProvider(userProvider, "tmp/")
+            val networkingHandler = ShoppingListNetworkHandler(tokenProvider)
 
-        networkingHandler.get("/v1/lists", object : IHttpResponseHandler {
-            override suspend fun handle(response: HttpResponse): Boolean {
-                return response.status == HttpStatusCode.OK
-            }
-        })
-    }
+            networkingHandler.get(
+                "/v1/lists",
+                object : IHttpResponseHandler {
+                    override suspend fun handle(response: HttpResponse): Boolean = response.status == HttpStatusCode.OK
+                },
+            )
+        }
 
     private suspend fun createUserAccount(fileDirPath: String): Boolean {
         var success = false

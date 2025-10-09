@@ -18,7 +18,6 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.junit.Assert
@@ -47,7 +46,7 @@ class OnlineUserOnlineTest {
         val database = ShoppingListDatabase.getInstance(application)
         val localUserDs = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserDs)
-        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp/")
         val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val userRepository = AppUserRepository(localUserDs, remoteUserDs)
@@ -67,14 +66,14 @@ class OnlineUserOnlineTest {
                     "ignore",
                     UserRightsEnum.USER.value,
                     OffsetDateTime.now(),
-                    OffsetDateTime.now()
+                    OffsetDateTime.now(),
                 )
             val encodedUser = json.encodeToString(newUser)
             val application = ApplicationProvider.getApplicationContext<Application>()
             val database = ShoppingListDatabase.getInstance(application)
             val localUserDs = AppUserLocalDataSource(database)
             val payloadProvider = UserCreationDataProvider(localUserDs)
-            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
+            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp/")
             val networking = Networking(tokenProvider)
             networking.POST("/v1/users", encodedUser) { resp ->
                 // Authentication already handled by the networking object

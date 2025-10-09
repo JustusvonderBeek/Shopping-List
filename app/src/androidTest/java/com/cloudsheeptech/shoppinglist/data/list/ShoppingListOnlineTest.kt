@@ -41,7 +41,7 @@ class ShoppingListOnlineTest {
         val database = ShoppingListDatabase.getInstance(application)
         val localUserDs = AppUserLocalDataSource(database)
         val payloadProvider = UserCreationDataProvider(localUserDs)
-        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider)
+        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp/")
         val networking = Networking(tokenProvider)
         val remoteUserDs = AppUserRemoteDataSource(networking)
         val appUserRepository = AppUserRepository(localUserDs, remoteUserDs)
@@ -273,7 +273,11 @@ class ShoppingListOnlineTest {
             var success = remoteDataSource.create(listWithItems)
             assert(success)
 
-            success = remoteDataSource.deleteShoppingList(listWithItems.listId)
+            success =
+                remoteDataSource.deleteShoppingList(
+                    listWithItems.listId,
+                    listWithItems.createdBy.onlineId,
+                )
             assert(success)
 
             val remoteList =

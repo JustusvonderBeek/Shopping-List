@@ -31,7 +31,8 @@ class AppUserOnlineTest {
         application.filesDir.path + "/token.txt"
         val appUserLocalDataSource = AppUserLocalDataSource(database)
         val userCreationPayloadProvider = UserCreationDataProvider(appUserLocalDataSource)
-        val tokenProvider = ShoppingListAuthenticationTokenProvider(userCreationPayloadProvider)
+        val tokenProvider =
+            ShoppingListAuthenticationTokenProvider(userCreationPayloadProvider, "tmp/")
         val remoteApi = Networking(tokenProvider)
         val appUserRemoteDataSource = AppUserRemoteDataSource(remoteApi)
         appUserLocalDataSource.create("test user")

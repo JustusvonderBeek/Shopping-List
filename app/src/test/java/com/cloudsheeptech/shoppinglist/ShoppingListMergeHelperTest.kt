@@ -1,0 +1,178 @@
+package com.cloudsheeptech.shoppinglist
+
+import com.cloudsheeptech.shoppinglist.data.items.ApiItem
+import com.cloudsheeptech.shoppinglist.data.list.ApiShoppingList
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListMergeHelper
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListOperations
+import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
+import org.junit.Assert
+import org.junit.Test
+import java.time.OffsetDateTime
+
+class ShoppingListMergeHelperTest {
+    private fun createItem(
+        num: Int,
+        creatorId: Long = 234L,
+    ): ApiItem {
+        val item = ApiItem("item $num", "icon $num", num.toLong(), num % 2 == 0, creatorId)
+        return item
+    }
+
+    private fun createDefaultList(numItems: Int): ApiShoppingList {
+        val creatorId = 234L
+        val list =
+            ApiShoppingList(
+                1L,
+                "list 1",
+                ListCreator(creatorId, "username"),
+                OffsetDateTime.now(),
+                OffsetDateTime.now(),
+                mutableListOf(),
+                1L,
+            )
+        val items = mutableListOf<ApiItem>()
+        for (i in 0 until numItems) {
+            val item = createItem(i, creatorId)
+            items.add(item)
+        }
+        list.items = items
+        return list
+    }
+
+    @Test
+    fun testAddItem() {
+        val oldList = createDefaultList(3)
+        val newList = createDefaultList(3)
+
+        val newItem = createItem(4)
+        newList.items.add(newItem)
+
+        val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.ADD_ITEM))
+        Assert.assertNotNull(operationsPerformed.get(ShoppingListOperations.ADD_ITEM))
+        Assert.assertEquals(1, operationsPerformed.get(ShoppingListOperations.ADD_ITEM)!!.size)
+        Assert.assertEquals(
+            listOf(newItem),
+            operationsPerformed.get(ShoppingListOperations.ADD_ITEM),
+        )
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.REMOVE_ITEM))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_QUANTITY))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.RENAME_LIST))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_CREATOR))
+    }
+
+    @Test
+    fun testRemoveItem() {
+        val oldList = createDefaultList(3)
+        val newList = createDefaultList(3)
+
+        val removedItem = newList.items.removeAt(1)
+
+        val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.REMOVE_ITEM))
+        Assert.assertNotNull(operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM))
+        Assert.assertEquals(1, operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM)!!.size)
+        Assert.assertEquals(
+            listOf(removedItem),
+            operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM),
+        )
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.ADD_ITEM))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_QUANTITY))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.RENAME_LIST))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_CREATOR))
+    }
+
+    @Test
+    fun testRenameList() {
+        val oldList = createDefaultList(3)
+        val newList = createDefaultList(3)
+
+        newList.title = "super duper new title"
+
+        val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.RENAME_LIST))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.ADD_ITEM))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_QUANTITY))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.REMOVE_ITEM))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_CREATOR))
+    }
+
+    @Test
+    fun testDifferentLists() {
+        val oldList = createDefaultList(3)
+        val newList = createDefaultList(3)
+
+        newList.listId = 4321L
+
+        var exceptionThrown = false
+        try {
+            val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+        } catch (ex: IllegalArgumentException) {
+            exceptionThrown = true
+        }
+        Assert.assertTrue(exceptionThrown)
+    }
+
+    @Test
+    fun testMultipleChanges() {
+        val oldList = createDefaultList(3)
+        val newList = createDefaultList(3)
+
+        val removedItems = mutableListOf<ApiItem>()
+        removedItems.add(newList.items.removeAt(1))
+        removedItems.add(newList.items.removeAt(1))
+
+        val changedQuantityItem = newList.items.get(0)
+        newList.items.get(0).quantity = 12
+        changedQuantityItem.quantity = 12
+        val changedQuantityItems = listOf(changedQuantityItem)
+
+        val newItem = createItem(4)
+        newList.items.add(newItem)
+        val newItem2 = createItem(123)
+        newList.items.add(newItem2)
+        val newItem3 = createItem(321)
+        newList.items.add(newItem3)
+        val addedItems = listOf(newItem, newItem2, newItem3)
+
+        newList.title = "super duper new title"
+
+        newList.createdBy.onlineId = 665544L
+
+        val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.RENAME_LIST))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.CHANGE_CREATOR))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.ADD_ITEM))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.REMOVE_ITEM))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.CHANGE_QUANTITY))
+
+        Assert.assertEquals(0, operationsPerformed.get(ShoppingListOperations.RENAME_LIST)!!.size)
+        Assert.assertEquals(
+            0,
+            operationsPerformed.get(ShoppingListOperations.CHANGE_CREATOR)!!.size,
+        )
+        Assert.assertEquals(
+            addedItems.size,
+            operationsPerformed.get(ShoppingListOperations.ADD_ITEM)!!.size,
+        )
+        Assert.assertEquals(
+            removedItems.size,
+            operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM)!!.size,
+        )
+        Assert.assertEquals(
+            changedQuantityItems.size,
+            operationsPerformed.get(ShoppingListOperations.CHANGE_QUANTITY)!!.size,
+        )
+        Assert.assertTrue(
+            operationsPerformed.get(ShoppingListOperations.ADD_ITEM)!!.containsAll(addedItems),
+        )
+        Assert.assertTrue(
+            operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM)!!.containsAll(removedItems),
+        )
+        Assert.assertTrue(
+            operationsPerformed
+                .get(ShoppingListOperations.CHANGE_QUANTITY)!!
+                .containsAll(changedQuantityItems),
+        )
+    }
+}

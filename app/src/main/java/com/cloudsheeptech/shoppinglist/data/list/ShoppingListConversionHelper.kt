@@ -1,9 +1,9 @@
 package com.cloudsheeptech.shoppinglist.data.list
 
-import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
+import com.cloudsheeptech.shoppinglist.data.items.ItemToList
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 
 class ShoppingListConversionHelper {
@@ -41,28 +41,28 @@ class ShoppingListConversionHelper {
             itemId: Long,
             listId: Long,
             createdBy: Long,
-        ): ListMapping {
-            val listMapping =
-                ListMapping(
-                    ID = 0L, // Auto generated
-                    ItemID = itemId,
-                    ListID = listId,
-                    CreatedBy = createdBy,
-                    Quantity = this.quantity,
-                    Checked = this.checked,
-                    AddedBy = this.addedBy,
+        ): ItemToList {
+            val itemToList =
+                ItemToList(
+                    id = 0L, // Auto generated
+                    itemId = itemId,
+                    listId = listId,
+                    createdBy = createdBy,
+                    quantity = this.quantity,
+                    checked = this.checked,
+                    addedBy = this.addedBy,
                 )
-            return listMapping
+            return itemToList
         }
 
-        fun ApiShoppingList.toDbList(): Pair<DbShoppingList, List<DbItem>> {
+        fun ShoppingList.toDbList(): Pair<DbShoppingList, List<DbItem>> {
             val dbList =
                 DbShoppingList(
                     listId = this.listId,
                     title = this.title,
                     createdBy = this.createdBy.onlineId,
                     createdByName = this.createdBy.username,
-                    lastUpdated = this.lastUpdated,
+                    synchronized = this.synchronized,
                     version = this.version,
                 )
             val dbItems = this.items.map { item -> item.toDbItem() }
@@ -70,28 +70,31 @@ class ShoppingListConversionHelper {
         }
 
         // Ignore for now
-        fun DbShoppingList.toApiList(listCreator: ListCreator): ApiShoppingList {
+        fun DbShoppingList.toApiList(
+            listCreator: ListCreator,
+            items: MutableList<ApiItem> = mutableListOf(),
+        ): ShoppingList {
             val apiList =
-                ApiShoppingList(
+                ShoppingList(
                     listId = this.listId,
                     title = this.title,
                     createdBy = listCreator,
-                    createdAt = this.lastUpdated,
-                    lastUpdated = this.lastUpdated,
-                    items = mutableListOf(),
+                    createdAt = this.synchronized,
+                    synchronized = this.synchronized,
+                    items = items,
                     version = this.version,
                 )
             return apiList
         }
 
-        fun ListMapping.toApiItem(): ApiItem {
+        fun ItemToList.toApiItem(): ApiItem {
             val apiItem =
                 ApiItem(
                     name = "",
                     icon = "",
-                    quantity = this.Quantity,
-                    checked = this.Checked,
-                    addedBy = this.AddedBy,
+                    quantity = this.quantity,
+                    checked = this.checked,
+                    addedBy = this.addedBy,
                 )
             return apiItem
         }

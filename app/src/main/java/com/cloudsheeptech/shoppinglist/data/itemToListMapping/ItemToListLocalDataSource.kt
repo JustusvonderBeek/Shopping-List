@@ -1,6 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.itemToListMapping
 
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.data.items.ItemToList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -20,17 +21,17 @@ class ItemToListLocalDataSource
          * @throws IllegalStateException if the mapping already exists
          * @return the id of the newly created mapping
          */
-        suspend fun create(mapping: ListMapping): Long {
+        suspend fun create(mapping: ItemToList): Long {
             var mappingId = 0L
-            if (mapping.ID != 0L) {
+            if (mapping.id != 0L) {
                 throw IllegalArgumentException("mapping already exists")
             }
             withContext(Dispatchers.IO) {
                 val existingMappings =
                     mappingDao.getMappingForItemAndList(
-                        mapping.ItemID,
-                        mapping.ListID,
-                        mapping.CreatedBy,
+                        mapping.itemId,
+                        mapping.listId,
+                        mapping.createdBy,
                     )
                 if (existingMappings.isNotEmpty()) {
                     throw IllegalStateException("mapping already exists")
@@ -44,8 +45,8 @@ class ItemToListLocalDataSource
          * Searches for and returns a single mapping for the given ID
          * @return the mapping if found or null
          */
-        suspend fun read(mappingId: Long): ListMapping? {
-            var dbMapping: ListMapping? = null
+        suspend fun read(mappingId: Long): ItemToList? {
+            var dbMapping: ItemToList? = null
             withContext(Dispatchers.IO) {
                 dbMapping = mappingDao.getMapping(mappingId)
             }
@@ -59,8 +60,8 @@ class ItemToListLocalDataSource
         suspend fun read(
             listId: Long,
             createdBy: Long,
-        ): List<ListMapping> {
-            val foundMappings = mutableListOf<ListMapping>()
+        ): List<ItemToList> {
+            val foundMappings = mutableListOf<ItemToList>()
             withContext(Dispatchers.IO) {
                 val dbMappings = mappingDao.getMappingsForList(listId, createdBy)
 //            Log.d("ItemToListLocalDataSource", "Found ${dbMappings.size} items for list $listId from $createdBy")
@@ -74,19 +75,19 @@ class ItemToListLocalDataSource
          * @throws IllegalStateException if the mapping does not exist
          * @return the id of the updated mapping
          */
-        suspend fun update(mapping: ListMapping): Long {
+        suspend fun update(mapping: ItemToList): Long {
             var updateMappingId = 0L
             withContext(Dispatchers.IO) {
                 var existingMappings =
                     mappingDao.getMappingForItemAndList(
-                        mapping.ItemID,
-                        mapping.ListID,
-                        mapping.CreatedBy,
+                        mapping.itemId,
+                        mapping.listId,
+                        mapping.createdBy,
                     )
                 if (existingMappings.isEmpty()) {
 //                throw IllegalStateException("mapping does not exists")
                     val existingMapping =
-                        mappingDao.getMapping(mapping.ID)
+                        mappingDao.getMapping(mapping.id)
                             ?: throw IllegalStateException("mapping does not exist")
                     existingMappings = listOf(existingMapping)
                 }
@@ -95,9 +96,9 @@ class ItemToListLocalDataSource
                 }
                 // Allows to update the mapping even in cases where the data was received
                 // from remote and the id is not set
-                mapping.ID = existingMappings[0].ID
+                mapping.id = existingMappings[0].id
                 mappingDao.updateMapping(mapping)
-                updateMappingId = mapping.ID
+                updateMappingId = mapping.id
             }
             return updateMappingId
         }
@@ -126,9 +127,9 @@ class ItemToListLocalDataSource
             }
         }
 
-        suspend fun delete(mapping: ListMapping) {
+        suspend fun delete(mapping: ItemToList) {
             withContext(Dispatchers.IO) {
-                mappingDao.deleteMapping(mapping.ID)
+                mappingDao.deleteMapping(mapping.id)
             }
         }
 

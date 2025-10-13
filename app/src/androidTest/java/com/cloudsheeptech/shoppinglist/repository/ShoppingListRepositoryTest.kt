@@ -37,7 +37,11 @@ class ShoppingListRepositoryTest {
             val newShoppingList = shoppingListRepository.create("new list")
             Assert.assertNotNull(newShoppingList)
 
-            val emptyReadList = shoppingListRepository.read(newShoppingList.listId, newShoppingList.createdBy.onlineId)
+            val emptyReadList =
+                shoppingListRepository.read(
+                    newShoppingList.listId,
+                    newShoppingList.createdBy.onlineId,
+                )
             Assert.assertNotNull(emptyReadList)
             Assert.assertEquals(newShoppingList, emptyReadList)
 
@@ -57,7 +61,11 @@ class ShoppingListRepositoryTest {
             shoppingListRepository.update(newListWithItems)
 
             // Offline should always be correct, but online as well?
-            val storedListWithItems = shoppingListRepository.read(newListWithItems.listId, newListWithItems.createdBy.onlineId)
+            val storedListWithItems =
+                shoppingListRepository.read(
+                    newListWithItems.listId,
+                    newListWithItems.createdBy.onlineId,
+                )
             Assert.assertNotNull(storedListWithItems)
             Assert.assertEquals(newListWithItems, storedListWithItems)
         }
@@ -89,7 +97,11 @@ class ShoppingListRepositoryTest {
             shoppingListRepository.update(newListWithItems)
 
             // Offline should always be correct, but online as well?
-            val storedListWithItems = shoppingListRepository.read(newListWithItems.listId, newListWithItems.createdBy.onlineId)
+            val storedListWithItems =
+                shoppingListRepository.read(
+                    newListWithItems.listId,
+                    newListWithItems.createdBy.onlineId,
+                )
             Assert.assertNotNull(storedListWithItems)
             Assert.assertEquals(newListWithItems, storedListWithItems)
         }
@@ -129,15 +141,31 @@ class ShoppingListRepositoryTest {
             shoppingListRepository.update(newListWithItems)
 
             // Offline should always be correct, but online as well?
-            var storedListWithItems = shoppingListRepository.read(newListWithItems.listId, newListWithItems.createdBy.onlineId)
+            var storedListWithItems =
+                shoppingListRepository.read(
+                    newListWithItems.listId,
+                    newListWithItems.createdBy.onlineId,
+                )
             Assert.assertNotNull(storedListWithItems)
             Assert.assertEquals(newListWithItems, storedListWithItems)
 
-            newListWithItems.items.add(ApiItem("new item", "new icon", 1L, false, testUser!!.OnlineID))
+            newListWithItems.items.add(
+                ApiItem(
+                    "new item",
+                    "new icon",
+                    1L,
+                    false,
+                    testUser!!.OnlineID,
+                ),
+            )
             newListWithItems.title = "new title"
             shoppingListRepository.update(newListWithItems)
 
-            storedListWithItems = shoppingListRepository.read(newListWithItems.listId, newListWithItems.createdBy.onlineId)
+            storedListWithItems =
+                shoppingListRepository.read(
+                    newListWithItems.listId,
+                    newListWithItems.createdBy.onlineId,
+                )
             Assert.assertNotNull(storedListWithItems)
             Assert.assertEquals(newListWithItems, storedListWithItems)
         }
@@ -169,12 +197,23 @@ class ShoppingListRepositoryTest {
             shoppingListRepository.update(newListWithItems)
 
             // Offline should always be correct, but online as well?
-            val storedListWithItems = shoppingListRepository.read(newListWithItems.listId, newListWithItems.createdBy.onlineId)
+            val storedListWithItems =
+                shoppingListRepository.read(
+                    newListWithItems.listId,
+                    newListWithItems.createdBy.onlineId,
+                )
             Assert.assertNotNull(storedListWithItems)
             Assert.assertEquals(newListWithItems, storedListWithItems)
 
-            shoppingListRepository.delete(storedListWithItems!!.listId, storedListWithItems.createdBy.onlineId)
-            val deletedListWithItems = shoppingListRepository.read(storedListWithItems.listId, storedListWithItems.createdBy.onlineId)
+            shoppingListRepository.delete(
+                storedListWithItems!!.listId,
+                storedListWithItems.createdBy.onlineId,
+            )
+            val deletedListWithItems =
+                shoppingListRepository.read(
+                    storedListWithItems.listId,
+                    storedListWithItems.createdBy.onlineId,
+                )
             Assert.assertNull(deletedListWithItems)
         }
 }

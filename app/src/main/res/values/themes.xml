@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="VocabularyTheme" parent="Theme.Material3.DynamicColors.DayNight">
+    <style name="AppTheme" parent="Theme.Material3.DynamicColors.DayNight">
         <item name="colorPrimary">@color/app_green_0</item>
         <item name="colorControlHighlight">@color/app_green_700</item>
+        <item name="android:navigationBarColor">@color/app_green_700</item>
+        <item name="statusBarForeground">@color/app_black</item>
+        <item name="statusBarBackground">@color/app_black</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

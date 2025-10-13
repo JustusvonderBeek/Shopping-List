@@ -74,6 +74,11 @@ class ItemRepository
             createdBy: Long,
         ): LiveData<List<AppItem>> = localDataSource.readForListLive(listId, createdBy)
 
+        fun readForList(
+            listId: Long,
+            createdBy: Long,
+        ): List<AppItem> = localDataSource.readForList(listId, createdBy)
+
         /**
          * Stores the new item but only
          * item does not exist

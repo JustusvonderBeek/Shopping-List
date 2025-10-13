@@ -20,7 +20,7 @@ class ShoppingListCRUDHandler
                     title = listTitle,
                     createdBy = createdBy,
                     createdByName = "",
-                    lastUpdated = OffsetDateTime.now(),
+                    synchronized = OffsetDateTime.now(),
                     version = 1L,
                 )
             return super.create(newList)

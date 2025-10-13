@@ -37,12 +37,20 @@ interface ItemDao {
     fun getItemsLive(keys: List<Long>): LiveData<List<DbItem>>
 
     @Query(
-        "SELECT i.id, i.name, i.icon,m.Quantity as quantity ,m.Checked as checked,m.AddedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.ItemID WHERE m.ListID = :listId AND m.CreatedBy = :createdBy",
+        "SELECT i.id, i.name, i.icon,m.quantity as quantity ,m.checked as checked,m.addedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.itemId WHERE m.listId = :listId AND m.createdBy = :createdBy",
     )
     fun getItemsWithQuantityInListLive(
         listId: Long,
         createdBy: Long,
     ): LiveData<List<AppItem>>
+
+    @Query(
+        "SELECT i.id, i.name, i.icon,m.quantity as quantity ,m.checked as checked,m.addedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.itemId WHERE m.listId = :listId AND m.createdBy = :createdBy",
+    )
+    fun getItemsWithQuantityInList(
+        listId: Long,
+        createdBy: Long,
+    ): List<AppItem>
 
     @Query("SELECT * FROM items WHERE name = :name")
     fun getItemFromName(name: String): DbItem?

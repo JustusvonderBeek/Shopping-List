@@ -8,13 +8,13 @@ class ShoppingListMergeHelper {
     companion object {
         @Throws(IllegalArgumentException::class)
         fun getListDelta(
-            existingList: ApiShoppingList,
-            newList: ApiShoppingList,
-        ): Map<ShoppingListOperations, List<ApiItem>> {
+            existingList: ShoppingList,
+            newList: ShoppingList,
+        ): Map<ShoppingListOperation, List<ApiItem>> {
             val addedItems = mutableListOf<ApiItem>()
             val removeItems = mutableListOf<ApiItem>()
             val changedQuantityItems = mutableListOf<ApiItem>()
-            val operationsPerformed = HashMap<ShoppingListOperations, List<ApiItem>>()
+            val operationsPerformed = HashMap<ShoppingListOperation, List<ApiItem>>()
 
             if (existingList.listId != newList.listId) {
                 throw IllegalArgumentException(
@@ -26,11 +26,11 @@ class ShoppingListMergeHelper {
                     "ShoppingListMergeHelper",
                     "existing list ${existingList.title}: ${existingList.listId} has different creator ${existingList.createdBy.onlineId} than new list ${newList.createdBy.onlineId}",
                 )
-                operationsPerformed.put(ShoppingListOperations.CHANGE_CREATOR, emptyList())
+                operationsPerformed.put(ShoppingListOperation.CHANGE_CREATOR, emptyList())
             }
 
             if (existingList.title != newList.title) {
-                operationsPerformed.put(ShoppingListOperations.RENAME_LIST, emptyList())
+                operationsPerformed.put(ShoppingListOperation.RENAME_LIST, emptyList())
             }
 
             val newItems = HashMap<String, ApiItem>()
@@ -50,14 +50,14 @@ class ShoppingListMergeHelper {
 
             addedItems.addAll(newItems.values)
             if (addedItems.isNotEmpty()) {
-                operationsPerformed.put(ShoppingListOperations.ADD_ITEM, addedItems)
+                operationsPerformed.put(ShoppingListOperation.ADD_ITEM, addedItems)
             }
             if (removeItems.isNotEmpty()) {
-                operationsPerformed.put(ShoppingListOperations.REMOVE_ITEM, removeItems)
+                operationsPerformed.put(ShoppingListOperation.REMOVE_ITEM, removeItems)
             }
             if (changedQuantityItems.isNotEmpty()) {
                 operationsPerformed.put(
-                    ShoppingListOperations.CHANGE_QUANTITY,
+                    ShoppingListOperation.CHANGE_QUANTITY,
                     changedQuantityItems,
                 )
             }

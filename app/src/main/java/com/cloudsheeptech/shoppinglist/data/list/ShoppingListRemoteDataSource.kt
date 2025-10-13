@@ -35,7 +35,7 @@ class ShoppingListRemoteDataSource
                     }
             }
 
-        suspend fun create(list: ApiShoppingList): Boolean {
+        suspend fun create(list: ShoppingList): Boolean {
             var success = false
             withContext(Dispatchers.IO) {
                 try {
@@ -73,8 +73,8 @@ class ShoppingListRemoteDataSource
         suspend fun read(
             listId: Long,
             createdBy: Long,
-        ): ApiShoppingList? {
-            var retrievedRemoteList: ApiShoppingList? = null
+        ): ShoppingList? {
+            var retrievedRemoteList: ShoppingList? = null
             withContext(Dispatchers.IO) {
                 networking.get("${UrlProviderEnum.BASE_SHOPPING_LIST_URL.url}/$listId?createdBy=$createdBy") { response ->
                     if (response.status != HttpStatusCode.OK) {
@@ -89,15 +89,15 @@ class ShoppingListRemoteDataSource
                         Log.e("ShoppingListRemoteDataSource", "Remote did not return any list body")
                         return@get
                     }
-                    val onlineList = json.decodeFromString<ApiShoppingList>(rawBody)
+                    val onlineList = json.decodeFromString<ShoppingList>(rawBody)
                     retrievedRemoteList = onlineList
                 }
             }
             return retrievedRemoteList
         }
 
-        suspend fun readAll(): List<ApiShoppingList> {
-            val allRemoteLists = mutableListOf<ApiShoppingList>()
+        suspend fun readAll(): List<ShoppingList> {
+            val allRemoteLists = mutableListOf<ShoppingList>()
             withContext(Dispatchers.IO) {
                 networking.get(UrlProviderEnum.BASE_SHOPPING_LIST_URL.url) { response ->
                     if (response.status != HttpStatusCode.OK) {
@@ -111,7 +111,7 @@ class ShoppingListRemoteDataSource
                             return@get
                         }
                         Log.d("ShoppingListRemoteDataSource", "Received: $rawBody")
-                        val decodedOnlineLists = json.decodeFromString<List<ApiShoppingList>>(rawBody)
+                        val decodedOnlineLists = json.decodeFromString<List<ShoppingList>>(rawBody)
                         allRemoteLists.addAll(decodedOnlineLists)
                     } catch (ex: SerializationException) {
                         Log.e("ShoppingListRemoteDataSource", "Cannot decode remote lists $ex")
@@ -123,7 +123,7 @@ class ShoppingListRemoteDataSource
             return allRemoteLists
         }
 
-        suspend fun update(updatedList: ApiShoppingList): Boolean {
+        suspend fun update(updatedList: ShoppingList): Boolean {
             var success = false
             withContext(Dispatchers.IO) {
                 try {

@@ -1,6 +1,6 @@
 package com.cloudsheeptech.shoppinglist.network
 
-import com.cloudsheeptech.shoppinglist.data.list.ApiShoppingList
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiRecipe
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
@@ -11,7 +11,7 @@ import retrofit2.http.Part
 
 interface ShoppingListAPI {
     @GET("/v1/list/{id}")
-    suspend fun get(id: Long): ApiShoppingList
+    suspend fun get(id: Long): ShoppingList
 
     @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     @Multipart

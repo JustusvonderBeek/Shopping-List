@@ -1,5 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.itemToListMapping
 
+import com.cloudsheeptech.shoppinglist.data.items.ItemToList
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -9,16 +10,16 @@ class ItemToListRepository
     constructor(
         private val localDataSource: ItemToListLocalDataSource,
     ) {
-        suspend fun create(mapping: ListMapping): Long = localDataSource.create(mapping)
+        suspend fun create(mapping: ItemToList): Long = localDataSource.create(mapping)
 
-        suspend fun read(mappingId: Long): ListMapping? = localDataSource.read(mappingId)
+        suspend fun read(mappingId: Long): ItemToList? = localDataSource.read(mappingId)
 
         suspend fun read(
             listId: Long,
             createdBy: Long,
-        ): List<ListMapping> = localDataSource.read(listId, createdBy)
+        ): List<ItemToList> = localDataSource.read(listId, createdBy)
 
-        suspend fun update(mapping: ListMapping): Long = localDataSource.update(mapping)
+        suspend fun update(mapping: ItemToList): Long = localDataSource.update(mapping)
 
         suspend fun setCreatorIdForAllItems(createdBy: Long) = localDataSource.setCreatorIdForAllItems(createdBy)
 
@@ -28,7 +29,7 @@ class ItemToListRepository
 
         suspend fun resetAddedByForOwnLists(addedBy: Long) = localDataSource.resetAddedByForOwnLists(addedBy)
 
-        suspend fun delete(mapping: ListMapping) = localDataSource.delete(mapping)
+        suspend fun delete(mapping: ItemToList) = localDataSource.delete(mapping)
 
         suspend fun delete(
             itemId: Long,

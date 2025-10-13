@@ -56,7 +56,7 @@ class ShoppingListOnlineTest {
             appUserRepo.create("test user")
             val appUser = appUserRepo.read()!!
             val newListWithoutItems =
-                ApiShoppingList(
+                ShoppingList(
                     0L,
                     "list without titles",
                     ListCreator(appUser.OnlineID, appUser.Username),
@@ -69,7 +69,7 @@ class ShoppingListOnlineTest {
             assert(success)
 
             val listWithItems =
-                ApiShoppingList(
+                ShoppingList(
                     12L,
                     "list with items",
                     ListCreator(appUser.OnlineID, appUser.Username),
@@ -101,7 +101,7 @@ class ShoppingListOnlineTest {
             val appUser = appUserRepo.read()!!
 
             val listWithItems =
-                ApiShoppingList(
+                ShoppingList(
                     12L,
                     "list with items",
                     ListCreator(appUser.OnlineID, appUser.Username),
@@ -140,7 +140,7 @@ class ShoppingListOnlineTest {
             val appUser = appUserRepo.read()!!
 
             val listWithItems =
-                ApiShoppingList(
+                ShoppingList(
                     12L,
                     "list with items",
                     ListCreator(appUser.OnlineID, appUser.Username),
@@ -202,7 +202,7 @@ class ShoppingListOnlineTest {
             val appUser = appUserRepo.read()!!
 
             val listWithItems =
-                ApiShoppingList(
+                ShoppingList(
                     12L,
                     "list with items",
                     ListCreator(appUser.OnlineID, appUser.Username),
@@ -250,7 +250,7 @@ class ShoppingListOnlineTest {
             val appUser = appUserRepo.read()!!
 
             val listWithItems =
-                ApiShoppingList(
+                ShoppingList(
                     12L,
                     "list with items",
                     ListCreator(appUser.OnlineID, appUser.Username),

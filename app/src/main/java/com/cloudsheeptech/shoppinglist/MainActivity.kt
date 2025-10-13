@@ -2,10 +2,14 @@ package com.cloudsheeptech.shoppinglist
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
+import android.view.Window
+import android.view.WindowInsetsController
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
@@ -64,9 +68,11 @@ class MainActivity : AppCompatActivity() {
                     // the registration which would be BAD
                     botNav.visibility = View.GONE
                 }
+
                 R.id.createShoppinglistFragment, R.id.shoppinglist, R.id.configFragment -> {
                     botNav.menu.findItem(R.id.fragment_overview).isChecked = true
                 }
+
                 R.id.receiptsOverview, R.id.receipt, R.id.listPickerFragment, R.id.receiptEditFragment -> {
                     botNav.menu.findItem(R.id.receiptsOverview).isChecked = true
                 }
@@ -87,6 +93,30 @@ class MainActivity : AppCompatActivity() {
                 override fun onPreDraw(): Boolean = appUserRepository.loaded()
             },
         )
+    }
+
+    fun setColoredStatusBar(
+        window: Window,
+        color: Int,
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.apply {
+                isNavigationBarContrastEnforced = false
+                // Disable contrast enforcement if needed
+                insetsController?.setSystemBarsAppearance(
+                    0, // No special appearance
+                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+                        WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+                )
+                // Force black color for the navigation bar
+                decorView.setBackgroundColor(color)
+            }
+        } else {
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.statusBarColor = color
+            window.decorView.systemUiVisibility = 0
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

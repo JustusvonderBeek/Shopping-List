@@ -58,6 +58,11 @@ class ItemLocalDataSource
             createdBy: Long,
         ) = itemDao.getItemsWithQuantityInListLive(listId, createdBy)
 
+        fun readForList(
+            listId: Long,
+            createdBy: Long,
+        ) = itemDao.getItemsWithQuantityInList(listId, createdBy)
+
         /**
          * Creating a new item in the database.
          * Creates the item only if no other item with the same characters (case-insensitive)

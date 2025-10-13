@@ -69,7 +69,7 @@ class ListOperationTests {
                 title = "1",
                 createdBy = 12,
                 createdByName = "",
-                lastUpdated = OffsetDateTime.now(),
+                synchronized = OffsetDateTime.now(),
                 version = 1L,
             )
         sl.updateList(list)
@@ -89,7 +89,7 @@ class ListOperationTests {
                 title = "1",
                 createdBy = 12,
                 createdByName = "",
-                lastUpdated = OffsetDateTime.now(),
+                synchronized = OffsetDateTime.now(),
                 version = 1L,
             )
         val list2 =
@@ -98,7 +98,7 @@ class ListOperationTests {
                 title = "2",
                 createdBy = 12,
                 createdByName = "",
-                lastUpdated = OffsetDateTime.now(),
+                synchronized = OffsetDateTime.now(),
                 version = 1L,
             )
         sl.insertList(list)
@@ -121,7 +121,7 @@ class ListOperationTests {
                 title = "1",
                 createdBy = 12,
                 createdByName = "",
-                lastUpdated = OffsetDateTime.now(),
+                synchronized = OffsetDateTime.now(),
                 version = 1L,
             )
         sl.insertList(list)

@@ -10,9 +10,9 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.AutoMigrationSpec
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemListMappingDao
-import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ListMapping
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemDao
+import com.cloudsheeptech.shoppinglist.data.items.ItemToList
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListDao
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
@@ -41,7 +41,7 @@ import javax.inject.Singleton
 @Database(
     version = 36,
     entities = [
-        DbShoppingList::class, DbItem::class, ListMapping::class, AppUser::class,
+        DbShoppingList::class, DbItem::class, ItemToList::class, AppUser::class,
         ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class,
         ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class,
     ],

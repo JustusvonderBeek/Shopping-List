@@ -1,9 +1,9 @@
 package com.cloudsheeptech.shoppinglist
 
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
-import com.cloudsheeptech.shoppinglist.data.list.ApiShoppingList
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingList
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListMergeHelper
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListOperations
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListOperation
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import org.junit.Assert
 import org.junit.Test
@@ -18,10 +18,10 @@ class ShoppingListMergeHelperTest {
         return item
     }
 
-    private fun createDefaultList(numItems: Int): ApiShoppingList {
+    private fun createDefaultList(numItems: Int): ShoppingList {
         val creatorId = 234L
         val list =
-            ApiShoppingList(
+            ShoppingList(
                 1L,
                 "list 1",
                 ListCreator(creatorId, "username"),
@@ -48,17 +48,17 @@ class ShoppingListMergeHelperTest {
         newList.items.add(newItem)
 
         val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
-        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.ADD_ITEM))
-        Assert.assertNotNull(operationsPerformed.get(ShoppingListOperations.ADD_ITEM))
-        Assert.assertEquals(1, operationsPerformed.get(ShoppingListOperations.ADD_ITEM)!!.size)
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.ADD_ITEM))
+        Assert.assertNotNull(operationsPerformed.get(ShoppingListOperation.ADD_ITEM))
+        Assert.assertEquals(1, operationsPerformed.get(ShoppingListOperation.ADD_ITEM)!!.size)
         Assert.assertEquals(
             listOf(newItem),
-            operationsPerformed.get(ShoppingListOperations.ADD_ITEM),
+            operationsPerformed.get(ShoppingListOperation.ADD_ITEM),
         )
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.REMOVE_ITEM))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_QUANTITY))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.RENAME_LIST))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_CREATOR))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.REMOVE_ITEM))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.CHANGE_QUANTITY))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.RENAME_LIST))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.CHANGE_CREATOR))
     }
 
     @Test
@@ -69,17 +69,17 @@ class ShoppingListMergeHelperTest {
         val removedItem = newList.items.removeAt(1)
 
         val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
-        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.REMOVE_ITEM))
-        Assert.assertNotNull(operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM))
-        Assert.assertEquals(1, operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM)!!.size)
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.REMOVE_ITEM))
+        Assert.assertNotNull(operationsPerformed.get(ShoppingListOperation.REMOVE_ITEM))
+        Assert.assertEquals(1, operationsPerformed.get(ShoppingListOperation.REMOVE_ITEM)!!.size)
         Assert.assertEquals(
             listOf(removedItem),
-            operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM),
+            operationsPerformed.get(ShoppingListOperation.REMOVE_ITEM),
         )
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.ADD_ITEM))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_QUANTITY))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.RENAME_LIST))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_CREATOR))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.ADD_ITEM))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.CHANGE_QUANTITY))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.RENAME_LIST))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.CHANGE_CREATOR))
     }
 
     @Test
@@ -90,11 +90,11 @@ class ShoppingListMergeHelperTest {
         newList.title = "super duper new title"
 
         val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
-        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.RENAME_LIST))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.ADD_ITEM))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_QUANTITY))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.REMOVE_ITEM))
-        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperations.CHANGE_CREATOR))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.RENAME_LIST))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.ADD_ITEM))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.CHANGE_QUANTITY))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.REMOVE_ITEM))
+        Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.CHANGE_CREATOR))
     }
 
     @Test
@@ -140,38 +140,38 @@ class ShoppingListMergeHelperTest {
         newList.createdBy.onlineId = 665544L
 
         val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
-        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.RENAME_LIST))
-        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.CHANGE_CREATOR))
-        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.ADD_ITEM))
-        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.REMOVE_ITEM))
-        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperations.CHANGE_QUANTITY))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.RENAME_LIST))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.CHANGE_CREATOR))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.ADD_ITEM))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.REMOVE_ITEM))
+        Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.CHANGE_QUANTITY))
 
-        Assert.assertEquals(0, operationsPerformed.get(ShoppingListOperations.RENAME_LIST)!!.size)
+        Assert.assertEquals(0, operationsPerformed.get(ShoppingListOperation.RENAME_LIST)!!.size)
         Assert.assertEquals(
             0,
-            operationsPerformed.get(ShoppingListOperations.CHANGE_CREATOR)!!.size,
+            operationsPerformed.get(ShoppingListOperation.CHANGE_CREATOR)!!.size,
         )
         Assert.assertEquals(
             addedItems.size,
-            operationsPerformed.get(ShoppingListOperations.ADD_ITEM)!!.size,
+            operationsPerformed.get(ShoppingListOperation.ADD_ITEM)!!.size,
         )
         Assert.assertEquals(
             removedItems.size,
-            operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM)!!.size,
+            operationsPerformed.get(ShoppingListOperation.REMOVE_ITEM)!!.size,
         )
         Assert.assertEquals(
             changedQuantityItems.size,
-            operationsPerformed.get(ShoppingListOperations.CHANGE_QUANTITY)!!.size,
+            operationsPerformed.get(ShoppingListOperation.CHANGE_QUANTITY)!!.size,
         )
         Assert.assertTrue(
-            operationsPerformed.get(ShoppingListOperations.ADD_ITEM)!!.containsAll(addedItems),
+            operationsPerformed.get(ShoppingListOperation.ADD_ITEM)!!.containsAll(addedItems),
         )
         Assert.assertTrue(
-            operationsPerformed.get(ShoppingListOperations.REMOVE_ITEM)!!.containsAll(removedItems),
+            operationsPerformed.get(ShoppingListOperation.REMOVE_ITEM)!!.containsAll(removedItems),
         )
         Assert.assertTrue(
             operationsPerformed
-                .get(ShoppingListOperations.CHANGE_QUANTITY)!!
+                .get(ShoppingListOperation.CHANGE_QUANTITY)!!
                 .containsAll(changedQuantityItems),
         )
     }

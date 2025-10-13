@@ -31,7 +31,6 @@ class ShoppingListRepository
         private val remoteApi: ShoppingListRemoteDataSource,
         private val userRepository: AppUserRepository,
     ) {
-        // TODO: This should only ever happen once after the creation of a new user
         init {
             CoroutineScope(Dispatchers.Main + Job()).launch {
                 Log.d("ShoppingListRepository", "Starting updating process")
@@ -43,7 +42,7 @@ class ShoppingListRepository
         // Creation of a new list + Insertion + Update
         // ------------------------------------------------------------------------------
 
-        private fun updateListCreatedBy(list: ApiShoppingList) {
+        private fun updateListCreatedBy(list: ShoppingList) {
             if (list.createdBy.onlineId != 0L) {
                 return
             }
@@ -54,22 +53,22 @@ class ShoppingListRepository
             list.items.map { item -> item.addedBy = user.OnlineID }
         }
 
-        suspend fun create(title: String): ApiShoppingList {
+        suspend fun create(title: String): ShoppingList {
             val now = OffsetDateTime.now()
             val newList =
-                ApiShoppingList(
+                ShoppingList(
                     listId = 0L,
                     title = title,
                     createdBy = ListCreator(0, ""),
                     createdAt = now,
-                    lastUpdated = now,
+                    synchronized = now,
                     items = mutableListOf(),
                     1L,
                 )
             updateListCreatedBy(newList)
             val createdByBeforeOnlineOperation = newList.createdBy
-            val newListId = localDataSource.createOrUpdate(newList)
-            newList.listId = newListId
+            val newListIdAndVersion = localDataSource.createOrUpdate(newList)
+            newList.listId = newListIdAndVersion.first
             try {
                 val success = remoteApi.create(newList)
                 if (!success) {
@@ -90,7 +89,7 @@ class ShoppingListRepository
             return newList
         }
 
-        private suspend fun createRemote(list: ApiShoppingList): Boolean {
+        private suspend fun createRemote(list: ShoppingList): Boolean {
             try {
                 return remoteApi.create(list)
             } catch (ex: IllegalArgumentException) {
@@ -104,8 +103,8 @@ class ShoppingListRepository
         suspend fun read(
             listId: Long,
             createdBy: Long,
-        ): ApiShoppingList? {
-            var latestList: ApiShoppingList? = null
+        ): ShoppingList? {
+            var latestList: ShoppingList? = null
             try {
                 val storedList = localDataSource.read(listId, createdBy)
                 val remoteList = remoteApi.read(listId, createdBy)
@@ -150,15 +149,15 @@ class ShoppingListRepository
          * @return The list with the highest version. If both versions are equal list1 is returned
          */
         private fun compareAndGetLatestList(
-            list1: ApiShoppingList,
-            list2: ApiShoppingList,
-        ): ApiShoppingList =
+            list1: ShoppingList,
+            list2: ShoppingList,
+        ): ShoppingList =
             when (list1.compare(list2)) {
                 -1 -> list2
                 else -> list1
             }
 
-        suspend fun readAllOwn(): List<ApiShoppingList> = localDataSource.readAll()
+        suspend fun readAllOwn(): List<ShoppingList> = localDataSource.readAll()
 
         suspend fun readAllRemote() {
             try {
@@ -202,7 +201,7 @@ class ShoppingListRepository
             return exists
         }
 
-        suspend fun update(list: ApiShoppingList): Boolean {
+        suspend fun update(list: ShoppingList): Boolean {
             val onlineIdBeforeUpdate = list.createdBy.onlineId
             list.version++
             var migratedListToNewId = false
@@ -225,7 +224,7 @@ class ShoppingListRepository
             return migratedListToNewId
         }
 
-        private suspend fun updateListOnlineAndRetryOnFailure(list: ApiShoppingList) {
+        private suspend fun updateListOnlineAndRetryOnFailure(list: ShoppingList) {
             var success = remoteApi.update(list)
             if (!success) {
                 updateListCreatedBy(list)

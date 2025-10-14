@@ -5,14 +5,12 @@ import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListRepository
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
-import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
 import com.cloudsheeptech.shoppinglist.data.items.ItemToList
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListConversionHelper.Companion.toApiItem
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListConversionHelper.Companion.toApiList
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListConversionHelper.Companion.toAppItem
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListConversionHelper.Companion.toDbList
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListConversionHelper.Companion.toListMapping
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
@@ -42,64 +40,47 @@ class ShoppingListLocalDataSource
 
         /**
          * This function creates a new shopping list in the local database
-         * @return Pair of listId and version of the newly created or updated list
-         * @exception IllegalArgumentException in case the list already exists
-         * @exception IllegalStateException in case creating the list in the db failed
+         * @param newList expecting a new list with listId == 0; a new listId will be generated
+         * by this function!
+         * @return The newly inserted list with updated listId
+         * @exception IllegalStateException in case the list already exists
+         * @exception IllegalArgumentException if the listId != 0
          */
         @Throws(IllegalArgumentException::class, IllegalStateException::class)
-        suspend fun createOrUpdate(listForCreationOrUpdate: ShoppingList): Pair<Long, Long> {
-            var listIdAfterInsertion = listForCreationOrUpdate.listId
-            var version = 1L
-            withContext(Dispatchers.IO) {
-                // Differentiate between new and existing list
-                if (listDao.exists(
-                        listForCreationOrUpdate.listId,
-                        listForCreationOrUpdate.createdBy.onlineId,
+        suspend fun create(newList: ShoppingList): ShoppingList {
+            return withContext(Dispatchers.IO) {
+                if (listDao.listExists(
+                        newList.listId,
+                        newList.createdBy.onlineId,
                     )
                 ) {
-                    version = update(listForCreationOrUpdate)
-                    listIdAfterInsertion = listForCreationOrUpdate.listId
-                    return@withContext
+                    throw IllegalStateException("list $newList exists")
                 }
 
+                // Break reference to outside list
+                val copiedList = newList.copy()
                 // Update the id to the latest available ID if the list was created locally
-                val listForCreation = listForCreationOrUpdate.copy()
-                listIdAfterInsertion = createListIdForNewLocalList(listForCreation)
-                if (listIdAfterInsertion < 0L) {
-                    listIdAfterInsertion = listForCreation.listId
-                }
-                // Correctly return version of remote list
-                if (!isListFromLocalUser(listForCreation)) {
-                    version = listForCreation.version
+                val newListId = createListIdForNewLocalList(copiedList)
+                if (newListId < 0) {
+                    throw IllegalArgumentException("list $copiedList is not a new list from local user")
                 }
 
-                // We split the list from one single object into 2 parts: basic list and items
-                val (listForCreationInDatabaseFormat, itemsForCreationInDatabaseFormat) = listForCreation.toDbList()
-                val totalTableRows = listDao.insertList(listForCreationInDatabaseFormat)
-                if (totalTableRows == -1L) {
-                    Log.e(
-                        "ShoppingListLocalDataSource",
-                        "Failed to insert list '${listForCreation.title}': ${listForCreation.listId}",
-                    )
-                    throw IllegalStateException("Failed to insert list '${listForCreation.title}': ${listForCreation.listId}")
+                val listId = listDao.insertList(copiedList)
+                if (listId != copiedList.listId) {
+                    // Something in my programming went wrong
+                    throw Error("list $newList got new id during insertion")
                 }
-                Log.i(
-                    "ShoppingListHandler",
-                    "Stored new list '${listForCreationInDatabaseFormat.title}': ${listForCreationInDatabaseFormat.listId} in database",
-                )
-
-                // Insert the items in case we received a remote list which is already populated
-                insertItems(itemsForCreationInDatabaseFormat, listForCreation)
-                Log.d(
-                    "ShoppingListHandler",
-                    "Inserted list '${listForCreationOrUpdate.title}': ${listForCreationOrUpdate.listId} from ${listForCreationOrUpdate.createdBy.onlineId} with ${itemsForCreationInDatabaseFormat.size} items successfully into database",
-                )
+                val insertedList = listDao.getList(listId, newList.createdBy.onlineId)
+                    ?: throw IllegalStateException("failed to insert $newList - cannot find list after insertion")
+                return@withContext insertedList
             }
-            return Pair(listIdAfterInsertion, version)
         }
 
     private suspend fun createListIdForNewLocalList(list: ShoppingList): Long {
-            if (!isNewList(list) || !isListFromLocalUser(list)) {
+        if (!isNewList(list) && !isListFromLocalUser(list)) {
+            return 0L
+        }
+        if (!isNewList(list) && isListFromLocalUser(list)) {
                 return -1L
             }
             list.listId = getUniqueShoppingListID(list.createdBy.onlineId)
@@ -128,33 +109,105 @@ class ShoppingListLocalDataSource
 
     private fun isNewList(list: ShoppingList): Boolean = list.listId == 0L
 
-        private suspend fun insertItems(
-            itemsForInsertion: List<DbItem>,
-            insertedItemsInApiFormat: ShoppingList,
-        ) {
-            itemsForInsertion.forEachIndexed { index, item ->
-                val apiItem = insertedItemsInApiFormat.items[index]
-                val itemIdAfterInsertionOrUpdate =
-                    try {
-                        itemRepository.create(item)
-                    } catch (_: IllegalStateException) {
-                        itemRepository.update(item)
-                    }
 
-                val listMapping =
-                    apiItem.toListMapping(
-                        itemIdAfterInsertionOrUpdate,
-                        insertedItemsInApiFormat.listId,
-                        insertedItemsInApiFormat.createdBy.onlineId,
-                    )
+    suspend fun applyUpdates(operations: List<ShoppingListOperation>): ShoppingList? {
+        return withContext(Dispatchers.IO) {
+            var finalList: ShoppingList? = null
+            for (operation in operations) {
+                finalList = update(operation)
+            }
+            return@withContext finalList
+        }
+    }
 
-                try {
-                    itemToListRepository.create(listMapping)
-                } catch (_: IllegalStateException) {
-                    itemToListRepository.update(listMapping)
-                } catch (_: IllegalArgumentException) {
-                    itemToListRepository.update(listMapping)
+    suspend fun update(operation: ShoppingListOperation): ShoppingList? {
+        var listPk: ShoppingListPK
+        return withContext(Dispatchers.IO) {
+            when (operation) {
+                is ShoppingListOperation.AddItem -> {
+                    val itemToAdd = operation.item
+                    listDao.addItem(itemToAdd, operation.listPk.listId, operation.listPk.createdBy)
+                    listPk = operation.listPk
                 }
+
+                is ShoppingListOperation.ChangeQuantityOfItem -> {
+                    val listItems =
+                        listDao.getItems(operation.listPk.listId, operation.listPk.createdBy)
+                    val itemToUpdate = listItems.find { item -> item.id == operation.itemId }
+                    if (itemToUpdate == null) {
+                        throw IllegalArgumentException("item ${operation.itemId} is not contained in list ${operation.listPk}")
+                    }
+                    if (operation.quantity != null) {
+                        itemToUpdate.quantity = operation.quantity
+                    }
+                    if (operation.quantityType != null) {
+                        itemToUpdate.quantityType = operation.quantityType
+                    }
+                    listDao.updateItem(
+                        itemToUpdate,
+                        operation.listPk.listId,
+                        operation.listPk.createdBy
+                    )
+                    listPk = operation.listPk
+                }
+
+                is ShoppingListOperation.Create -> {
+                    val newList = ShoppingList(
+                        listId = 0L,
+                        createdBy = operation.creator,
+                        title = operation.title,
+                        synchronized = OffsetDateTime.now(),
+                        items = operation.items.toMutableList()
+                    )
+                    val newListId = listDao.insertList(newList)
+                    listPk = ShoppingListPK(newListId, operation.creator.onlineId)
+                }
+
+                is ShoppingListOperation.RemoveItemById -> {
+                    val listItems =
+                        listDao.getItems(operation.listPk.listId, operation.listPk.createdBy)
+                    val itemToRemove = listItems.find { item -> item.id == operation.itemId }
+                    if (itemToRemove != null) {
+                        listDao.removeItem(
+                            itemToRemove,
+                            operation.listPk.listId,
+                            operation.listPk.createdBy
+                        )
+                    }
+                    listPk = operation.listPk
+                }
+
+                is ShoppingListOperation.RemoveItemByName -> {
+                    val listItems =
+                        listDao.getItems(operation.listPk.listId, operation.listPk.createdBy)
+                    val itemToRemove = listItems.find { item ->
+                        item.name.lowercase().equals(operation.itemName.lowercase())
+                    }
+                    if (itemToRemove != null) {
+                        listDao.removeItem(
+                            itemToRemove,
+                            operation.listPk.listId,
+                            operation.listPk.createdBy
+                        )
+                    }
+                    listPk = operation.listPk
+                }
+
+                is ShoppingListOperation.RenameList -> {
+                    listDao.updateListTitle(
+                        operation.newName,
+                        operation.listPk.listId,
+                        operation.listPk.createdBy
+                    )
+                    listPk = operation.listPk
+                }
+
+                is ShoppingListOperation.Delete -> {
+                    listDao.deleteList(operation.listPk.listId, operation.listPk.createdBy)
+                    return@withContext null
+                }
+                }
+            return@withContext listDao.getList(listPk.listId, listPk.createdBy)
             }
         }
 
@@ -169,39 +222,10 @@ class ShoppingListLocalDataSource
             listId: Long,
             createdBy: Long,
         ): ShoppingList? {
-            var offlineList: ShoppingList? = null
-            withContext(Dispatchers.IO) {
-                val shoppingListBase = listDao.getShoppingList(listId, createdBy) ?: return@withContext
-                val user =
-                    userRepository.read() ?: throw IllegalStateException("user null after login")
-                var username = user.Username
-                if (user.OnlineID != createdBy) {
-                    val onlineUser = onlineUserRepository.read(createdBy)
-                    username = onlineUser?.username ?: ""
-                }
-                offlineList = shoppingListBase.toApiList(ListCreator(createdBy, username))
-                // Combine the mapping and item information to craft the item list
-                val mappings = itemToListRepository.read(listId, createdBy)
-                if (mappings.isEmpty()) {
-                    Log.d(
-                        "ShoppingListLocalDataSource",
-                        "No items found for list $listId from $createdBy",
-                    )
-                    return@withContext
-                }
-                val apiItems =
-                    mappings.map { mapping ->
-                        val apiItem = mapping.toApiItem()
-                        val itemInfo =
-                            itemRepository.read(mapping.itemId)
-                                ?: throw IllegalStateException("mapped item not stored in database")
-                        apiItem.name = itemInfo.name
-                        apiItem.icon = itemInfo.icon
-                        apiItem
-                    }
-                offlineList.items.addAll(apiItems)
+            return withContext(Dispatchers.IO) {
+                val currentList = listDao.getList(listId, createdBy)
+                return@withContext currentList
             }
-            return offlineList
         }
 
         /**
@@ -349,11 +373,11 @@ class ShoppingListLocalDataSource
         operation: ShoppingListOperation
     ): ShoppingList {
         when (operation) {
-            is ShoppingListOperation.Add -> {
+            is ShoppingListOperation.AddItem -> {
                 listToUpdate?.items?.add(operation.item.toApiItem())
             }
 
-            is ShoppingListOperation.ChangeQuantity -> {
+            is ShoppingListOperation.ChangeQuantityOfItem -> {
                 listToUpdate?.items?.map { item ->
                     if (item.name == "TODO") {
                         item.quantity = operation.quantity
@@ -366,9 +390,9 @@ class ShoppingListLocalDataSource
             }
 
             is ShoppingListOperation.Delete -> TODO()
-            is ShoppingListOperation.RemoveById -> TODO()
-            is ShoppingListOperation.RemoveByName -> TODO()
-            is ShoppingListOperation.Rename -> TODO()
+            is ShoppingListOperation.RemoveItemById -> TODO()
+            is ShoppingListOperation.RemoveItemByName -> TODO()
+            is ShoppingListOperation.RenameList -> TODO()
         }
     }
 

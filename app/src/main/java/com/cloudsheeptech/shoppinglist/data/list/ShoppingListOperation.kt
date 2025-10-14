@@ -1,37 +1,44 @@
 package com.cloudsheeptech.shoppinglist.data.list
 
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
+import com.cloudsheeptech.shoppinglist.data.items.QuantityType
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 
 sealed class ShoppingListOperation {
     data class Create(
-        val name: String,
+        val title: String,
         val creator: ListCreator,
         val items: List<AppItem>,
     ) : ShoppingListOperation()
 
-    data class Add(
+    data class AddItem(
         val item: AppItem,
+        val listPk: ShoppingListPK,
     ) : ShoppingListOperation()
 
-    data class RemoveByName(
+    data class RemoveItemByName(
         val itemName: String,
+        val listPk: ShoppingListPK,
     ) : ShoppingListOperation()
 
-    data class RemoveById(
-        val id: Long,
+    data class RemoveItemById(
+        val itemId: Long,
+        val listPk: ShoppingListPK,
     ) : ShoppingListOperation()
 
-    data class Rename(
+    data class ChangeQuantityOfItem(
+        val itemId: Long,
+        val quantity: Long?,
+        val quantityType: QuantityType?,
+        val listPk: ShoppingListPK,
+    ) : ShoppingListOperation()
+
+    data class RenameList(
         val newName: String,
-    ) : ShoppingListOperation()
-
-    data class ChangeQuantity(
-        val id: Long,
-        val quantity: Long,
+        val listPk: ShoppingListPK,
     ) : ShoppingListOperation()
 
     data class Delete(
-        val listId: Long,
+        val listPk: ShoppingListPK,
     ) : ShoppingListOperation()
 }

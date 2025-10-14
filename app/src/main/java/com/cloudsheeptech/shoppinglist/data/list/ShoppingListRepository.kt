@@ -20,8 +20,7 @@ import javax.inject.Singleton
 /**
  * This class implements the main handling of app wide shopping lists.
  * This includes the creation of new lists in a displayable format
- * and the deserialization from an API list to into the individual parts
- * that can be stored by the application.
+ * and updating individual parts of the list
  */
 @Singleton
 class ShoppingListRepository
@@ -39,36 +38,31 @@ class ShoppingListRepository
         }
 
         // ------------------------------------------------------------------------------
-        // Creation of a new list + Insertion + Update
+        // Creation of a new list
         // ------------------------------------------------------------------------------
-
-        private fun updateListCreatedBy(list: ShoppingList) {
-            if (list.createdBy.onlineId != 0L) {
-                return
-            }
-            val user =
-                userRepository.read() ?: throw IllegalStateException("user null after login screen")
-            list.createdBy.onlineId = user.OnlineID
-            list.createdBy.username = user.Username
-            list.items.map { item -> item.addedBy = user.OnlineID }
-        }
 
         suspend fun create(title: String): ShoppingList {
             val now = OffsetDateTime.now()
-            val newList =
+            var newList =
                 ShoppingList(
-                    listId = 0L,
-                    title = title,
+                    listId = 0L, // Created by DB
                     createdBy = ListCreator(0, ""),
-                    createdAt = now,
+                    title = title,
                     synchronized = now,
                     items = mutableListOf(),
-                    1L,
                 )
             updateListCreatedBy(newList)
+
             val createdByBeforeOnlineOperation = newList.createdBy
-            val newListIdAndVersion = localDataSource.createOrUpdate(newList)
-            newList.listId = newListIdAndVersion.first
+            try {
+                newList = localDataSource.create(newList)
+            } catch (ex: IllegalArgumentException) {
+                Log.e("ShoppingListRepository", "Failed insertion: $ex")
+                return newList
+            } catch (ex: IllegalStateException) {
+                Log.e("ShoppingListRepository", "Failed insertion: $ex")
+                return newList
+            }
             try {
                 val success = remoteApi.create(newList)
                 if (!success) {
@@ -88,6 +82,17 @@ class ShoppingListRepository
             }
             return newList
         }
+
+        private fun updateListCreatedBy(list: ShoppingList) {
+            if (list.createdBy.onlineId != 0L) {
+                return
+            }
+            val user =
+                userRepository.read() ?: throw IllegalStateException("user null after login screen")
+            list.createdBy.onlineId = user.OnlineID
+            list.createdBy.username = user.Username
+            list.items.map { item -> item.addedBy = user.OnlineID }
+    }
 
         private suspend fun createRemote(list: ShoppingList): Boolean {
             try {
@@ -130,7 +135,7 @@ class ShoppingListRepository
                     latestList = compareAndGetLatestList(storedList, remoteList)
                 }
                 // We don't want to propagate an update we just received back online
-                localDataSource.createOrUpdate(latestList!!)
+                localDataSource.create(latestList!!)
                 Log.d(
                     "ShoppingListRepository",
                     "Updated List $listId from $createdBy to latest version ${latestList.version}",
@@ -172,9 +177,9 @@ class ShoppingListRepository
                         "List ${remoteList.listId} from ${remoteList.createdBy.onlineId} exists: $exists",
                     )
                     if (!exists) {
-                        localDataSource.createOrUpdate(remoteList)
+                        localDataSource.create(remoteList)
                     } else {
-                        localDataSource.createOrUpdate(remoteList)
+                        localDataSource.create(remoteList)
                     }
                 }
             } catch (ex: Exception) {
@@ -206,7 +211,7 @@ class ShoppingListRepository
             list.version++
             var migratedListToNewId = false
             try {
-                localDataSource.createOrUpdate(list)
+                localDataSource.create(list)
                 updateListOnlineAndRetryOnFailure(list)
                 if (list.createdBy.onlineId != onlineIdBeforeUpdate) {
                     migratedListToNewId = true

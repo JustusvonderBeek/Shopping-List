@@ -41,7 +41,7 @@ data class AppItem(
         fun fromBaseAndMapping(
             baseItem: DbItem,
             mapping: ItemToList,
-        ): AppItem {
+        ): AppItem =
             AppItem(
                 id = baseItem.id,
                 name = baseItem.name,
@@ -51,6 +51,5 @@ data class AppItem(
                 checked = mapping.checked,
                 addedBy = mapping.addedBy,
             )
-        }
     }
 }

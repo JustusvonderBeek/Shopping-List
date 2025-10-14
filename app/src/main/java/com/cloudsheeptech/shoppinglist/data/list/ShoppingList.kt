@@ -19,8 +19,8 @@ data class ShoppingList(
     @Contextual
     var synchronized: OffsetDateTime,
     var items: MutableList<AppItem> = mutableListOf(),
-) : EntityIdentifier<Pair<Long, Long>> {
-    override fun getId(): Pair<Long, Long> = Pair(listId, createdBy.onlineId)
+) : EntityIdentifier<ShoppingListPK> {
+    override fun getId(): ShoppingListPK = ShoppingListPK(listId, createdBy.onlineId)
 
     fun toEntities(): Triple<DbShoppingList, List<DbItem>, List<ItemToList>> {
         val dbList =
@@ -64,4 +64,6 @@ data class ShoppingList(
         result = 31 * result + items.hashCode()
         return result
     }
+
+    override fun toString(): String = "$title ($listId,${createdBy.onlineId})"
 }

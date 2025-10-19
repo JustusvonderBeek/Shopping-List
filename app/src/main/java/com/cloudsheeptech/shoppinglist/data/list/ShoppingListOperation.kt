@@ -16,6 +16,11 @@ sealed class ShoppingListOperation {
         val listPk: ShoppingListPK,
     ) : ShoppingListOperation()
 
+    data class AddItemById(
+        val itemId: Long,
+        val listPk: ShoppingListPK,
+    ) : ShoppingListOperation()
+
     data class RemoveItemByName(
         val itemName: String,
         val listPk: ShoppingListPK,
@@ -28,9 +33,15 @@ sealed class ShoppingListOperation {
 
     data class ChangeQuantityOfItem(
         val itemId: Long,
-        val quantity: Long?,
+        val quantity: Long,
         val quantityType: QuantityType?,
         val listPk: ShoppingListPK,
+    ) : ShoppingListOperation()
+
+    data class SetItemCheckedStatus(
+        val itemId: Long,
+        val status: ItemToggleStatus = ItemToggleStatus.TOGGLE,
+        val listPK: ShoppingListPK,
     ) : ShoppingListOperation()
 
     data class RenameList(

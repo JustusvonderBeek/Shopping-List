@@ -10,10 +10,12 @@ import androidx.room.Update
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemToList
+import com.cloudsheeptech.shoppinglist.data.items.QuantityType
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 /**
@@ -54,7 +56,6 @@ interface ShoppingListDao {
     /**
      * @return The list including items in the App format or null if not found
      */
-    @Transaction
     suspend fun getList(
         listId: Long,
         createdBy: Long,
@@ -101,6 +102,27 @@ interface ShoppingListDao {
     @Query("SELECT * FROM items WHERE id in (:id)")
     fun getBaseItems(id: List<Long>): List<DbItem>
 
+    suspend fun getAllLists(): List<ShoppingList> {
+        val baseLists = getBaseLists()
+        val allLists = mutableListOf<ShoppingList>()
+        for (list in baseLists) {
+            val listItems = getItems(list.listId, list.createdBy)
+            allLists.add(
+                ShoppingList(
+                    listId = list.listId,
+                    createdBy = ListCreator(list.createdBy, "TODO"),
+                    title = list.title,
+                    synchronized = list.synchronized,
+                    items = listItems.toMutableList(),
+                ),
+            )
+        }
+        return allLists
+    }
+
+    @Query("SELECT * FROM list_table")
+    suspend fun getBaseLists(): List<DbShoppingList>
+
     @Transaction
     suspend fun addItem(
         item: AppItem,
@@ -112,6 +134,29 @@ interface ShoppingListDao {
             val itemId = insertItem(baseItem)
             itemMapping.itemId = itemId
         }
+        insertItemMapping(itemMapping)
+    }
+
+    suspend fun addItemById(
+        itemId: Long,
+        userId: Long,
+        listId: Long,
+        createdBy: Long,
+    ) {
+        val item = getBaseItems(listOf(itemId))
+        if (item.size != 1) {
+            throw IllegalArgumentException("Item with id $itemId not found")
+        }
+        val itemMapping =
+            ItemToList(
+                itemId = itemId,
+                listId = listId,
+                createdBy = createdBy,
+                quantity = 1L,
+                quantityType = QuantityType.PIECES,
+                checked = false,
+                addedBy = userId,
+            )
         insertItemMapping(itemMapping)
     }
 
@@ -226,6 +271,27 @@ interface ShoppingListDao {
         }
     }
 
+    fun getAllListsLive(): Flow<List<ShoppingList>> {
+        val allBaseLists = getAllBaseListsLive()
+        return allBaseLists.flatMapLatest { lists ->
+            return@flatMapLatest flow {
+                lists.map { list ->
+                    val items = getItems(list.listId, list.createdBy)
+                    ShoppingList(
+                        listId = list.listId,
+                        createdBy = ListCreator(list.createdBy, ""),
+                        title = list.title,
+                        synchronized = list.synchronized,
+                        items = items.toMutableList(),
+                    )
+                }
+            }
+        }
+    }
+
+    @Query("SELECT * FROM list_table")
+    fun getAllBaseListsLive(): Flow<List<DbShoppingList>>
+
     @Query("SELECT 1 FROM list_table WHERE listId = :listId AND createdBy = :createdBy LIMIT 1")
     suspend fun listExists(
         listId: Long,
@@ -234,4 +300,25 @@ interface ShoppingListDao {
 
     @Query("SELECT MAX(listId) FROM list_table WHERE createdBy = :createdBy")
     fun getLatestListId(createdBy: Long): Long
+
+    @Transaction
+    suspend fun updatedCreatedBy(
+        updatedOnlineId: Long,
+        previousOnlineId: Long = 0L,
+    ) {
+        updatedCreatedByForBaseList(previousOnlineId, updatedOnlineId)
+        updatedAddedByForItems(previousOnlineId, updatedOnlineId)
+    }
+
+    @Query("UPDATE list_table SET createdBy = :updatedOnlineId WHERE createdBy = :previousOnlineId")
+    suspend fun updatedCreatedByForBaseList(
+        previousOnlineId: Long,
+        updatedOnlineId: Long,
+    )
+
+    @Query("UPDATE item_to_list_mapping SET addedBy = :updatedOnlineId WHERE addedBy = :previousOnlineId")
+    suspend fun updatedAddedByForItems(
+        previousOnlineId: Long,
+        updatedOnlineId: Long,
+    )
 }

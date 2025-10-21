@@ -1,6 +1,5 @@
 package com.cloudsheeptech.shoppinglist.repository
 
-import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert

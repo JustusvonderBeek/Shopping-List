@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.fragments.list
+package com.cloudsheeptech.shoppinglist.fragments.list.detail
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -26,16 +26,17 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
-import com.cloudsheeptech.shoppinglist.databinding.FragmentListBinding
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListPK
+import com.cloudsheeptech.shoppinglist.databinding.FragmentListDetailBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ShoppingListFragment :
+class ShoppingListDetailFragment :
     Fragment(),
     MenuProvider,
     AdapterView.OnItemSelectedListener {
-    private lateinit var binding: FragmentListBinding
-    private val viewModel: ShoppingListViewModel by viewModels()
+    private lateinit var binding: FragmentListDetailBinding
+    private val viewModel: ShoppingListDetailViewModel by viewModels()
 //    private val learningViewModel : RecipeViewModel by activityViewModels()
 
     private var startTouchY = 0f
@@ -43,7 +44,7 @@ class ShoppingListFragment :
     private var initialBottomSheetWeight = 0f
     private var initialListViewWeight = 0f
 
-    val args: ShoppingListFragmentArgs by navArgs()
+    val args: ShoppingListDetailFragmentArgs by navArgs()
 
     override fun onCreateMenu(
         menu: Menu,
@@ -100,7 +101,7 @@ class ShoppingListFragment :
         savedInstanceState: Bundle?,
     ): View {
         // Inflate the layout for this fragment
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_list, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_list_detail, container, false)
 
         // Adding the dropdown menu in the toolbar
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
@@ -139,7 +140,7 @@ class ShoppingListFragment :
                     viewModel.toggleItem(itemId.toLong())
                 },
                 amountName,
-                Pair(shoppingListId, createdBy),
+                ShoppingListPK(listId = shoppingListId, createdBy = createdBy),
                 viewModel.shoppingListRepository,
             )
         // The adapter for the preview items
@@ -274,7 +275,7 @@ class ShoppingListFragment :
             Observer { (listId, createdBy) ->
                 if (listId > 0 && createdBy >= 0) {
                     findNavController().navigate(
-                        ShoppingListFragmentDirections.actionShoppinglistToShareFragment(
+                        ShoppingListDetailFragmentDirections.actionShoppinglistToShareFragment(
                             listId = listId,
                             createdBy = createdBy,
                             title = viewModel.title.value!!,
@@ -381,7 +382,7 @@ class ShoppingListFragment :
             Observer { (rename, listId) ->
                 if (rename.isNotEmpty() && listId > 0L) {
                     findNavController().navigate(
-                        ShoppingListFragmentDirections.actionShoppinglistToCreateShoppinglistFragment(
+                        ShoppingListDetailFragmentDirections.actionShoppinglistToCreateShoppinglistFragment(
                             rename,
                             listId,
                         ),

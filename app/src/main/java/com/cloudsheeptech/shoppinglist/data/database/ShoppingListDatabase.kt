@@ -4,11 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.room.AutoMigration
 import androidx.room.Database
-import androidx.room.RenameColumn
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.AutoMigrationSpec
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemListMappingDao
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemDao
@@ -39,7 +37,7 @@ import javax.inject.Singleton
 
 @Singleton
 @Database(
-    version = 36,
+    version = 37,
     entities = [
         DbShoppingList::class, DbItem::class, ItemToList::class, AppUser::class,
         ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class,
@@ -48,8 +46,8 @@ import javax.inject.Singleton
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 18, to = 19),
-        AutoMigration(from = 19, to = 20, ShoppingListDatabase.Database19To20Migration::class),
-        AutoMigration(from = 20, to = 21, ShoppingListDatabase.Database20To21Migration::class),
+        AutoMigration(from = 19, to = 20, AppDatabaseMigration.Database19To20Migration::class),
+        AutoMigration(from = 20, to = 21, AppDatabaseMigration.Database20To21Migration::class),
         AutoMigration(from = 34, to = 35, AppDatabaseMigration.Database34To35Migration::class),
     ],
 )
@@ -105,67 +103,4 @@ abstract class ShoppingListDatabase : RoomDatabase() {
             return instance
         }
     }
-
-    @RenameColumn.Entries(
-        RenameColumn(
-            tableName = "list_table",
-            fromColumnName = "CreatedBy",
-            toColumnName = "createdBy",
-        ),
-        RenameColumn(
-            tableName = "list_table",
-            fromColumnName = "ID",
-            toColumnName = "listId",
-        ),
-        RenameColumn(
-            tableName = "list_table",
-            fromColumnName = "Name",
-            toColumnName = "title",
-        ),
-        RenameColumn(
-            tableName = "list_table",
-            fromColumnName = "CreatedByName",
-            toColumnName = "createdByName",
-        ),
-        RenameColumn(
-            tableName = "list_table",
-            fromColumnName = "LastEdited",
-            toColumnName = "lastUpdated",
-        ),
-        RenameColumn(
-            tableName = "items",
-            fromColumnName = "ID",
-            toColumnName = "id",
-        ),
-        RenameColumn(
-            tableName = "items",
-            fromColumnName = "Name",
-            toColumnName = "name",
-        ),
-        RenameColumn(
-            tableName = "items",
-            fromColumnName = "Icon",
-            toColumnName = "icon",
-        ),
-        RenameColumn(
-            tableName = "user",
-            fromColumnName = "UserId",
-            toColumnName = "OnlineID",
-        ),
-    )
-    class Database19To20Migration : AutoMigrationSpec
-
-    @RenameColumn.Entries(
-        RenameColumn(
-            tableName = "online_user",
-            fromColumnName = "ID",
-            toColumnName = "onlineId",
-        ),
-        RenameColumn(
-            tableName = "online_user",
-            fromColumnName = "Name",
-            toColumnName = "username",
-        ),
-    )
-    class Database20To21Migration : AutoMigrationSpec
 }

@@ -4,8 +4,6 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.ShoppingListApplication
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListRepository
 import com.cloudsheeptech.shoppinglist.data.items.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListLocalDataSource

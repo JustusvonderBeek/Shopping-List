@@ -67,7 +67,7 @@ interface ShoppingListDao {
                 listId = listId,
                 createdBy = ListCreator(createdBy, "todo"),
                 title = baseList.title,
-                synchronized = baseList.synchronized,
+                synchronized = baseList.lastSynchronized,
                 items = items.toMutableList(),
             )
         return list
@@ -112,7 +112,7 @@ interface ShoppingListDao {
                     listId = list.listId,
                     createdBy = ListCreator(list.createdBy, "TODO"),
                     title = list.title,
-                    synchronized = list.synchronized,
+                    synchronized = list.lastSynchronized,
                     items = listItems.toMutableList(),
                 ),
             )
@@ -121,7 +121,7 @@ interface ShoppingListDao {
     }
 
     @Query("SELECT * FROM list_table")
-    suspend fun getBaseLists(): List<DbShoppingList>
+    fun getBaseLists(): List<DbShoppingList>
 
     @Transaction
     suspend fun addItem(
@@ -160,6 +160,7 @@ interface ShoppingListDao {
         insertItemMapping(itemMapping)
     }
 
+    @Transaction
     suspend fun removeItem(
         item: AppItem,
         listId: Long,
@@ -207,7 +208,7 @@ interface ShoppingListDao {
     fun updateItemMapping(itemMapping: ItemToList)
 
     @Query("UPDATE list_table SET title = :title WHERE listId = :listId AND createdBy = :createdBy")
-    suspend fun updateListTitle(
+    fun updateListTitle(
         title: String,
         listId: Long,
         createdBy: Long,
@@ -265,7 +266,7 @@ interface ShoppingListDao {
                 listId = list.listId,
                 createdBy = ListCreator(createdBy, ""),
                 title = list.title,
-                synchronized = list.synchronized,
+                synchronized = list.lastSynchronized,
                 items = items.toMutableList(),
             )
         }
@@ -281,7 +282,7 @@ interface ShoppingListDao {
                         listId = list.listId,
                         createdBy = ListCreator(list.createdBy, ""),
                         title = list.title,
-                        synchronized = list.synchronized,
+                        synchronized = list.lastSynchronized,
                         items = items.toMutableList(),
                     )
                 }
@@ -293,7 +294,7 @@ interface ShoppingListDao {
     fun getAllBaseListsLive(): Flow<List<DbShoppingList>>
 
     @Query("SELECT 1 FROM list_table WHERE listId = :listId AND createdBy = :createdBy LIMIT 1")
-    suspend fun listExists(
+    fun listExists(
         listId: Long,
         createdBy: Long,
     ): Boolean
@@ -311,13 +312,13 @@ interface ShoppingListDao {
     }
 
     @Query("UPDATE list_table SET createdBy = :updatedOnlineId WHERE createdBy = :previousOnlineId")
-    suspend fun updatedCreatedByForBaseList(
+    fun updatedCreatedByForBaseList(
         previousOnlineId: Long,
         updatedOnlineId: Long,
     )
 
     @Query("UPDATE item_to_list_mapping SET addedBy = :updatedOnlineId WHERE addedBy = :previousOnlineId")
-    suspend fun updatedAddedByForItems(
+    fun updatedAddedByForItems(
         previousOnlineId: Long,
         updatedOnlineId: Long,
     )

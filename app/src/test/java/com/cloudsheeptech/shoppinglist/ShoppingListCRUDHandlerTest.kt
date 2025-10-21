@@ -14,7 +14,7 @@ class ShoppingListCRUDHandlerTest {
             title = "test",
             createdBy = 12345L,
             createdByName = "test",
-            synchronized = OffsetDateTime.now(),
+            lastSynchronized = OffsetDateTime.now(),
             version = 1L,
         )
 

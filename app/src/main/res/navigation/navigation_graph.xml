@@ -12,7 +12,7 @@
         tools:layout="@layout/fragment_start" />
     <fragment
         android:id="@+id/fragment_overview"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.list_overview.ListOverviewFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.list.overview.ListOverviewFragment"
         android:label="@string/nav_start_overview_title"
         tools:layout="@layout/fragment_list_overview">
         <action
@@ -30,7 +30,7 @@
     </fragment>
     <fragment
         android:id="@+id/shoppinglist"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.list.ShoppingListFragment"
+        android:name="com.cloudsheeptech.shoppinglist.fragments.list.detail.ShoppingListDetailFragment"
         android:label="@string/nav_list_title">
         <argument
             android:name="ListID"

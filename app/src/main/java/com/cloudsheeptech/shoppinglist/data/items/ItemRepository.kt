@@ -36,7 +36,8 @@ class ItemRepository
                     var localItem = localDataSource.readByExactName(itemName)
                     if (localItem == null) {
                         Log.d("ItemRepository", "Item with name $itemName not found. Creating new item")
-                        localItem = DbItem(0L, itemName, "")
+                        localItem =
+                            DbItem(0L, itemName, "")
                         localItem.id = localDataSource.create(localItem)
                     }
                     return@withContext localItem

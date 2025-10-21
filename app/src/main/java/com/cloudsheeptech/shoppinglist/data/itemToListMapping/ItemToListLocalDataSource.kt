@@ -23,7 +23,7 @@ class ItemToListLocalDataSource
          */
         suspend fun create(mapping: ItemToList): Long {
             var mappingId = 0L
-            if (mapping.id != 0L) {
+            if (mapping.itemId != 0L) {
                 throw IllegalArgumentException("mapping already exists")
             }
             withContext(Dispatchers.IO) {
@@ -87,7 +87,7 @@ class ItemToListLocalDataSource
                 if (existingMappings.isEmpty()) {
 //                throw IllegalStateException("mapping does not exists")
                     val existingMapping =
-                        mappingDao.getMapping(mapping.id)
+                        mappingDao.getMapping(mapping.itemId)
                             ?: throw IllegalStateException("mapping does not exist")
                     existingMappings = listOf(existingMapping)
                 }
@@ -96,9 +96,9 @@ class ItemToListLocalDataSource
                 }
                 // Allows to update the mapping even in cases where the data was received
                 // from remote and the id is not set
-                mapping.id = existingMappings[0].id
+                mapping.itemId = existingMappings[0].itemId
                 mappingDao.updateMapping(mapping)
-                updateMappingId = mapping.id
+                updateMappingId = mapping.itemId
             }
             return updateMappingId
         }
@@ -129,7 +129,7 @@ class ItemToListLocalDataSource
 
         suspend fun delete(mapping: ItemToList) {
             withContext(Dispatchers.IO) {
-                mappingDao.deleteMapping(mapping.id)
+                mappingDao.deleteMappingItemListId(mapping.itemId, mapping.listId, mapping.createdBy)
             }
         }
 

@@ -5,11 +5,11 @@
 
         <variable
             name="list"
-            type="com.cloudsheeptech.shoppinglist.data.list.DbShoppingList" />
+            type="com.cloudsheeptech.shoppinglist.data.list.ShoppingList" />
 
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.list_overview.ShoppingListAdapter.ListClickListener" />
+            type="com.cloudsheeptech.shoppinglist.fragments.list.overview.ShoppingListAdapter.ListClickListener" />
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -48,7 +48,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text='@{String.format("%s", list.createdByName)}'
+                    android:text='@{String.format("%s", list.createdBy.username)}'
                     style="@style/ListItemSubtitleStyle" />
 
             </LinearLayout>

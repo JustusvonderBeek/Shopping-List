@@ -16,7 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListPickerBinding
-import com.cloudsheeptech.shoppinglist.fragments.list_overview.ShoppingListAdapter
+import com.cloudsheeptech.shoppinglist.fragments.list.overview.ShoppingListAdapter
 import com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

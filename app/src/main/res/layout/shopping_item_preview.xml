@@ -4,10 +4,10 @@
     <data>
         <variable
             name="item"
-            type="com.cloudsheeptech.shoppinglist.data.items.DbItem" />
+            type="com.cloudsheeptech.shoppinglist.data.items.AppItem" />
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.list.ItemPreviewAdapter.ItemPreviewClickListener" />
+            type="com.cloudsheeptech.shoppinglist.fragments.list.detail.ItemPreviewAdapter.ItemPreviewClickListener" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

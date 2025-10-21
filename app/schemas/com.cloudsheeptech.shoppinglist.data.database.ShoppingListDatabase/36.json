@@ -2,22 +2,16 @@
   "formatVersion": 1,
   "database": {
     "version": 36,
-    "identityHash": "d949bf6118e1f9201104427c02fce39a",
+    "identityHash": "99058870efd3b21e30d47782c22552fb",
     "entities": [
       {
         "tableName": "list_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`listId` INTEGER NOT NULL, `title` TEXT NOT NULL, `createdBy` INTEGER NOT NULL, `createdByName` TEXT NOT NULL, `lastUpdated` TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, `version` INTEGER NOT NULL, PRIMARY KEY(`listId`, `createdBy`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`listId` INTEGER NOT NULL, `createdBy` INTEGER NOT NULL, `title` TEXT NOT NULL, PRIMARY KEY(`listId`, `createdBy`))",
         "fields": [
           {
             "fieldPath": "listId",
             "columnName": "listId",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "title",
-            "columnName": "title",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -27,22 +21,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "createdByName",
-            "columnName": "createdByName",
+            "fieldPath": "title",
+            "columnName": "title",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "lastUpdated",
-            "columnName": "lastUpdated",
-            "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
-          },
-          {
-            "fieldPath": "version",
-            "columnName": "version",
-            "affinity": "INTEGER",
             "notNull": true
           }
         ],
@@ -90,59 +71,73 @@
       },
       {
         "tableName": "item_to_list_mapping",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ID` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `ItemID` INTEGER NOT NULL, `ListID` INTEGER NOT NULL, `CreatedBy` INTEGER NOT NULL, `Quantity` INTEGER NOT NULL, `Checked` INTEGER NOT NULL, `AddedBy` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`itemId` INTEGER NOT NULL, `listId` INTEGER NOT NULL, `createdBy` INTEGER NOT NULL, `quantity` INTEGER NOT NULL, `quantityType` TEXT NOT NULL, `checked` INTEGER NOT NULL, `addedBy` INTEGER NOT NULL, PRIMARY KEY(`itemId`, `listId`, `createdBy`), FOREIGN KEY(`itemId`) REFERENCES `items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
-            "fieldPath": "ID",
-            "columnName": "ID",
+            "fieldPath": "itemId",
+            "columnName": "itemId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "ItemID",
-            "columnName": "ItemID",
+            "fieldPath": "listId",
+            "columnName": "listId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "ListID",
-            "columnName": "ListID",
+            "fieldPath": "createdBy",
+            "columnName": "createdBy",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "CreatedBy",
-            "columnName": "CreatedBy",
+            "fieldPath": "quantity",
+            "columnName": "quantity",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "Quantity",
-            "columnName": "Quantity",
+            "fieldPath": "quantityType",
+            "columnName": "quantityType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "checked",
+            "columnName": "checked",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "Checked",
-            "columnName": "Checked",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "AddedBy",
-            "columnName": "AddedBy",
+            "fieldPath": "addedBy",
+            "columnName": "addedBy",
             "affinity": "INTEGER",
             "notNull": true
           }
         ],
         "primaryKey": {
-          "autoGenerate": true,
+          "autoGenerate": false,
           "columnNames": [
-            "ID"
+            "itemId",
+            "listId",
+            "createdBy"
           ]
         },
         "indices": [],
-        "foreignKeys": []
+        "foreignKeys": [
+          {
+            "table": "items",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "itemId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       },
       {
         "tableName": "user",
@@ -513,7 +508,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd949bf6118e1f9201104427c02fce39a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '99058870efd3b21e30d47782c22552fb')"
     ]
   }
 }

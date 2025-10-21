@@ -16,8 +16,8 @@ interface ItemListMappingDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateMapping(itemToList: ItemToList)
 
-    @Query("DELETE FROM item_to_list_mapping WHERE id = :key")
-    fun deleteMapping(key: Long)
+//    @Query("DELETE FROM item_to_list_mapping WHERE  = :key")
+//    fun deleteMapping(key: Long)
 
     @Query("DELETE FROM item_to_list_mapping WHERE itemId = :itemId AND listId = :listId AND createdBy = :createdBy")
     fun deleteMappingItemListId(
@@ -41,7 +41,7 @@ interface ItemListMappingDao {
     @Query("DELETE FROM item_to_list_mapping")
     fun deleteAllMappings()
 
-    @Query("SELECT * FROM item_to_list_mapping WHERE id = :mappingId")
+    @Query("SELECT * FROM item_to_list_mapping WHERE listId = :mappingId")
     fun getMapping(mappingId: Long): ItemToList?
 
     @Query("SELECT * FROM item_to_list_mapping WHERE listId = :listId AND createdBy = :createdBy")

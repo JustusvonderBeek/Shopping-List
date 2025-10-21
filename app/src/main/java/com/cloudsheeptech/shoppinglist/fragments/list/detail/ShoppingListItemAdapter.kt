@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.fragments.list
+package com.cloudsheeptech.shoppinglist.fragments.list.detail
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemBinding
 import kotlinx.coroutines.Dispatchers
@@ -16,20 +17,32 @@ class ShoppingListItemAdapter(
     val clickListener: ShoppingItemClickListener,
     val checkboxClickListener: ShoppingItemCheckboxClickListener,
     private val amountName: String,
-    private val listPK: Pair<Long, Long>,
+    private val listPk: ShoppingListPK,
     private val shoppingListRepository: ShoppingListRepository,
 ) : ListAdapter<AppItem, ShoppingListItemAdapter.WordListItemViewHolder>(
         WordDiffCallback(),
     ) {
     suspend fun deleteItemAt(position: Int) {
         withContext(Dispatchers.IO) {
-            val item = currentList[position]
-            Log.d("ShoppingListItemAdapter", "Removing item ${item.name} at $position")
-            shoppingListRepository.removeItem(listPK.first, listPK.second, item.id)
+            try {
+                if (position >= currentList.size) {
+                    Log.e("ShoppingListItemAdapter", "Index $position is greater than list ${currentList.size}")
+                    return@withContext
+                }
+                val item = currentList[position]
+                if (item.id == null) {
+                    Log.e("ShoppingListItemAdapter", "Cannot remove item ${item.name} in list $listPk because id is not set")
+                    return@withContext
+                }
+                Log.d("ShoppingListItemAdapter", "Removing item ${item.name} at $position")
+                shoppingListRepository.removeItem(item.id!!, listPk)
+            } catch (ex: Exception) {
+                Log.e("ShoppingListItemAdapter", "Failed to remove item: $ex")
+            }
         }
     }
 
-    override fun getItemId(position: Int): Long = currentList[position].id
+    override fun getItemId(position: Int): Long = currentList[position].id ?: 0L
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -82,13 +95,13 @@ class ShoppingListItemAdapter(
         fun onClick(
             item: AppItem,
             count: Int,
-        ) = clickListener(item.id.toInt(), count)
+        ) = clickListener(item.id!!.toInt(), count)
     }
 
     class ShoppingItemCheckboxClickListener(
         val clickListener: (itemId: Int) -> Unit,
     ) {
-        fun onClick(item: AppItem) = clickListener(item.id.toInt())
+        fun onClick(item: AppItem) = clickListener(item.id!!.toInt())
     }
 
     class WordDiffCallback : DiffUtil.ItemCallback<AppItem>() {

@@ -2,11 +2,13 @@ package com.cloudsheeptech.shoppinglist.data.items
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 
 @Entity(
     tableName = "item_to_list_mapping",
     primaryKeys = ["itemId", "listId", "createdBy"],
+    indices = [Index(value = ["itemId", "listId", "createdBy"])],
     foreignKeys = [
         ForeignKey(
             entity = DbItem::class,
@@ -16,8 +18,8 @@ import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
         ),
         ForeignKey(
             entity = DbShoppingList::class,
-            parentColumns = ["id"],
-            childColumns = ["ListId"],
+            parentColumns = ["listId", "createdBy"],
+            childColumns = ["listId", "createdBy"],
             onDelete = ForeignKey.CASCADE,
         ),
     ],

@@ -28,7 +28,7 @@ data class ShoppingList(
                 listId = this.listId,
                 createdBy = this.createdBy.onlineId,
                 title = this.title,
-                synchronized = this.synchronized,
+                lastSynchronized = this.synchronized,
             )
         val dbItemsAndItemToListMapping =
             this.items

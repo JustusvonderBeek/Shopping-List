@@ -2,7 +2,6 @@ package com.cloudsheeptech.shoppinglist.data.list
 
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
-import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemToList
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 
@@ -62,7 +61,7 @@ class ShoppingListConversionHelper {
                     title = this.title,
                     createdBy = this.createdBy.onlineId,
                     createdByName = this.createdBy.username,
-                    synchronized = this.synchronized,
+                    lastSynchronized = this.synchronized,
                     version = this.version,
                 )
             val dbItems = this.items.map { item -> item.toDbItem() }
@@ -79,8 +78,8 @@ class ShoppingListConversionHelper {
                     listId = this.listId,
                     title = this.title,
                     createdBy = listCreator,
-                    createdAt = this.synchronized,
-                    synchronized = this.synchronized,
+                    createdAt = this.lastSynchronized,
+                    synchronized = this.lastSynchronized,
                     items = items,
                     version = this.version,
                 )

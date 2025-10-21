@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.fragments.list_overview
+package com.cloudsheeptech.shoppinglist.fragments.list.overview
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -6,12 +6,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
+import com.cloudsheeptech.shoppinglist.data.list.ShoppingList
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingListOverviewItemBinding
 
 class ShoppingListAdapter(
     val clickListener: ListClickListener,
-) : ListAdapter<DbShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
+) : ListAdapter<ShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
         ItemDiffCallback(),
     ) {
     suspend fun deleteItemAt(position: Int) {
@@ -36,7 +36,7 @@ class ShoppingListAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             clickListener: ListClickListener,
-            list: DbShoppingList,
+            list: ShoppingList,
         ) {
             binding.list = list
             binding.clickListener = clickListener
@@ -55,18 +55,18 @@ class ShoppingListAdapter(
     class ListClickListener(
         val clickListener: (id: Long, from: Long, title: String) -> Unit,
     ) {
-        fun onClick(list: DbShoppingList) = clickListener(list.listId, list.createdBy, list.title)
+        fun onClick(list: ShoppingList) = clickListener(list.listId, list.createdBy.onlineId, list.title)
     }
 
-    class ItemDiffCallback : DiffUtil.ItemCallback<DbShoppingList>() {
+    class ItemDiffCallback : DiffUtil.ItemCallback<ShoppingList>() {
         override fun areItemsTheSame(
-            oldItem: DbShoppingList,
-            newItem: DbShoppingList,
+            oldItem: ShoppingList,
+            newItem: ShoppingList,
         ): Boolean = oldItem.listId == newItem.listId && oldItem.title == newItem.title
 
         override fun areContentsTheSame(
-            oldItem: DbShoppingList,
-            newItem: DbShoppingList,
+            oldItem: ShoppingList,
+            newItem: ShoppingList,
         ): Boolean = oldItem == newItem
     }
 }

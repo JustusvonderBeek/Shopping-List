@@ -37,7 +37,7 @@ interface ItemDao {
     fun getItemsLive(keys: List<Long>): LiveData<List<DbItem>>
 
     @Query(
-        "SELECT i.id, i.name, i.icon,m.quantity as quantity ,m.checked as checked,m.addedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.itemId WHERE m.listId = :listId AND m.createdBy = :createdBy",
+        "SELECT i.id, i.name, i.icon,m.quantity as quantity, m.quantityType as quantityType ,m.checked as checked,m.addedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.itemId WHERE m.listId = :listId AND m.createdBy = :createdBy",
     )
     fun getItemsWithQuantityInListLive(
         listId: Long,
@@ -45,7 +45,7 @@ interface ItemDao {
     ): LiveData<List<AppItem>>
 
     @Query(
-        "SELECT i.id, i.name, i.icon,m.quantity as quantity ,m.checked as checked,m.addedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.itemId WHERE m.listId = :listId AND m.createdBy = :createdBy",
+        "SELECT i.id, i.name, i.icon,m.quantity as quantity, m.quantityType as quantityType ,m.checked as checked,m.addedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.itemId WHERE m.listId = :listId AND m.createdBy = :createdBy",
     )
     fun getItemsWithQuantityInList(
         listId: Long,

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.fragments.list
+package com.cloudsheeptech.shoppinglist.fragments.list.detail
 
 import android.content.res.Resources
 import android.util.Log
@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
-import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemClassifier
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
@@ -27,7 +26,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class ShoppingListViewModel
+class ShoppingListDetailViewModel
     @Inject
     constructor(
         database: ShoppingListDatabase,
@@ -97,8 +96,8 @@ class ShoppingListViewModel
         private val itemsInList =
             shoppingListRepository.readAllListItemsLive(this.shoppingListId, this.createdBy)
 
-        private val _previewItems = MutableLiveData<List<DbItem>>()
-        val previewItems: LiveData<List<DbItem>> get() = _previewItems
+        private val _previewItems = MutableLiveData<List<AppItem>>()
+        val previewItems: LiveData<List<AppItem>> get() = _previewItems
 
         private val _listInformation = listDao.getShoppingListLive(shoppingListId, createdBy)
         val listInformation: LiveData<DbShoppingList> get() = _listInformation

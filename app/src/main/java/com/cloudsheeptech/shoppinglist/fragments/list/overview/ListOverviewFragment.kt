@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.fragments.list_overview
+package com.cloudsheeptech.shoppinglist.fragments.list.overview
 
 import android.os.Bundle
 import android.util.Log

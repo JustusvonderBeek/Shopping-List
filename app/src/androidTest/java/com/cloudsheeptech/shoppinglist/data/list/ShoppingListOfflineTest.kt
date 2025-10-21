@@ -3,7 +3,6 @@ package com.cloudsheeptech.shoppinglist.data.list
 import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
@@ -15,6 +14,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil

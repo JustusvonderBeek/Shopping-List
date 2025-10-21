@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.database
+package com.cloudsheeptech.shoppinglist.database.migrations
 
 import androidx.room.RenameColumn
 import androidx.room.migration.AutoMigrationSpec

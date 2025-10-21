@@ -1,10 +1,10 @@
 package com.cloudsheeptech.shoppinglist.data.sharing.recipe
 
 import androidx.lifecycle.LiveData
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
 import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.InternalSerializationApi

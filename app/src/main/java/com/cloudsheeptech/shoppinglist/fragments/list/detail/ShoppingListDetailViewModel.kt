@@ -8,7 +8,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.data.items.ItemClassifier
 import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
@@ -17,6 +16,7 @@ import com.cloudsheeptech.shoppinglist.data.uiPreference.Ordering
 import com.cloudsheeptech.shoppinglist.data.uiPreference.OrderingUtil
 import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreference
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

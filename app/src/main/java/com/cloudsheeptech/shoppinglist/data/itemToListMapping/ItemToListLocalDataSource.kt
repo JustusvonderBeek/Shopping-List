@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.itemToListMapping
 
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.ItemToList
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

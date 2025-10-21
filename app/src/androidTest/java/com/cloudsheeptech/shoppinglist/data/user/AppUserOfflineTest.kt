@@ -4,7 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.After

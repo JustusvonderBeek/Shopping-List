@@ -1,7 +1,6 @@
 package com.cloudsheeptech.shoppinglist
 
 import android.app.Application
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemToListRepository
 import com.cloudsheeptech.shoppinglist.data.items.ItemLocalDataSource
@@ -20,6 +19,7 @@ import com.cloudsheeptech.shoppinglist.data.sharing.ListShareRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.IUserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider

@@ -2,7 +2,6 @@ package com.cloudsheeptech.shoppinglist.data.list
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
 import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
 import com.cloudsheeptech.shoppinglist.data.user.ApiUser
@@ -12,6 +11,7 @@ import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import kotlinx.coroutines.test.runTest

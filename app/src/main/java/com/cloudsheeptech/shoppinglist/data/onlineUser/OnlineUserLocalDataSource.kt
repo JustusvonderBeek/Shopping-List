@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.onlineUser
 
 import androidx.lifecycle.LiveData
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

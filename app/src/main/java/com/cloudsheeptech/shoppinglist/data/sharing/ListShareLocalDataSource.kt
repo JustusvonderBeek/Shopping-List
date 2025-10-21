@@ -1,9 +1,9 @@
 package com.cloudsheeptech.shoppinglist.data.sharing
 
 import androidx.lifecycle.LiveData
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

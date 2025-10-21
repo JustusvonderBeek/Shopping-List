@@ -3,9 +3,9 @@ package com.cloudsheeptech.shoppinglist.network
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.cloudsheeptech.shoppinglist.data.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.data.items.DbItem
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
+import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode

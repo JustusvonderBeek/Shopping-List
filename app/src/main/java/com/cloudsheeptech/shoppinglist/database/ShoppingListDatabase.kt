@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.database
+package com.cloudsheeptech.shoppinglist.database
 
 import android.content.Context
 import android.util.Log
@@ -32,6 +32,7 @@ import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreference
 import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreferencesDao
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.user.AppUserDao
+import com.cloudsheeptech.shoppinglist.database.migrations.AppDatabaseMigration
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 

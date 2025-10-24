@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
-import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
+import com.cloudsheeptech.shoppinglist.list.model.UserNotAuthenticatedException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

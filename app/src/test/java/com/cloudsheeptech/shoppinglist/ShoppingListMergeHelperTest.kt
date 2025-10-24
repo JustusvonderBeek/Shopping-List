@@ -1,10 +1,10 @@
 package com.cloudsheeptech.shoppinglist
 
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingList
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListMergeHelper
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListOperation
-import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
+import com.cloudsheeptech.shoppinglist.list.model.ListCreator
+import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
+import com.cloudsheeptech.shoppinglist.list.model.ShoppingListOperation
+import com.cloudsheeptech.shoppinglist.list.util.ShoppingListMergeUtil
 import org.junit.Assert
 import org.junit.Test
 import java.time.OffsetDateTime
@@ -47,7 +47,7 @@ class ShoppingListMergeHelperTest {
         val newItem = createItem(4)
         newList.items.add(newItem)
 
-        val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+        val operationsPerformed = ShoppingListMergeUtil.getListDelta(oldList, newList)
         Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.ADD_ITEM))
         Assert.assertNotNull(operationsPerformed.get(ShoppingListOperation.ADD_ITEM))
         Assert.assertEquals(1, operationsPerformed.get(ShoppingListOperation.ADD_ITEM)!!.size)
@@ -68,7 +68,7 @@ class ShoppingListMergeHelperTest {
 
         val removedItem = newList.items.removeAt(1)
 
-        val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+        val operationsPerformed = ShoppingListMergeUtil.getListDelta(oldList, newList)
         Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.REMOVE_ITEM))
         Assert.assertNotNull(operationsPerformed.get(ShoppingListOperation.REMOVE_ITEM))
         Assert.assertEquals(1, operationsPerformed.get(ShoppingListOperation.REMOVE_ITEM)!!.size)
@@ -89,7 +89,7 @@ class ShoppingListMergeHelperTest {
 
         newList.title = "super duper new title"
 
-        val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+        val operationsPerformed = ShoppingListMergeUtil.getListDelta(oldList, newList)
         Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.RENAME_LIST))
         Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.ADD_ITEM))
         Assert.assertFalse(operationsPerformed.contains(ShoppingListOperation.CHANGE_QUANTITY))
@@ -106,7 +106,7 @@ class ShoppingListMergeHelperTest {
 
         var exceptionThrown = false
         try {
-            val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+            val operationsPerformed = ShoppingListMergeUtil.getListDelta(oldList, newList)
         } catch (ex: IllegalArgumentException) {
             exceptionThrown = true
         }
@@ -139,7 +139,7 @@ class ShoppingListMergeHelperTest {
 
         newList.createdBy.onlineId = 665544L
 
-        val operationsPerformed = ShoppingListMergeHelper.getListDelta(oldList, newList)
+        val operationsPerformed = ShoppingListMergeUtil.getListDelta(oldList, newList)
         Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.RENAME_LIST))
         Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.CHANGE_CREATOR))
         Assert.assertTrue(operationsPerformed.contains(ShoppingListOperation.ADD_ITEM))

@@ -2,13 +2,12 @@ package com.cloudsheeptech.shoppinglist.data.sharing
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import com.cloudsheeptech.shoppinglist.data.user.ApiUser
 import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
+import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.junit.Test
@@ -57,7 +56,7 @@ class ListShareOnlineTest {
                     "ignore",
                     UserRightsEnum.USER.value,
                     OffsetDateTime.now(),
-                    OffsetDateTime.now()
+                    OffsetDateTime.now(),
                 )
             json.encodeToString(newUser)
             ApplicationProvider.getApplicationContext<Application>()

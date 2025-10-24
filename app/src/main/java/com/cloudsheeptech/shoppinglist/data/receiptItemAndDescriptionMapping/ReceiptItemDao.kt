@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.cloudsheeptech.shoppinglist.data.items.DbItem
+import com.cloudsheeptech.shoppinglist.list.model.DbItem
 import kotlinx.coroutines.flow.Flow
 
 @Dao

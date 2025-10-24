@@ -1,10 +1,10 @@
 package com.cloudsheeptech.shoppinglist.data.recipe
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
-import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
+import com.cloudsheeptech.shoppinglist.list.model.UserNotAuthenticatedException
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
+import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText

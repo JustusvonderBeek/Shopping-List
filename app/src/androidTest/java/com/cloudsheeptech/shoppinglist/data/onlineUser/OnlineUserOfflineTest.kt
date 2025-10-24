@@ -3,6 +3,8 @@ package com.cloudsheeptech.shoppinglist.data.onlineUser
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.list.model.ListCreator
+import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserLocalDataSource
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert

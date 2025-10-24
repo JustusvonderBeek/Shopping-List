@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.items.AppItem
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListPK
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemBinding
+import com.cloudsheeptech.shoppinglist.list.model.AppItem
+import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
+import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

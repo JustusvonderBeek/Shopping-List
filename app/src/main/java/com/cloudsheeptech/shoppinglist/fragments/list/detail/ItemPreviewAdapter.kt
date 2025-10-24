@@ -5,8 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.items.AppItem
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemPreviewBinding
+import com.cloudsheeptech.shoppinglist.list.model.AppItem
 
 class ItemPreviewAdapter(
     val clickListener: ItemPreviewClickListener,

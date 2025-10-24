@@ -5,7 +5,7 @@
 
         <variable
             name="list"
-            type="com.cloudsheeptech.shoppinglist.data.list.ShoppingList" />
+            type="com.cloudsheeptech.shoppinglist.list.model.ShoppingList" />
 
         <variable
             name="clickListener"

@@ -25,9 +25,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.cloudsheeptech.shoppinglist.R
-import com.cloudsheeptech.shoppinglist.data.SwipeToDeleteHandler
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListDetailBinding
+import com.cloudsheeptech.shoppinglist.fragments.list.SwipeToDeleteHandler
+import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

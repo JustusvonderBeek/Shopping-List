@@ -1,8 +1,8 @@
 package com.cloudsheeptech.shoppinglist.network
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.exception.UserAuthenticationFailedException
-import com.cloudsheeptech.shoppinglist.exception.UserNotAuthenticatedException
+import com.cloudsheeptech.shoppinglist.list.model.UserAuthenticationFailedException
+import com.cloudsheeptech.shoppinglist.list.model.UserNotAuthenticatedException
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp

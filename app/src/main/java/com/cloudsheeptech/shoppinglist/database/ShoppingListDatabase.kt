@@ -7,14 +7,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.cloudsheeptech.shoppinglist.data.itemToListMapping.ItemListMappingDao
-import com.cloudsheeptech.shoppinglist.data.items.DbItem
-import com.cloudsheeptech.shoppinglist.data.items.ItemDao
-import com.cloudsheeptech.shoppinglist.data.items.ItemToList
-import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListDao
-import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
-import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserDao
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionDao
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionMapping
 import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemDao
@@ -23,16 +15,24 @@ import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeDao
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImageDao
-import com.cloudsheeptech.shoppinglist.data.sharing.ListShareDatabase
-import com.cloudsheeptech.shoppinglist.data.sharing.SharedDao
-import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShare
-import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShareDao
-import com.cloudsheeptech.shoppinglist.data.typeConverter.DatabaseTypeConverter
 import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreference
 import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreferencesDao
 import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import com.cloudsheeptech.shoppinglist.data.user.AppUserDao
 import com.cloudsheeptech.shoppinglist.database.migrations.AppDatabaseMigration
+import com.cloudsheeptech.shoppinglist.list.dao.ItemDao
+import com.cloudsheeptech.shoppinglist.list.dao.ItemListMappingDao
+import com.cloudsheeptech.shoppinglist.list.dao.SharedDao
+import com.cloudsheeptech.shoppinglist.list.dao.ShoppingListDao
+import com.cloudsheeptech.shoppinglist.list.model.DbItem
+import com.cloudsheeptech.shoppinglist.list.model.DbListShare
+import com.cloudsheeptech.shoppinglist.list.model.DbShoppingList
+import com.cloudsheeptech.shoppinglist.list.model.ItemToList
+import com.cloudsheeptech.shoppinglist.list.model.ListCreator
+import com.cloudsheeptech.shoppinglist.sharing.dao.OnlineUserDao
+import com.cloudsheeptech.shoppinglist.sharing.dao.RecipeShareDao
+import com.cloudsheeptech.shoppinglist.sharing.model.RecipeShare
+import com.cloudsheeptech.shoppinglist.util.DatabaseTypeConverter
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
@@ -41,7 +41,7 @@ import javax.inject.Singleton
     version = 37,
     entities = [
         DbShoppingList::class, DbItem::class, ItemToList::class, AppUser::class,
-        ListCreator::class, ListShareDatabase::class, UIPreference::class, DbRecipe::class,
+        ListCreator::class, DbListShare::class, UIPreference::class, DbRecipe::class,
         ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class,
     ],
     exportSchema = true,

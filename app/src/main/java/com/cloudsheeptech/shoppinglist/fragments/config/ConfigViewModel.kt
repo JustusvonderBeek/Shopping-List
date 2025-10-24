@@ -6,8 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.cloudsheeptech.shoppinglist.BuildConfig
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

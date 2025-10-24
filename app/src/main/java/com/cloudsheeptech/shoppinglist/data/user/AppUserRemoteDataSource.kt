@@ -1,11 +1,11 @@
 package com.cloudsheeptech.shoppinglist.data.user
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
-import com.cloudsheeptech.shoppinglist.exception.UserAuthenticationFailedException
-import com.cloudsheeptech.shoppinglist.exception.UserNotCreatedException
+import com.cloudsheeptech.shoppinglist.list.model.UserAuthenticationFailedException
+import com.cloudsheeptech.shoppinglist.list.model.UserNotCreatedException
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
+import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

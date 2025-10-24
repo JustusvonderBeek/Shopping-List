@@ -3,21 +3,20 @@ package com.cloudsheeptech.shoppinglist.testUtil
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.ShoppingListApplication
-import com.cloudsheeptech.shoppinglist.data.items.ItemLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.items.ItemRepository
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRemoteDataSource
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
-import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRemoteDataSource
-import com.cloudsheeptech.shoppinglist.data.onlineUser.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
+import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
+import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRemoteDataSource
+import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
+import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
 
 object TestUtil {
     var shoppingListApplication: ShoppingListApplication = ShoppingListApplication()

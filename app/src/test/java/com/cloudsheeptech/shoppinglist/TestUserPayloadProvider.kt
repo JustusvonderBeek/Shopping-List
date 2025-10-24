@@ -1,10 +1,9 @@
 package com.cloudsheeptech.shoppinglist
 
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
 import com.cloudsheeptech.shoppinglist.data.user.ApiUser
 import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
 import com.cloudsheeptech.shoppinglist.network.IUserCreationDataProvider
-import kotlinx.serialization.encodeToString
+import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.time.OffsetDateTime

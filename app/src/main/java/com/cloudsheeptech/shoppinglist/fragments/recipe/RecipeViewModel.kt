@@ -7,12 +7,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
-import com.cloudsheeptech.shoppinglist.data.sharing.recipe.RecipeShareRepository
 import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.list.model.DbShoppingList
+import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
+import com.cloudsheeptech.shoppinglist.sharing.repo.RecipeShareRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

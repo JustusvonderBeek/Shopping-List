@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.data.recipe
 
 import android.annotation.SuppressLint
-import com.cloudsheeptech.shoppinglist.data.onlineUser.ListCreator
+import com.cloudsheeptech.shoppinglist.list.model.ListCreator
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames

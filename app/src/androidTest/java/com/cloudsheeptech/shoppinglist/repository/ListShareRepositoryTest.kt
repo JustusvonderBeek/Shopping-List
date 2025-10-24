@@ -1,6 +1,6 @@
 package com.cloudsheeptech.shoppinglist.repository
 
-import com.cloudsheeptech.shoppinglist.data.typeConverter.OffsetDateTimeFormatHandler
+import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule

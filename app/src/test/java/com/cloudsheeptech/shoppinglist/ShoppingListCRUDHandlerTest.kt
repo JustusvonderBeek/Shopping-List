@@ -1,7 +1,6 @@
 package com.cloudsheeptech.shoppinglist
 
-import com.cloudsheeptech.shoppinglist.data.list.DbShoppingList
-import com.cloudsheeptech.shoppinglist.data.list.ShoppingListCRUDHandler
+import com.cloudsheeptech.shoppinglist.list.model.DbShoppingList
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test

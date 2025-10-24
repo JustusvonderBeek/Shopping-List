@@ -6,8 +6,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.sharing.ShareUserPreview
 import com.cloudsheeptech.shoppinglist.databinding.UserSharePreviewBinding
+import com.cloudsheeptech.shoppinglist.sharing.model.ShareUserPreview
 
 class UserShareAdapter(
     val shareListener: UserShareClickListener,

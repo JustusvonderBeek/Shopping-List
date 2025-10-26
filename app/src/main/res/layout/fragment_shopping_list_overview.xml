@@ -2,13 +2,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.list.overview.ListOverviewFragment">
+    tools:context=".ui.list.overview.ShoppingListOverviewFragment">
 
     <data>
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.ui.list.overview.ListOverviewViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.list.overview.ShoppingListOverviewViewModel" />
     </data>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -24,7 +24,7 @@
                 android:id="@+id/listOverviewList"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:listitem="@layout/shopping_list_overview_item"
+                tools:listitem="@layout/shopping_list_overview_list_item"
                 tools:itemCount="4"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 

@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/shopping_list_overview_item"
+            tools:listitem="@layout/shopping_list_overview_list_item"
             tools:itemCount="5" />
 
     </LinearLayout>

@@ -19,7 +19,7 @@ import javax.inject.Inject
 * When no user is found, navigate to the user creation and only allow navigating back if a user is found
  */
 @HiltViewModel
-class ListOverviewViewModel
+class ShoppingListOverviewViewModel
     @Inject
     constructor(
         private val shoppingListRepository: ShoppingListRepository,
@@ -49,7 +49,8 @@ class ListOverviewViewModel
 
         // Data
         val user = userRepo.readLive()
-        val shoppingList = shoppingListRepository.readAllLive() // We only require the name and creator name
+        val shoppingList =
+            shoppingListRepository.readAllLive() // We only require the name and creator name
 
         // -----------------------------------------------
 

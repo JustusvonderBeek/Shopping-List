@@ -16,7 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListPickerBinding
-import com.cloudsheeptech.shoppinglist.ui.list.overview.ShoppingListAdapter
+import com.cloudsheeptech.shoppinglist.ui.list.overview.ShoppingListOverviewListAdapter
 import com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -57,8 +57,8 @@ class ListPickerFragment :
         binding.lifecycleOwner = viewLifecycleOwner
 
         val adapter =
-            ShoppingListAdapter(
-                ShoppingListAdapter.ListClickListener { listId, createdBy, title ->
+            ShoppingListOverviewListAdapter(
+                ShoppingListOverviewListAdapter.ListClickListener { listId, createdBy, title ->
                     viewModel.selectList(listId, createdBy)
                 },
             )

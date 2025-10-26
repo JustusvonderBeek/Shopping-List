@@ -6,12 +6,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.databinding.ShoppingListOverviewItemBinding
+import com.cloudsheeptech.shoppinglist.databinding.ShoppingListOverviewListItemBinding
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
 
-class ShoppingListAdapter(
+class ShoppingListOverviewListAdapter(
     val clickListener: ListClickListener,
-) : ListAdapter<ShoppingList, ShoppingListAdapter.ShoppingListViewHolder>(
+) : ListAdapter<ShoppingList, ShoppingListOverviewListAdapter.ShoppingListViewHolder>(
         ItemDiffCallback(),
     ) {
     suspend fun deleteItemAt(position: Int) {
@@ -32,7 +32,7 @@ class ShoppingListAdapter(
     }
 
     class ShoppingListViewHolder private constructor(
-        val binding: ShoppingListOverviewItemBinding,
+        val binding: ShoppingListOverviewListItemBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             clickListener: ListClickListener,
@@ -46,7 +46,8 @@ class ShoppingListAdapter(
         companion object {
             fun from(parent: ViewGroup): ShoppingListViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val binding = ShoppingListOverviewItemBinding.inflate(layoutInflater, parent, false)
+                val binding =
+                    ShoppingListOverviewListItemBinding.inflate(layoutInflater, parent, false)
                 return ShoppingListViewHolder(binding)
             }
         }

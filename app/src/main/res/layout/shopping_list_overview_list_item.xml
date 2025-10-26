@@ -9,7 +9,7 @@
 
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.ui.list.overview.ShoppingListAdapter.ListClickListener" />
+            type="com.cloudsheeptech.shoppinglist.ui.list.overview.ShoppingListOverviewListAdapter.ListClickListener" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

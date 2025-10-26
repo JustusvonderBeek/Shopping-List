@@ -16,17 +16,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
-import com.cloudsheeptech.shoppinglist.databinding.FragmentListOverviewBinding
+import com.cloudsheeptech.shoppinglist.databinding.FragmentShoppingListOverviewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 // This is required for Hilt to inject the viewModel correctly
 // See: https://developer.android.com/training/dependency-injection/hilt-jetpack
 @AndroidEntryPoint
-class ListOverviewFragment :
+class ShoppingListOverviewFragment :
     Fragment(),
     MenuProvider {
-    private lateinit var binding: FragmentListOverviewBinding
-    private val viewModel: ListOverviewViewModel by viewModels() // Injected by hilt
+    private lateinit var binding: FragmentShoppingListOverviewBinding
+    private val viewModel: ShoppingListOverviewViewModel by viewModels() // Injected by hilt
 
     override fun onCreateMenu(
         menu: Menu,
@@ -67,15 +67,20 @@ class ListOverviewFragment :
     ): View {
         // Inflate the layout
         binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_shopping_list_overview, container, false)
+            DataBindingUtil.inflate(
+                inflater,
+                R.layout.fragment_shopping_list_overview,
+                container,
+                false,
+            )
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         val adapter =
-            ShoppingListAdapter(
-                ShoppingListAdapter.ListClickListener { id, from, title ->
+            ShoppingListOverviewListAdapter(
+                ShoppingListOverviewListAdapter.ListClickListener { id, from, title ->
                     Log.d("ListOverviewFragment", "Got ID $id from $from called $title")
                     viewModel.navigateToShoppingList(id, from, title)
                 },
@@ -102,7 +107,7 @@ class ListOverviewFragment :
             Observer { navigate ->
                 if (navigate) {
                     findNavController().navigate(
-                        ListOverviewFragmentDirections.actionOverviewToCreateShoppinglistFragment(
+                        ShoppingListOverviewFragmentDirections.actionOverviewToCreateShoppinglistFragment(
                             null,
                             0L,
                         ),
@@ -120,7 +125,7 @@ class ListOverviewFragment :
                 val title = idAndFromAndTitle.third
                 if (id > 0L) {
                     findNavController().navigate(
-                        ListOverviewFragmentDirections.actionOverviewToShoppinglist(
+                        ShoppingListOverviewFragmentDirections.actionOverviewToShoppinglist(
                             id,
                             from,
                             title,
@@ -135,7 +140,7 @@ class ListOverviewFragment :
             viewLifecycleOwner,
             Observer { navigate ->
                 if (navigate) {
-                    findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToConfigFragment())
+                    findNavController().navigate(ShoppingListOverviewFragmentDirections.actionOverviewToConfigFragment())
                     viewModel.onConfigNavigated()
                 }
             },
@@ -145,7 +150,7 @@ class ListOverviewFragment :
             viewLifecycleOwner,
             Observer { user ->
                 if (user == null) {
-                    findNavController().navigate(ListOverviewFragmentDirections.actionOverviewToUsernameSelection())
+                    findNavController().navigate(ShoppingListOverviewFragmentDirections.actionOverviewToUsernameSelection())
                 }
             },
         )

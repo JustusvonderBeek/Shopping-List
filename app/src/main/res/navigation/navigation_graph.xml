@@ -12,7 +12,7 @@
         tools:layout="@layout/fragment_start" />
     <fragment
         android:id="@+id/fragment_overview"
-        android:name="com.cloudsheeptech.shoppinglist.ui.list.overview.ListOverviewFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.list.overview.ShoppingListOverviewFragment"
         android:label="@string/nav_start_overview_title"
         tools:layout="@layout/fragment_shopping_list_overview">
         <action

@@ -59,15 +59,6 @@ class ShoppingListApplication : Application() {
     lateinit var itemLocalDataSource: ItemLocalDataSource
 
     @Inject
-    lateinit var itemRepository: ItemRepository
-
-    @Inject
-    lateinit var itemToListLocalDataSource: ItemToListLocalDataSource
-
-    @Inject
-    lateinit var itemToListRepository: ItemToListRepository
-
-    @Inject
     lateinit var onlineUserLocalDataSource: OnlineUserLocalDataSource
 
     @Inject
@@ -110,12 +101,6 @@ class ShoppingListApplication : Application() {
     fun isNetworkingInitialized() = ::networking.isInitialized
 
     fun isItemLocalDSInitialized() = ::itemLocalDataSource.isInitialized
-
-    fun isItemRepositoryInitialized() = ::itemRepository.isInitialized
-
-    fun isItemToListLocalDSInitialized() = ::itemToListLocalDataSource.isInitialized
-
-    fun isItemToListRepositoryInitialized() = ::itemToListRepository.isInitialized
 
     fun isShoppingListLocalDSInitialized() = ::shoppingListLocalDataSource.isInitialized
 

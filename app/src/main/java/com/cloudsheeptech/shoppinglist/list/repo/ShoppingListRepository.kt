@@ -98,17 +98,6 @@ class ShoppingListRepository
             return newList
         }
 
-        private suspend fun createRemote(list: ShoppingList): Boolean {
-            try {
-                return remoteDataSource.create(list)
-            } catch (ex: IllegalArgumentException) {
-                Log.w("ShoppingListRepository", "List already exists: $ex")
-            } catch (ex: Exception) {
-                Log.w("ShoppingListRepository", "Failed to create list: $ex")
-            }
-            return false
-        }
-
         suspend fun read(
             listId: Long,
             createdBy: Long,
@@ -116,8 +105,6 @@ class ShoppingListRepository
             withContext(Dispatchers.IO) {
                 localDataSource.read(listId, createdBy)
             }
-
-        suspend fun readAllOwn(): List<ShoppingList> = localDataSource.readAll()
 
         suspend fun readAllRemote() {
             try {
@@ -158,7 +145,11 @@ class ShoppingListRepository
                 localDataSource.exists(listId, createdBy)
             }
 
-        // TODO: Include the operations since the last synchronization and perform these
+        /**
+         * Idea of this function would be after the synchronisation with online to perform update
+         * I dont know if this interface is needed for this or should be private
+         * Even for testing I would prefer the direct methods like addItem
+         */
         suspend fun update(updateOperations: List<ShoppingListOperation>): ShoppingList? {
             val updatedList = localDataSource.applyUpdates(updateOperations)
             if (updatedList == null) {

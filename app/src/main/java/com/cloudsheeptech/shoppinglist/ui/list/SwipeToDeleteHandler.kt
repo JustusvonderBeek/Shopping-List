@@ -1,0 +1,35 @@
+package com.cloudsheeptech.shoppinglist.ui.list
+
+import android.util.Log
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import com.cloudsheeptech.shoppinglist.ui.list.detail.ShoppingListItemAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+
+class SwipeToDeleteHandler(
+    private val adapter: ShoppingListItemAdapter,
+) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    private val job = Job()
+    private val swipeHandlerScope = CoroutineScope(Dispatchers.Main + job)
+
+    override fun onMove(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        target: RecyclerView.ViewHolder,
+    ): Boolean = false
+
+    override fun onSwiped(
+        viewHolder: RecyclerView.ViewHolder,
+        direction: Int,
+    ) {
+//        adapter.deleteItemAt(viewHolder.adapterPosition)
+        Log.i("SwipeToDeleteHandler", "Position is ${viewHolder.bindingAdapterPosition}")
+        val position = viewHolder.bindingAdapterPosition
+        swipeHandlerScope.launch {
+            adapter.deleteItemAt(position)
+        }
+    }
+}

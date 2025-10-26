@@ -87,7 +87,7 @@ class ShoppingListOverviewFragment :
             )
         binding.listOverviewList.adapter = adapter
 
-        viewModel.shoppingList.observe(
+        viewModel.allShoppingLists.observe(
             viewLifecycleOwner,
             Observer { list ->
                 if (list.isNullOrEmpty()) {
@@ -117,7 +117,7 @@ class ShoppingListOverviewFragment :
             },
         )
 
-        viewModel.navigateList.observe(
+        viewModel.navigateToList.observe(
             viewLifecycleOwner,
             Observer { idAndFromAndTitle ->
                 val id = idAndFromAndTitle.first
@@ -136,7 +136,7 @@ class ShoppingListOverviewFragment :
             },
         )
 
-        viewModel.navigateConfig.observe(
+        viewModel.navigateToConfig.observe(
             viewLifecycleOwner,
             Observer { navigate ->
                 if (navigate) {

@@ -26,51 +26,60 @@ class ShoppingListOverviewViewModel
         private val userRepo: AppUserRepository,
     ) : ViewModel() {
         private val job = Job()
-        private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
+        private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
 
-        // -----------------------------------------------
-        // Navigation variables
+        // ------------------- Navigation variables -------------------
 
         private val _createList = MutableLiveData<Boolean>(false)
         val createList: LiveData<Boolean> get() = _createList
 
-        private val _navigateList = MutableLiveData<Triple<Long, Long, String>>(Triple(-1, -1, ""))
-        val navigateList: LiveData<Triple<Long, Long, String>> get() = _navigateList
+        // ListId, CreatedBy, Title
+        private val _navigateToList = MutableLiveData<Triple<Long, Long, String>>(Triple(-1, -1, ""))
+        val navigateToList: LiveData<Triple<Long, Long, String>> get() = _navigateToList
 
-        private val _navigateUser = MutableLiveData<Boolean>(false)
-        val navigateUser: LiveData<Boolean> get() = _navigateUser
         private val _refreshing = MutableLiveData<Boolean>(false)
-
-        private val _navigateConfig = MutableLiveData<Boolean>(false)
-        val navigateConfig: LiveData<Boolean> get() = _navigateConfig
-
-        // UI State changes
         val refreshing: LiveData<Boolean> get() = _refreshing
+
+        // TODO: Is a configuration really necessary after debugging? In production? I guess not
+        private val _navigateToConfig = MutableLiveData<Boolean>(false)
+        val navigateToConfig: LiveData<Boolean> get() = _navigateToConfig
 
         // Data
         val user = userRepo.readLive()
-        val shoppingList =
-            shoppingListRepository.readAllLive() // We only require the name and creator name
 
-        // -----------------------------------------------
+        // We only show the name and creator name
+        val allShoppingLists = shoppingListRepository.readAllLive()
 
-        init {
-            checkInitialized()
-        }
-
-        private fun checkInitialized() {
-            if (user.value == null) {
-                Log.d("ListOverviewViewModel", "User is not initialized. Creating user")
-                navigateToCreateUser()
-            }
-        }
+        // --------------------- Lists Handling --------------------------
 
         fun createNewList() {
             navigateToCreateList()
         }
 
+        fun updateAllLists() {
+            Log.d("ListOverviewViewModel", "Updating all list for this user")
+            vmCoroutine.launch {
+                withContext(Dispatchers.Main) {
+                    _refreshing.value = true
+                }
+                // Launch the update for the own lists
+                updateAllListsFromRemote()
+                withContext(Dispatchers.Main) {
+                    _refreshing.value = false
+                }
+            }
+        }
+
+        private suspend fun updateAllListsFromRemote() {
+            withContext(Dispatchers.IO) {
+                shoppingListRepository.readAllRemote()
+        }
+    }
+
+        // --------------------- Drop Down Menu Handling --------------------------
+
         fun removeUser() {
-            coroutineScope.launch {
+            vmCoroutine.launch {
                 try {
                     shoppingListRepository.resetCreatedByForOwnLists()
                     userRepo.delete()
@@ -87,7 +96,7 @@ class ShoppingListOverviewViewModel
         }
 
         fun clearDatabase() {
-            coroutineScope.launch {
+            vmCoroutine.launch {
                 try {
                     removeItemsAndListsFromDatabase()
                 } catch (ex: Exception) {
@@ -96,38 +105,18 @@ class ShoppingListOverviewViewModel
             }
         }
 
-        fun updateAllLists() {
-            Log.d("ListOverviewViewModel", "Updating all list for this user")
-            coroutineScope.launch {
-                withContext(Dispatchers.Main) {
-                    _refreshing.value = true
-                }
-                // Launch the update for the own lists
-                updateAllListsFromRemote()
-                withContext(Dispatchers.Main) {
-                    _refreshing.value = false
-                }
-            }
-        }
-
-        private suspend fun updateAllListsFromRemote() {
-            withContext(Dispatchers.IO) {
-                shoppingListRepository.readAllRemote()
-            }
-        }
-
-        // -----------------------------------------------
+    // ------------------- Navigation functions -------------------
 
         fun navigateToShoppingList(
             id: Long,
             from: Long,
             title: String,
         ) {
-            _navigateList.value = Triple(id, from, title)
+            _navigateToList.value = Triple(id, from, title)
         }
 
         fun onShoppingListNavigated() {
-            _navigateList.value = Triple(-1, -1, "")
+            _navigateToList.value = Triple(-1, -1, "")
         }
 
         private fun navigateToCreateList() {
@@ -138,15 +127,11 @@ class ShoppingListOverviewViewModel
             _createList.value = false
         }
 
-        private fun navigateToCreateUser() {
-            _navigateUser.value = true
-        }
-
         fun navigateConfig() {
-            _navigateConfig.value = true
+            _navigateToConfig.value = true
         }
 
         fun onConfigNavigated() {
-            _navigateConfig.value = false
+            _navigateToConfig.value = false
         }
     }

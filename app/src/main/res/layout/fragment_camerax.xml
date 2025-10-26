@@ -6,7 +6,7 @@
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.camera.CameraViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.camera.CameraViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

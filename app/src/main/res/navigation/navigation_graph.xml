@@ -7,14 +7,14 @@
 
     <fragment
         android:id="@+id/usernameSelection"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.create.user.StartFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.start.StartFragment"
         android:label="Create a User"
         tools:layout="@layout/fragment_start" />
     <fragment
         android:id="@+id/fragment_overview"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.list.overview.ListOverviewFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.list.overview.ListOverviewFragment"
         android:label="@string/nav_start_overview_title"
-        tools:layout="@layout/fragment_list_overview">
+        tools:layout="@layout/fragment_shopping_list_overview">
         <action
             android:id="@+id/action_overview_to_createShoppinglistFragment"
             app:destination="@id/createShoppinglistFragment" />
@@ -30,7 +30,7 @@
     </fragment>
     <fragment
         android:id="@+id/shoppinglist"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.list.detail.ShoppingListDetailFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.list.detail.ShoppingListDetailFragment"
         android:label="@string/nav_list_title">
         <argument
             android:name="ListID"
@@ -53,7 +53,7 @@
     </fragment>
     <fragment
         android:id="@+id/createShoppinglistFragment"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.list.create.CreateShoppinglistFragment"
         android:label="@string/nav_create_list_title"
         tools:layout="@layout/fragment_create_shoppinglist">
         <action
@@ -69,7 +69,7 @@
     </fragment>
     <fragment
         android:id="@+id/shareFragment"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.share.ShareFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.share.ShareFragment"
         android:label="@string/share_fragment_name">
         <argument
             android:name="listId"
@@ -89,7 +89,7 @@
     </fragment>
     <fragment
         android:id="@+id/listPickerFragment"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.list_picker.ListPickerFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.list.picker.ListPickerFragment"
         android:label="@string/fragment_list_picker_title"
         tools:layout="@layout/fragment_list_picker">
         <action
@@ -100,7 +100,7 @@
 
     <fragment
         android:id="@+id/receipt"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeFragment"
         android:label="@string/receipt_title"
         tools:layout="@layout/fragment_recipe">
         <action
@@ -132,12 +132,12 @@
 
     <fragment
         android:id="@+id/configFragment"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.config.ConfigFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.config.ConfigFragment"
         android:label="@string/config_fragment_title"
         tools:layout="@layout/fragment_config" />
     <fragment
         android:id="@+id/receiptsOverview"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.recipes_overview.RecipesOverviewFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.recipe.overview.RecipesOverviewFragment"
         android:label="@string/receipt_overview_title"
         tools:layout="@layout/fragment_receipts_overview">
         <action
@@ -149,7 +149,7 @@
     </fragment>
     <fragment
         android:id="@+id/receiptEditFragment"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.edit.recipe.RecipeEditFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.recipe.edit.RecipeEditFragment"
         android:label="@string/receipt_edit_title"
         tools:layout="@layout/fragment_recipe_edit">
         <argument
@@ -165,6 +165,6 @@
     </fragment>
     <fragment
         android:id="@+id/cameraFragment"
-        android:name="com.cloudsheeptech.shoppinglist.fragments.camera.CameraFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.recipe.camera.CameraFragment"
         android:label="CameraFragment" />
 </navigation>

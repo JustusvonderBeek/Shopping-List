@@ -2,13 +2,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".fragments.edit.recipe.RecipeEditFragment">
+    tools:context=".ui.recipe.edit.RecipeEditFragment">
 
     <data>
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.edit.recipe.RecipeEditViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.edit.RecipeEditViewModel" />
     </data>
 
     <ScrollView

@@ -2,13 +2,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".fragments.list_picker.ListPickerFragment">
+    tools:context=".ui.list.picker.ListPickerFragment">
 
     <data>
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.recipe.RecipeViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeViewModel" />
     </data>
 
     <LinearLayout

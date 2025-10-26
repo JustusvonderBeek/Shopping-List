@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".fragments.create.list.CreateShoppinglistFragment">
+    tools:context=".ui.list.create.CreateShoppinglistFragment">
 
     <data>
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.create.list.CreateShoppinglistViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.list.create.CreateShoppinglistViewModel" />
     </data>
 
     <LinearLayout

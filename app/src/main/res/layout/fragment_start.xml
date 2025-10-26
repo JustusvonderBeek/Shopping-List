@@ -7,14 +7,14 @@
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.create.user.StartViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.start.StartViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/recapLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".fragments.create.user.StartFragment"
+        tools:context=".ui.start.StartFragment"
         android:orientation="vertical">
 
         <ImageView

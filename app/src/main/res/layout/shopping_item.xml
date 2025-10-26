@@ -14,11 +14,11 @@
 
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.list.detail.ShoppingListItemAdapter.ShoppingItemClickListener" />
+            type="com.cloudsheeptech.shoppinglist.ui.list.detail.ShoppingListItemAdapter.ShoppingItemClickListener" />
 
         <variable
             name="checkClickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.list.detail.ShoppingListItemAdapter.ShoppingItemCheckboxClickListener" />
+            type="com.cloudsheeptech.shoppinglist.ui.list.detail.ShoppingListItemAdapter.ShoppingItemCheckboxClickListener" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

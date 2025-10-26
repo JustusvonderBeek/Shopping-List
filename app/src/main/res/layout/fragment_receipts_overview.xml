@@ -2,13 +2,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".fragments.recipes_overview.RecipesOverviewFragment">
+    tools:context=".ui.recipe.overview.RecipesOverviewFragment">
 
     <data>
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.recipes_overview.RecipesOverviewViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.overview.RecipesOverviewViewModel" />
     </data>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

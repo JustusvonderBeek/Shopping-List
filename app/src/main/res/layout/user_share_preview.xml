@@ -8,10 +8,10 @@
             type="com.cloudsheeptech.shoppinglist.sharing.model.ShareUserPreview" />
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.share.UserShareAdapter.UserShareClickListener" />
+            type="com.cloudsheeptech.shoppinglist.ui.share.UserShareAdapter.UserShareClickListener" />
         <variable
             name="unshareClickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.share.UserShareAdapter.UserShareClickListener" />
+            type="com.cloudsheeptech.shoppinglist.ui.share.UserShareAdapter.UserShareClickListener" />
     </data>
 
     <LinearLayout

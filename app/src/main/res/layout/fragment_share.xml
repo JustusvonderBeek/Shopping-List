@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.share.ShareViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.share.ShareViewModel" />
     </data>
 
     <LinearLayout

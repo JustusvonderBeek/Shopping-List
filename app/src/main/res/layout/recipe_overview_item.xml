@@ -9,7 +9,7 @@
 
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.recipes_overview.RecipesListAdapter.ReceiptClickListener" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.overview.RecipesListAdapter" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.create.recipe.AddRecipeViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.create.AddRecipeViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

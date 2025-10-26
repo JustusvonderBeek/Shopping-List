@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.fragments.list.detail.ShoppingListDetailViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.list.detail.ShoppingListDetailViewModel" />
     </data>
 
     <LinearLayout

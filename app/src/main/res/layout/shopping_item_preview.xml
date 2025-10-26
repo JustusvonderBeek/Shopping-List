@@ -7,7 +7,7 @@
             type="com.cloudsheeptech.shoppinglist.list.model.AppItem" />
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.fragments.list.detail.ItemPreviewAdapter.ItemPreviewClickListener" />
+            type="com.cloudsheeptech.shoppinglist.ui.list.detail.ItemPreviewAdapter.ItemPreviewClickListener" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

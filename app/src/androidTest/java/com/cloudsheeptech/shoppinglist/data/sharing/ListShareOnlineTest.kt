@@ -2,8 +2,8 @@ package com.cloudsheeptech.shoppinglist.data.sharing
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.data.user.ApiUser
-import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
+import com.cloudsheeptech.shoppinglist.user.model.ApiUser
+import com.cloudsheeptech.shoppinglist.user.model.UserRightsEnum
 import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest

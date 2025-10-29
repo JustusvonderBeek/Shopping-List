@@ -1,10 +1,10 @@
 package com.cloudsheeptech.shoppinglist.sharing.repo
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
 import com.cloudsheeptech.shoppinglist.sharing.model.ListShare
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers

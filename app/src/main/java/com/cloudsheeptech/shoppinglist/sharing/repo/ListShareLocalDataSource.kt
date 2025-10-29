@@ -1,11 +1,12 @@
 package com.cloudsheeptech.shoppinglist.sharing.repo
 
 import androidx.lifecycle.LiveData
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.model.DbListShare
+import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.sharing.model.ShareUserPreview
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -33,7 +34,7 @@ class ListShareLocalDataSource
         ) {
             withContext(Dispatchers.IO) {
                 val user = userRepo.read() ?: throw IllegalStateException("user not initialized")
-                val listExists = listRepository.exist(listId, user.OnlineID)
+                val listExists = listRepository.exist(ShoppingListPK(listId, user.OnlineID))
                 if (!listExists) {
                     throw IllegalArgumentException("list does not exist")
                 }

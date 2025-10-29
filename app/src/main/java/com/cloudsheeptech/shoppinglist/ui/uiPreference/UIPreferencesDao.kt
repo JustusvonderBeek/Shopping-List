@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.uiPreference
+package com.cloudsheeptech.shoppinglist.ui.uiPreference
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao

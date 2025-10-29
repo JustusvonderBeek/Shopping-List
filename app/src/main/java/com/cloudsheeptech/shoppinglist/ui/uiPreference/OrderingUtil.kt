@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.uiPreference
+package com.cloudsheeptech.shoppinglist.ui.uiPreference
 
 import android.content.res.Resources
 import com.cloudsheeptech.shoppinglist.R

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.uiPreference
+package com.cloudsheeptech.shoppinglist.ui.uiPreference
 
 enum class Ordering(
     val position: Int,

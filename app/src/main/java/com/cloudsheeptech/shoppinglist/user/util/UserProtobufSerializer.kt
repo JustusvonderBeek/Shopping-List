@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.user
+package com.cloudsheeptech.shoppinglist.user.util
 
 import android.content.Context
 import androidx.datastore.core.CorruptionException
@@ -10,7 +10,7 @@ import com.cloudsheeptech.shoppinglist.UserProto
 import java.io.InputStream
 import java.io.OutputStream
 
-object UserProtobufSerializer : Serializer<UserProto>  {
+object UserProtobufSerializer : Serializer<UserProto> {
     // TODO: https://developer.android.com/topic/libraries/architecture/datastore#groovy
 
     override val defaultValue: UserProto
@@ -19,18 +19,20 @@ object UserProtobufSerializer : Serializer<UserProto>  {
     override suspend fun readFrom(input: InputStream): UserProto {
         try {
             return UserProto.parseFrom(input)
-        } catch (ex : InvalidProtocolBufferException) {
+        } catch (ex: InvalidProtocolBufferException) {
             throw CorruptionException("Cannot read proto.", ex)
         }
     }
 
-    override suspend fun writeTo(t: UserProto, output: OutputStream) {
+    override suspend fun writeTo(
+        t: UserProto,
+        output: OutputStream,
+    ) {
         t.writeTo(output)
     }
-
 }
 
 val Context.userDataStore: DataStore<UserProto> by dataStore(
     fileName = "userinfo.pb",
-    serializer = UserProtobufSerializer
+    serializer = UserProtobufSerializer,
 )

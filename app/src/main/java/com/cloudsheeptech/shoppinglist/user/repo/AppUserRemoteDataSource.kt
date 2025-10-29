@@ -1,10 +1,13 @@
-package com.cloudsheeptech.shoppinglist.data.user
+package com.cloudsheeptech.shoppinglist.user.repo
 
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.list.model.UserAuthenticationFailedException
 import com.cloudsheeptech.shoppinglist.list.model.UserNotCreatedException
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
+import com.cloudsheeptech.shoppinglist.user.model.ApiUser
+import com.cloudsheeptech.shoppinglist.user.model.AppUser
+import com.cloudsheeptech.shoppinglist.user.util.UserFormatAdapter
 import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
@@ -71,7 +74,7 @@ class AppUserRemoteDataSource
             val success =
                 withContext(Dispatchers.IO) {
                     try {
-                        val encodedUser = json.encodeToString(UserFormatAdapter.fromAppToApiUser(user))
+                        val encodedUser = json.encodeToString(UserFormatAdapter.Companion.fromAppToApiUser(user))
                         remoteApi.PUT(
                             "${UrlProviderEnum.BASE_USER_URL.url}/${user.OnlineID}",
                             encodedUser,

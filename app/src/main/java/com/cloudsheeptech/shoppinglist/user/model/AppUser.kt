@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.user
+package com.cloudsheeptech.shoppinglist.user.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

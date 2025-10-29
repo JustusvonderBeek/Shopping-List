@@ -1,9 +1,11 @@
-package com.cloudsheeptech.shoppinglist.data.user
+package com.cloudsheeptech.shoppinglist.user.repo
 
 import android.util.Base64
 import android.util.Log
 import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.user.dao.AppUserDao
+import com.cloudsheeptech.shoppinglist.user.model.AppUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -52,7 +54,11 @@ class AppUserLocalDataSource
             generateNewPassword()
             val passwordString = Base64.encodeToString(tokenArray, 0)
             this.appUser =
-                AppUser(Username = username, Password = passwordString, Created = OffsetDateTime.now())
+                AppUser(
+                    Username = username,
+                    Password = passwordString,
+                    Created = OffsetDateTime.now(),
+                )
         }
 
         // This is only relevant for the online use-case, still keep it here?

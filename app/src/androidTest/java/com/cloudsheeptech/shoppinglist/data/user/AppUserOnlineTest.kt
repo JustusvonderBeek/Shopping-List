@@ -9,6 +9,9 @@ import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.FixMethodOrder

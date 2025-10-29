@@ -1,5 +1,8 @@
-package com.cloudsheeptech.shoppinglist.data.user
+package com.cloudsheeptech.shoppinglist.user.util
 
+import com.cloudsheeptech.shoppinglist.user.model.ApiUser
+import com.cloudsheeptech.shoppinglist.user.model.AppUser
+import com.cloudsheeptech.shoppinglist.user.model.UserRightsEnum
 import java.time.OffsetDateTime
 import javax.inject.Singleton
 

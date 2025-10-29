@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.network
 
-import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

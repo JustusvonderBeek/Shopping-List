@@ -1,7 +1,8 @@
-package com.cloudsheeptech.shoppinglist.data.user
+package com.cloudsheeptech.shoppinglist.user.repo
 
 import android.util.Log
 import androidx.lifecycle.LiveData
+import com.cloudsheeptech.shoppinglist.user.model.AppUser
 import javax.inject.Inject
 import javax.inject.Singleton
 

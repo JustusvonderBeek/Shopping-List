@@ -6,13 +6,10 @@ import javax.inject.Singleton
 
 @Singleton
 class ShoppingListApiTokenProvider : ITokenProvider {
-
-    override suspend fun loadToken(): BearerTokens {
+    override fun loadToken(): BearerTokens {
         val apiToken = BuildConfig.SERVER_URL
         return BearerTokens(apiToken, "")
     }
 
-    override suspend fun refreshToken(): BearerTokens {
-        return BearerTokens("", "")
-    }
+    override suspend fun refreshToken(): BearerTokens = BearerTokens("", "")
 }

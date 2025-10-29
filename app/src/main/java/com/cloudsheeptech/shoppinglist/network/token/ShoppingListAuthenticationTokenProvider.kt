@@ -23,141 +23,141 @@ import javax.inject.Singleton
 
 @Singleton
 class ShoppingListAuthenticationTokenProvider
-@Inject
-constructor(
-    private val payloadProvider: IUserCreationDataProvider,
-    private val appFileDir: String,
-) : ITokenProvider {
-    private val tokenFile = "token.tkn"
+    @Inject
+    constructor(
+        private val payloadProvider: IUserCreationDataProvider,
+        private val appFileDir: String,
+    ) : ITokenProvider {
+        private val tokenFile = "token.tkn"
 
-    private var jwtToken: BearerTokens? = null
+        private var jwtToken: BearerTokens? = null
 
-    private val json =
-        Json {
-            ignoreUnknownKeys = false
-            encodeDefaults = true
-        }
-    private val unauthenticatedClient =
-        HttpClient(OkHttp) {
-            engine {
-                config {
-                    hostnameVerifier { hostname, sslSession ->
-                        HostnameVerification.Companion.verifyHostname(hostname, sslSession)
-                    }
-                }
+        private val json =
+            Json {
+                ignoreUnknownKeys = false
+                encodeDefaults = true
             }
-        }
-
-    override suspend fun loadToken(): BearerTokens? {
-        if (jwtToken != null) {
-            return jwtToken
-        }
-        return ShoppingListTokenStorage.readTokenFromDisk(appFileDir, tokenFile)
-    }
-
-    override suspend fun refreshToken(): BearerTokens? {
-        val token = refreshTokenAndCreateUserIfNotExists()
-        if (token?.accessToken?.isNotEmpty() == true) {
-            this.jwtToken = token
-            ShoppingListTokenStorage.storeTokenToDisk(
-                appFileDir,
-                tokenFile,
-                token
-            )
-        }
-        return token
-    }
-
-    private suspend fun createUserIfNotExists(): Boolean {
-        val success =
-            withContext(Dispatchers.IO) {
-                val finalRequestUrl =
-                    "${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.BASE_USER_URL.url}"
-                try {
-                    val payload =
-                        payloadProvider.provideUserCreationPayload() ?: return@withContext true
-                    val response: HttpResponse =
-                        unauthenticatedClient.post(finalRequestUrl) {
-                            setBody(payload)
+        private val unauthenticatedClient =
+            HttpClient(OkHttp) {
+                engine {
+                    config {
+                        hostnameVerifier { hostname, sslSession ->
+                            HostnameVerification.Companion.verifyHostname(hostname, sslSession)
                         }
-                    if (response.status != HttpStatusCode.Created) {
-                        return@withContext false
                     }
-                    val rawBody = response.bodyAsText(Charsets.UTF_8)
-                    val processingSuccess = payloadProvider.processUserCreationResponse(rawBody)
-                    return@withContext processingSuccess
-                } catch (ex: Exception) {
-                    Log.e(
-                        "TokenProvider",
-                        "Failed to send POST to $finalRequestUrl: $ex",
-                    )
                 }
-                return@withContext false
             }
-        return success
-    }
 
-    @OptIn(InternalSerializationApi::class)
-    private suspend fun loginAndGetToken(): BearerTokens? {
-        val user = payloadProvider.provideLoginPayload() ?: return null
-        var token: BearerTokens? = null
-        try {
-            token =
+        override fun loadToken(): BearerTokens? {
+            if (jwtToken != null) {
+                return jwtToken
+            }
+            return ShoppingListTokenStorage.readTokenFromDisk(appFileDir, tokenFile)
+        }
+
+        override suspend fun refreshToken(): BearerTokens? {
+            val token = refreshTokenAndCreateUserIfNotExists()
+            if (token?.accessToken?.isNotEmpty() == true) {
+                this.jwtToken = token
+                ShoppingListTokenStorage.storeTokenToDisk(
+                    appFileDir,
+                    tokenFile,
+                    token,
+                )
+            }
+            return token
+        }
+
+        private suspend fun createUserIfNotExists(): Boolean {
+            val success =
                 withContext(Dispatchers.IO) {
-                    val response =
-                        unauthenticatedClient.post("${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.LOGIN.url}/${user.second}") {
-                            setBody(user.first)
+                    val finalRequestUrl =
+                        "${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.BASE_USER_URL.url}"
+                    try {
+                        val payload =
+                            payloadProvider.provideUserCreationPayload() ?: return@withContext true
+                        val response: HttpResponse =
+                            unauthenticatedClient.post(finalRequestUrl) {
+                                setBody(payload)
+                            }
+                        if (response.status != HttpStatusCode.Created) {
+                            return@withContext false
                         }
-                    if (response.status != HttpStatusCode.OK) {
+                        val rawBody = response.bodyAsText(Charsets.UTF_8)
+                        val processingSuccess = payloadProvider.processUserCreationResponse(rawBody)
+                        return@withContext processingSuccess
+                    } catch (ex: Exception) {
                         Log.e(
-                            "ShoppingListAuthenticationTokenProvider",
-                            "Login failed, cannot get token",
+                            "TokenProvider",
+                            "Failed to send POST to $finalRequestUrl: $ex",
                         )
-                        return@withContext null
                     }
-                    val loginResponseBody = response.bodyAsText(Charsets.UTF_8)
-                    if (loginResponseBody.isNullOrEmpty()) {
-                        Log.e(
-                            "ShoppingListAuthenticationTokenProvider",
-                            "Login response is empty, failed to get token",
-                        )
-                        return@withContext null
-                    }
-                    val parsedLoginTokenResponse =
-                        json.decodeFromString<NetworkToken>(loginResponseBody)
-                    return@withContext BearerTokens(
-                        parsedLoginTokenResponse.token,
-                        parsedLoginTokenResponse.token,
-                    )
+                    return@withContext false
                 }
-        } catch (ex: ConnectException) {
-            Log.e("ShoppingListAuthenticationTokenProvider", "Network failed during login: $ex")
-        } catch (ex: IllegalArgumentException) {
-            Log.e(
-                "ShoppingListAuthenticationTokenProvider",
-                "Given login response in incorrect format: $ex",
-            )
-        } catch (ex: SerializationException) {
-            Log.e("ShoppingListAuthenticationTokenProvider", "Failed to parse login response: $ex")
-        } catch (ex: Exception) {
-            Log.e("ShoppingListAuthenticationTokenProvider", "Unknown exception during login: $ex")
+            return success
         }
-        if (token != null) {
-            this.jwtToken = token
-            ShoppingListTokenStorage.storeTokenToDisk(
-                appFileDir,
-                tokenFile,
-                token
-            )
-        }
-        return token
-    }
 
-    suspend fun refreshTokenAndCreateUserIfNotExists(): BearerTokens? {
-        Log.d("ShoppingListAuthenticationTokenProvider", "Refreshing the Authentication Token")
-        val authToken: BearerTokens? =
-            withContext(Dispatchers.IO) {
-                try {
+        @OptIn(InternalSerializationApi::class)
+        private suspend fun loginAndGetToken(): BearerTokens? {
+            val user = payloadProvider.provideLoginPayload() ?: return null
+            var token: BearerTokens? = null
+            try {
+                token =
+                    withContext(Dispatchers.IO) {
+                        val response =
+                            unauthenticatedClient.post("${UrlProviderEnum.BASE_URL.url}${UrlProviderEnum.LOGIN.url}/${user.second}") {
+                                setBody(user.first)
+                            }
+                        if (response.status != HttpStatusCode.OK) {
+                            Log.e(
+                                "ShoppingListAuthenticationTokenProvider",
+                                "Login failed, cannot get token",
+                            )
+                            return@withContext null
+                        }
+                        val loginResponseBody = response.bodyAsText(Charsets.UTF_8)
+                        if (loginResponseBody.isNullOrEmpty()) {
+                            Log.e(
+                                "ShoppingListAuthenticationTokenProvider",
+                                "Login response is empty, failed to get token",
+                            )
+                            return@withContext null
+                        }
+                        val parsedLoginTokenResponse =
+                            json.decodeFromString<NetworkToken>(loginResponseBody)
+                        return@withContext BearerTokens(
+                            parsedLoginTokenResponse.token,
+                            parsedLoginTokenResponse.token,
+                        )
+                    }
+            } catch (ex: ConnectException) {
+                Log.e("ShoppingListAuthenticationTokenProvider", "Network failed during login: $ex")
+            } catch (ex: IllegalArgumentException) {
+                Log.e(
+                    "ShoppingListAuthenticationTokenProvider",
+                    "Given login response in incorrect format: $ex",
+                )
+            } catch (ex: SerializationException) {
+                Log.e("ShoppingListAuthenticationTokenProvider", "Failed to parse login response: $ex")
+            } catch (ex: Exception) {
+                Log.e("ShoppingListAuthenticationTokenProvider", "Unknown exception during login: $ex")
+            }
+            if (token != null) {
+                this.jwtToken = token
+                ShoppingListTokenStorage.storeTokenToDisk(
+                    appFileDir,
+                    tokenFile,
+                    token,
+                )
+            }
+            return token
+        }
+
+        suspend fun refreshTokenAndCreateUserIfNotExists(): BearerTokens? {
+            Log.d("ShoppingListAuthenticationTokenProvider", "Refreshing the Authentication Token")
+            val authToken: BearerTokens? =
+                withContext(Dispatchers.IO) {
+                    try {
                     val successfullyCreated = createUserIfNotExists()
                     if (!successfullyCreated) {
                         return@withContext null

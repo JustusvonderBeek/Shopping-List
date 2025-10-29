@@ -10,18 +10,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.cloudsheeptech.shoppinglist.R
-import com.cloudsheeptech.shoppinglist.databinding.FragmentCreateShoppinglistBinding
-import com.cloudsheeptech.shoppinglist.ui.list.detail.ShoppingListDetailFragmentArgs
+import com.cloudsheeptech.shoppinglist.databinding.FragmentCreateShoppingListBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class CreateShoppinglistFragment : Fragment() {
-    private lateinit var binding: FragmentCreateShoppinglistBinding
-    private val viewModel: CreateShoppinglistViewModel by viewModels()
-
-    val args: ShoppingListDetailFragmentArgs by navArgs()
+class CreateShoppingListFragment : Fragment() {
+    private lateinit var binding: FragmentCreateShoppingListBinding
+    private val viewModel: CreateShoppingListViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,7 +27,7 @@ class CreateShoppinglistFragment : Fragment() {
         binding =
             DataBindingUtil.inflate(
                 inflater,
-                R.layout.fragment_create_shoppinglist,
+                R.layout.fragment_create_shopping_list,
                 container,
                 false,
             )
@@ -39,7 +35,7 @@ class CreateShoppinglistFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        viewModel.editTitle.observe(
+        viewModel.navigateToEditTitle.observe(
             viewLifecycleOwner,
             Observer { editTitle ->
                 if (editTitle) {
@@ -52,7 +48,7 @@ class CreateShoppinglistFragment : Fragment() {
             viewLifecycleOwner,
             Observer { navigate ->
                 if (navigate > 0) {
-                    findNavController().navigate(CreateShoppinglistFragmentDirections.actionCreateShoppinglistFragmentToShoppinglist())
+                    findNavController().navigate(CreateShoppingListFragmentDirections.actionCreateShoppinglistFragmentToShoppinglist())
                     viewModel.onCreatedListNavigated()
                 }
             },
@@ -80,7 +76,7 @@ class CreateShoppinglistFragment : Fragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        if (viewModel.editTitle.value != null && viewModel.editTitle.value == true) {
+        if (viewModel.navigateToEditTitle.value != null && viewModel.navigateToEditTitle.value == true) {
             (activity as AppCompatActivity).supportActionBar?.title =
                 getString(R.string.create_list_fragment_title)
         }

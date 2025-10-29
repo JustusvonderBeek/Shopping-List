@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription
 import com.cloudsheeptech.shoppinglist.databinding.ReceiptDescriptionEditTextBinding
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiDescription
 
 class RecipeDescriptionEditAdapter(
     val clickListener: ReceiptDescriptionEditClickListener,

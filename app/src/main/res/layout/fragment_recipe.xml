@@ -2,13 +2,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".ui.recipe.detail.RecipeFragment">
+    tools:context=".ui.recipe.detail.RecipeDetailFragment">
 
     <data>
 
         <variable
             name="recipeVM"
-            type="com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeDetailViewModel" />
 
     </data>
 

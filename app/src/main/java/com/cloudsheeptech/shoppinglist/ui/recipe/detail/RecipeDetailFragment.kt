@@ -26,13 +26,13 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 
 @AndroidEntryPoint
-class RecipeFragment :
+class RecipeDetailFragment :
     Fragment(),
     MenuProvider {
-    private val viewModel: RecipeViewModel by activityViewModels<RecipeViewModel>()
+    private val viewModel: RecipeDetailViewModel by activityViewModels<RecipeDetailViewModel>()
     private lateinit var binding: FragmentRecipeBinding
 
-    private val args: RecipeFragmentArgs by navArgs<RecipeFragmentArgs>()
+    private val args: RecipeDetailFragmentArgs by navArgs<RecipeDetailFragmentArgs>()
 
     override fun onCreateMenu(
         menu: Menu,
@@ -111,7 +111,7 @@ class RecipeFragment :
                 val createdBy = receiptIdAndCreatedBy.second
                 if (receiptId > 0 && createdBy >= 0) {
                     findNavController().navigate(
-                        RecipeFragmentDirections.actionReceiptToReceiptEditFragment(
+                        RecipeDetailFragmentDirections.actionReceiptToReceiptEditFragment(
                             receiptId,
                             createdBy,
                         ),
@@ -205,7 +205,7 @@ class RecipeFragment :
             viewLifecycleOwner,
             Observer { navigate ->
                 if (navigate) {
-                    findNavController().navigate(RecipeFragmentDirections.actionReceiptToListPickerFragment())
+                    findNavController().navigate(RecipeDetailFragmentDirections.actionReceiptToListPickerFragment())
                     viewModel.onSelectListNavigated()
                 }
             },
@@ -216,7 +216,7 @@ class RecipeFragment :
             Observer { (recipeId, createdBy) ->
                 if (recipeId > 0L && createdBy >= 0L) {
                     findNavController().navigate(
-                        RecipeFragmentDirections.actionReceiptToShareFragment(
+                        RecipeDetailFragmentDirections.actionReceiptToShareFragment(
                             recipeId = recipeId,
                             createdBy = createdBy,
                             title = viewModel.title.value!!,

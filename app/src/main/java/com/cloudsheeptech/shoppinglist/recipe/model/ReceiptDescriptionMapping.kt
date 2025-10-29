@@ -1,10 +1,10 @@
-package com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping
+package com.cloudsheeptech.shoppinglist.recipe.model
 
 import androidx.room.Entity
 
 @Entity(
     tableName = "recipe_to_description",
-    primaryKeys = ["recipeId", "createdBy", "descriptionOrder"]
+    primaryKeys = ["recipeId", "createdBy", "descriptionOrder"],
 )
 data class ReceiptDescriptionMapping(
     var recipeId: Long,

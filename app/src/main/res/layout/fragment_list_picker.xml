@@ -8,7 +8,7 @@
 
         <variable
             name="viewModel"
-            type="com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeViewModel" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeDetailViewModel" />
     </data>
 
     <LinearLayout

@@ -6,9 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription
-import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiDescription
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
+import com.cloudsheeptech.shoppinglist.recipe.repo.RecipeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

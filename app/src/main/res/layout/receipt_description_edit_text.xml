@@ -6,11 +6,11 @@
 
         <variable
             name="description"
-            type="com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription" />
+            type="com.cloudsheeptech.shoppinglist.recipe.model.ApiDescription" />
 
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.ui.recipe.edit.RecipeDescriptionEditAdapter" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.edit.RecipeDescriptionEditAdapter.ReceiptDescriptionEditClickListener" />
     </data>
 
     <LinearLayout

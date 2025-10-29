@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping
+package com.cloudsheeptech.shoppinglist.recipe.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

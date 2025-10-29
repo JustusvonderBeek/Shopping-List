@@ -6,7 +6,7 @@
 
         <variable
             name="apiIngredient"
-            type="com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient" />
+            type="com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

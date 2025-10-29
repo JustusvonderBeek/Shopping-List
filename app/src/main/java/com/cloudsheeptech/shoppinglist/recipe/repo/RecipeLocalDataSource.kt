@@ -1,16 +1,23 @@
-package com.cloudsheeptech.shoppinglist.data.recipe
+package com.cloudsheeptech.shoppinglist.recipe.repo
 
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
-import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionMapping
-import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemMapping
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.model.DbItem
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiDescription
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiRecipe
+import com.cloudsheeptech.shoppinglist.recipe.model.DbRecipe
+import com.cloudsheeptech.shoppinglist.recipe.model.ReceiptDescriptionMapping
+import com.cloudsheeptech.shoppinglist.recipe.model.ReceiptItemMapping
+import com.cloudsheeptech.shoppinglist.recipe.model.RecipeIdAndCreatedBy
+import com.cloudsheeptech.shoppinglist.recipe.model.RecipeImage
+import com.cloudsheeptech.shoppinglist.recipe.util.BinaryFileHandler
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -26,7 +33,6 @@ class RecipeLocalDataSource
     constructor(
         database: ShoppingListDatabase,
         private val userRepository: AppUserRepository,
-        private val itemRepository: ItemRepository,
         private val binaryFileHandler: BinaryFileHandler,
     ) {
         private val recipeDao = database.recipeDao()
@@ -88,11 +94,12 @@ class RecipeLocalDataSource
                         "",
                     )
                 ingredients.forEach { ingr ->
-                    var item = itemRepository.readOrCreate(ingr.name)
-                    mapping.itemId = item.id
-                    mapping.quantity = ingr.quantity
-                    mapping.quantityType = ingr.quantityType
-                    recipeItemDao.insert(mapping)
+                    // TODO: Fix this
+//                    var item = itemDao.(ingr.name)
+//                    mapping.itemId = item.id
+//                    mapping.quantity = ingr.quantity
+//                    mapping.quantityType = ingr.quantityType
+//                    recipeItemDao.insert(mapping)
                 }
             }
             return success
@@ -211,7 +218,12 @@ class RecipeLocalDataSource
                 storedRecipe = dbReceipt.toApiReceipt(emptyList(), emptyList())
                 val storedDescriptions = recipeDescriptionDao.read(recipeId, createdBy)
                 storedRecipe.description =
-                    storedDescriptions.map { x -> ApiDescription(x.descriptionOrder, x.description) }
+                    storedDescriptions.map { x ->
+                        ApiDescription(
+                            x.descriptionOrder,
+                            x.description,
+                        )
+                    }
                 val storedIngredients = recipeItemDao.readAllForReceipt(recipeId, createdBy)
                 storedRecipe.ingredients =
                     storedIngredients.map { ingredient ->

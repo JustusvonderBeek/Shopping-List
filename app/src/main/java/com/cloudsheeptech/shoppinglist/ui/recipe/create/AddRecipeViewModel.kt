@@ -3,11 +3,10 @@ package com.cloudsheeptech.shoppinglist.ui.recipe.create
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.recipe.ApiDescription
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
-import com.cloudsheeptech.shoppinglist.dataHandling.ItemListWithName
 import com.cloudsheeptech.shoppinglist.list.model.DbItem
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiDescription
+import com.cloudsheeptech.shoppinglist.recipe.repo.RecipeRepository
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import com.cloudsheeptech.shoppinglist.util.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -27,7 +26,7 @@ class AddRecipeViewModel
         private val job = Job()
         private val addVmScope = CoroutineScope(Dispatchers.IO + job)
 
-        val dbItemListWithName = MutableLiveData<ItemListWithName<DbItem>>()
+        val dbItemListWithName = MutableLiveData<List<DbItem>>()
 
         val receiptName = MutableLiveData<String>()
         val receiptDescription = MutableLiveData<String>()

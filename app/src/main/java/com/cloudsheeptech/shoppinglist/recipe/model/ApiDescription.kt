@@ -1,9 +1,9 @@
-package com.cloudsheeptech.shoppinglist.data.recipe
+package com.cloudsheeptech.shoppinglist.recipe.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ApiDescription (
+data class ApiDescription(
     var order: Int,
     var step: String,
 )

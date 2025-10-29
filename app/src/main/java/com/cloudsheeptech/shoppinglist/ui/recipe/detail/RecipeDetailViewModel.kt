@@ -7,12 +7,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
-import com.cloudsheeptech.shoppinglist.list.model.DbShoppingList
+import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
+import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
+import com.cloudsheeptech.shoppinglist.recipe.repo.RecipeRepository
 import com.cloudsheeptech.shoppinglist.sharing.repo.RecipeShareRepository
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +24,7 @@ import javax.inject.Inject
 import kotlin.math.max
 
 @HiltViewModel
-class RecipeViewModel
+class RecipeDetailViewModel
     @Inject
     constructor(
         private val recipeRepository: RecipeRepository,
@@ -44,7 +45,7 @@ class RecipeViewModel
         private var selectedList: Pair<Long, Long> = Pair(-1L, -1L)
 
         private val _shoppingLists = listRepository.readAllLive()
-        val shoppingLists: LiveData<List<DbShoppingList>> get() = _shoppingLists
+        val shoppingLists: LiveData<List<ShoppingList>> get() = _shoppingLists
 
         var recipe = recipeRepository.readLive(recipeId, createdBy)
 
@@ -111,7 +112,7 @@ class RecipeViewModel
             this.recipeId = recipeId
             this.createdBy = createdBy
             this.ingredientWithPortionsApplied.removeSource(this._ingredients)
-            this.recipe = recipeRepository.readLive(this@RecipeViewModel.recipeId, createdBy)
+            this.recipe = recipeRepository.readLive(this@RecipeDetailViewModel.recipeId, createdBy)
             this._ingredients = this.recipe.map { recipe -> recipe.ingredients }
             this.ingredientWithPortionsApplied.addSource(this._ingredients) { ingredients ->
                 val mappedIngredients =
@@ -222,7 +223,7 @@ class RecipeViewModel
                     "Adding ${selectedIngredients.size} items from $recipeId by $createdBy to list $listId",
                 )
                 listRepository.addAll(listId, createdBy, selectedIngredients)
-                val list = listRepository.read(listId, createdBy) ?: return@launch
+                val list = listRepository.read(ShoppingListPK(listId, createdBy)) ?: return@launch
                 makeToast(selectedIngredients.size, list.title)
                 withContext(Dispatchers.Main) {
                     navigateUp()

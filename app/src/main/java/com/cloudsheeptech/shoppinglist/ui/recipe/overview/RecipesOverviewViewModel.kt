@@ -3,10 +3,10 @@ package com.cloudsheeptech.shoppinglist.ui.recipe.overview
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeRepository
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
+import com.cloudsheeptech.shoppinglist.recipe.model.DbRecipe
+import com.cloudsheeptech.shoppinglist.recipe.model.RecipeImage
+import com.cloudsheeptech.shoppinglist.recipe.repo.RecipeRepository
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

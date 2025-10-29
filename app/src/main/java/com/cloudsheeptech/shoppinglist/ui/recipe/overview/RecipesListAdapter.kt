@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.cloudsheeptech.shoppinglist.R
-import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
 import com.cloudsheeptech.shoppinglist.databinding.RecipeOverviewItemBinding
+import com.cloudsheeptech.shoppinglist.recipe.model.DbRecipe
+import com.cloudsheeptech.shoppinglist.recipe.model.RecipeImage
 
 class RecipesListAdapter(
     val clickListener: ReceiptClickListener,

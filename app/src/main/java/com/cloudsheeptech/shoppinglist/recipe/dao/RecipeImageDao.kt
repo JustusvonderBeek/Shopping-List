@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.recipe
+package com.cloudsheeptech.shoppinglist.recipe.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
@@ -6,11 +6,12 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.cloudsheeptech.shoppinglist.recipe.model.RecipeImage
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RecipeImageDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     fun insert(receipt: RecipeImage): Long
 
     @Update

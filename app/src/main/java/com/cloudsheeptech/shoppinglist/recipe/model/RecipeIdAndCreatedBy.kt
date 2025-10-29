@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.recipe
+package com.cloudsheeptech.shoppinglist.recipe.model
 
 // Used to select custom columns from Room DB
 // No @Entity Annotation needed

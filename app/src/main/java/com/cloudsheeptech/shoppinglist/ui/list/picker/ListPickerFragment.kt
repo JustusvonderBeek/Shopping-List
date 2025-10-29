@@ -17,14 +17,14 @@ import androidx.navigation.fragment.findNavController
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListPickerBinding
 import com.cloudsheeptech.shoppinglist.ui.list.overview.ShoppingListOverviewListAdapter
-import com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeViewModel
+import com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ListPickerFragment :
     Fragment(),
     MenuProvider {
-    private val viewModel: RecipeViewModel by activityViewModels<RecipeViewModel>()
+    private val viewModel: RecipeDetailViewModel by activityViewModels<RecipeDetailViewModel>()
     private lateinit var binding: FragmentListPickerBinding
 
     override fun onCreateMenu(

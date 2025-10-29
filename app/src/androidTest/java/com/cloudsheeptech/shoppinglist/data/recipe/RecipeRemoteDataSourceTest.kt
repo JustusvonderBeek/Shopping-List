@@ -1,8 +1,10 @@
 package com.cloudsheeptech.shoppinglist.data.recipe
 
-import com.cloudsheeptech.shoppinglist.data.user.ApiUser
-import com.cloudsheeptech.shoppinglist.data.user.AppUser
-import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiDescription
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
+import com.cloudsheeptech.shoppinglist.user.model.ApiUser
+import com.cloudsheeptech.shoppinglist.user.model.AppUser
+import com.cloudsheeptech.shoppinglist.user.model.UserRightsEnum
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith

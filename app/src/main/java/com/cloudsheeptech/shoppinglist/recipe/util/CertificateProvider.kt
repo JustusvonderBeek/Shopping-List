@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.recipe
+package com.cloudsheeptech.shoppinglist.recipe.util
 
 import android.content.Context
 import com.cloudsheeptech.shoppinglist.R

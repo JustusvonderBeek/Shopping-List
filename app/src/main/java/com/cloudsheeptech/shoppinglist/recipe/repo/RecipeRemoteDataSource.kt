@@ -1,9 +1,11 @@
-package com.cloudsheeptech.shoppinglist.data.recipe
+package com.cloudsheeptech.shoppinglist.recipe.repo
 
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.list.model.UserNotAuthenticatedException
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiRecipe
+import com.cloudsheeptech.shoppinglist.recipe.model.RecipeMetadata
 import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel

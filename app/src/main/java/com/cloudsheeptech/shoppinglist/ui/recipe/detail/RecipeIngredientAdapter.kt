@@ -5,8 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
 import com.cloudsheeptech.shoppinglist.databinding.ReceiptItemBinding
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
 
 class RecipeIngredientAdapter : ListAdapter<ApiIngredient, RecipeIngredientAdapter.ReceiptItemViewHolder>(ItemDiffCallback()) {
     override fun onCreateViewHolder(

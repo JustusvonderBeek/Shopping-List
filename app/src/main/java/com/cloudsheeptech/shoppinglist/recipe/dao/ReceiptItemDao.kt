@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping
+package com.cloudsheeptech.shoppinglist.recipe.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.cloudsheeptech.shoppinglist.list.model.DbItem
+import com.cloudsheeptech.shoppinglist.recipe.model.ReceiptItemMapping
 import kotlinx.coroutines.flow.Flow
 
 @Dao

@@ -5,11 +5,11 @@
 
         <variable
             name="recipe"
-            type="com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe" />
+            type="com.cloudsheeptech.shoppinglist.recipe.model.DbRecipe" />
 
         <variable
             name="clickListener"
-            type="com.cloudsheeptech.shoppinglist.ui.recipe.overview.RecipesListAdapter" />
+            type="com.cloudsheeptech.shoppinglist.ui.recipe.overview.RecipesListAdapter.ReceiptClickListener" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

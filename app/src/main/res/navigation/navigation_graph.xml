@@ -53,9 +53,9 @@
     </fragment>
     <fragment
         android:id="@+id/createShoppinglistFragment"
-        android:name="com.cloudsheeptech.shoppinglist.ui.list.create.CreateShoppinglistFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.list.create.CreateShoppingListFragment"
         android:label="@string/nav_create_list_title"
-        tools:layout="@layout/fragment_create_shoppinglist">
+        tools:layout="@layout/fragment_create_shopping_list">
         <action
             android:id="@+id/action_createShoppinglistFragment_to_shoppinglist"
             app:destination="@id/shoppinglist" />
@@ -100,7 +100,7 @@
 
     <fragment
         android:id="@+id/receipt"
-        android:name="com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeFragment"
+        android:name="com.cloudsheeptech.shoppinglist.ui.recipe.detail.RecipeDetailFragment"
         android:label="@string/receipt_title"
         tools:layout="@layout/fragment_recipe">
         <action

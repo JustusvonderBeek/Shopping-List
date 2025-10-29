@@ -1,26 +1,26 @@
 package com.cloudsheeptech.shoppinglist.network
 
-import com.cloudsheeptech.shoppinglist.data.user.ApiUser
-import com.cloudsheeptech.shoppinglist.data.user.UserRightsEnum
-import kotlinx.serialization.encodeToString
+import com.cloudsheeptech.shoppinglist.user.model.ApiUser
+import com.cloudsheeptech.shoppinglist.user.model.UserRightsEnum
 import kotlinx.serialization.json.Json
 import java.time.OffsetDateTime
 
 class TestDataProvider : IUserCreationDataProvider {
+    private val json =
+        Json {
+            ignoreUnknownKeys = false
+            encodeDefaults = true
+        }
 
-    private val json = Json {
-        ignoreUnknownKeys = false
-        encodeDefaults = true
-    }
-
-    private val mockUser = ApiUser(
-        0L,
-        "test user",
-        "test password",
-        UserRightsEnum.USER.value,
-        OffsetDateTime.now(),
-        OffsetDateTime.now()
-    )
+    private val mockUser =
+        ApiUser(
+            0L,
+            "test user",
+            "test password",
+            UserRightsEnum.USER.value,
+            OffsetDateTime.now(),
+            OffsetDateTime.now(),
+        )
 
     private var decodedOnlineUser: ApiUser? = null
 

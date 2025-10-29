@@ -3,10 +3,6 @@ package com.cloudsheeptech.shoppinglist.testUtil
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.ShoppingListApplication
-import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
-import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
@@ -17,6 +13,10 @@ import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationT
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
+import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 
 object TestUtil {
     var shoppingListApplication: ShoppingListApplication = ShoppingListApplication()

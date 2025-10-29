@@ -1,8 +1,8 @@
 package com.cloudsheeptech.shoppinglist.util
 
 import androidx.room.TypeConverter
-import com.cloudsheeptech.shoppinglist.data.user.AppUser
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
+import com.cloudsheeptech.shoppinglist.user.model.AppUser
 import kotlinx.serialization.json.Json
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter

@@ -1,18 +1,16 @@
 package com.cloudsheeptech.shoppinglist.util
 
-import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemMapping
-import com.cloudsheeptech.shoppinglist.data.recipe.ApiIngredient
+import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
+import com.cloudsheeptech.shoppinglist.recipe.model.ReceiptItemMapping
 
 class ConversionUtil {
-
     companion object {
-
         fun convertToReceiptItemMapping(
             item: ApiIngredient,
             recipeId: Long,
-            createdBy: Long
-        ): ReceiptItemMapping {
-            return ReceiptItemMapping(
+            createdBy: Long,
+        ): ReceiptItemMapping =
+            ReceiptItemMapping(
                 0L,
                 recipeId,
                 createdBy,
@@ -20,19 +18,15 @@ class ConversionUtil {
                 item.quantity,
                 item.quantityType,
             )
-        }
 
         // TODO: This is not finished yet, include the name and icon
-        fun convertToApiIngredient(item: ReceiptItemMapping): ApiIngredient {
-            return ApiIngredient(
+        fun convertToApiIngredient(item: ReceiptItemMapping): ApiIngredient =
+            ApiIngredient(
                 item.id,
                 "",
                 "",
                 item.quantity,
-                item.quantityType
+                item.quantityType,
             )
-        }
-
     }
-
 }

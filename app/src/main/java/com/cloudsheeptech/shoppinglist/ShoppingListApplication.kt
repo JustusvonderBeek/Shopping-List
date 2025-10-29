@@ -1,11 +1,7 @@
+
 package com.cloudsheeptech.shoppinglist
 
 import android.app.Application
-import com.cloudsheeptech.shoppinglist.data.recipe.BinaryFileHandler
-import com.cloudsheeptech.shoppinglist.data.recipe.CompressionHandler
-import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
@@ -14,12 +10,17 @@ import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.network.IUserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
+import com.cloudsheeptech.shoppinglist.recipe.util.BinaryFileHandler
+import com.cloudsheeptech.shoppinglist.recipe.util.CompressionHandler
 import com.cloudsheeptech.shoppinglist.sharing.repo.ListShareLocalDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.ListShareRemoteDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.ListShareRepository
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 

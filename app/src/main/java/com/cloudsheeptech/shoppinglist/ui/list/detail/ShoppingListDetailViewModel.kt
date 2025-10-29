@@ -9,10 +9,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.cloudsheeptech.shoppinglist.data.uiPreference.Ordering
-import com.cloudsheeptech.shoppinglist.data.uiPreference.OrderingUtil
-import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreference
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.model.AppItem
 import com.cloudsheeptech.shoppinglist.list.model.ItemClassifier
@@ -20,6 +16,10 @@ import com.cloudsheeptech.shoppinglist.list.model.QuantityType
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
+import com.cloudsheeptech.shoppinglist.ui.uiPreference.Ordering
+import com.cloudsheeptech.shoppinglist.ui.uiPreference.OrderingUtil
+import com.cloudsheeptech.shoppinglist.ui.uiPreference.UIPreference
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +27,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.coroutines.EmptyCoroutineContext
 
 @HiltViewModel
 class ShoppingListDetailViewModel
@@ -38,22 +37,40 @@ class ShoppingListDetailViewModel
         private val appUserRepository: AppUserRepository,
         savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
+        // --------------- Repositories variables ---------------------------
+
         // TODO: Replace with repository abstraction
         private val listDao = database.shoppingListDao()
         private val itemDao = database.itemDao()
         private val mappingDao = database.mappingDao()
         private val preferenceDao = database.preferenceDao()
 
-        val itemName = MutableLiveData<String>("")
+        // --------------- Work variables ---------------------------
+
+        private val job = Job()
+        private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
+
+        // --------------- Data variables ---------------------------
 
         private val shoppingListId: Long = savedStateHandle["ListID"]!!
         private val createdBy: Long = savedStateHandle["CreatedBy"]!!
         val title = MutableLiveData<String>(savedStateHandle["Title"]!!)
 
-        private val job = Job()
-        private val localCoroutine = CoroutineScope(Dispatchers.Main + job)
+        val itemName = MutableLiveData<String>("")
 
-        // UI State
+        private val itemsInList =
+            shoppingListRepository.readAllListItemsLive(ShoppingListPK(this.shoppingListId, this.createdBy))
+
+        private val _previewItems = MutableLiveData<List<AppItem>>()
+        val previewItems: LiveData<List<AppItem>> get() = _previewItems
+
+        private val _listInformation =
+            listDao.getListLive(shoppingListId, createdBy).asLiveData(Dispatchers.IO)
+        val listInformation: LiveData<ShoppingList> get() = _listInformation
+
+        val orderedItemsInList = MediatorLiveData<List<AppItem>>()
+
+        // --------------- Navigation and UI variables ---------------------------
 
         private val _ordering = MutableLiveData<Ordering>(Ordering.DEFAULT)
         val ordering: LiveData<Ordering> get() = _ordering
@@ -66,7 +83,6 @@ class ShoppingListDetailViewModel
         private val _emptyList = MutableLiveData<Boolean>(true)
         val emptyList: LiveData<Boolean> get() = _emptyList
 
-        // Navigation
         private val _navigateUp = MutableLiveData<Boolean>(false)
         val navigateUp: LiveData<Boolean> get() = _navigateUp
 
@@ -94,21 +110,6 @@ class ShoppingListDetailViewModel
         private val _scrollDown = MutableLiveData<Int>(-1)
         val scrollDown: LiveData<Int> get() = _scrollDown
 
-        // ---
-
-        // The items in this list
-        private val itemsInList =
-            shoppingListRepository.readAllListItemsLive(this.shoppingListId, this.createdBy)
-
-        private val _previewItems = MutableLiveData<List<AppItem>>()
-        val previewItems: LiveData<List<AppItem>> get() = _previewItems
-
-        private val _listInformation =
-            listDao.getListLive(shoppingListId, createdBy).asLiveData(EmptyCoroutineContext, 5000L)
-        val listInformation: LiveData<ShoppingList> get() = _listInformation
-
-        val orderedItemsInList = MediatorLiveData<List<AppItem>>()
-
         init {
             orderedItemsInList.addSource(_ordering, { value ->
                 val orderedList = getSortedList(orderedItemsInList.value ?: emptyList(), value)
@@ -125,6 +126,8 @@ class ShoppingListDetailViewModel
                 }
             })
         }
+
+        // --------------- Displaying of list ---------------------------
 
         private fun getSortedList(
             listToSort: List<AppItem>,
@@ -188,7 +191,7 @@ class ShoppingListDetailViewModel
             _emptyList.value = false
         }
 
-        // ----
+        // --------------- List operations ---------------------------
 
         private fun createNewItemWithName(name: String): AppItem {
             val user = appUserRepository.read() ?: throw IllegalStateException("user null after login")
@@ -210,7 +213,7 @@ class ShoppingListDetailViewModel
                 Log.i("ShoppinglistViewModel", "Do not add empty item")
                 return
             }
-            localCoroutine.launch {
+            vmCoroutine.launch {
                 val item = createNewItemWithName(itemName.value!!)
                 shoppingListRepository.insertItem(ShoppingListPK(shoppingListId, createdBy), item)
                 val lastPosition = itemsInList.value?.size ?: -1
@@ -224,9 +227,9 @@ class ShoppingListDetailViewModel
 
         fun toggleItem(itemId: Long) {
             Log.d("ShoppinListViewModel", "Toggle item $itemId")
-            localCoroutine.launch {
+            vmCoroutine.launch {
                 val migratedToNewId =
-                    shoppingListRepository.toggleItem(itemId, ShoppingListPK(shoppingListId, createdBy))
+                    shoppingListRepository.toggleItem(ShoppingListPK(shoppingListId, createdBy), itemId)
                 withContext(Dispatchers.Main) {
                     _finished.value = false
                     if (migratedToNewId) {
@@ -240,8 +243,8 @@ class ShoppingListDetailViewModel
             itemId: Int,
             quantity: Long = 1L,
         ) {
-            Log.d("ShoppingListViewModel", "List has ${orderedItemsInList.hasActiveObservers()}")
-            localCoroutine.launch {
+            Log.d("ShoppingListViewModel", "Change quantity of item $itemId by $quantity")
+            vmCoroutine.launch {
                 val migratedToNewId =
                     shoppingListRepository.updateItemCount(
                         ShoppingListPK(shoppingListId, createdBy),
@@ -257,7 +260,7 @@ class ShoppingListDetailViewModel
         }
 
         fun decreaseItemCount(itemId: Int) {
-            localCoroutine.launch {
+            vmCoroutine.launch {
                 val migratedToNewId =
                     shoppingListRepository.updateItemCount(
                         ShoppingListPK(shoppingListId, createdBy),
@@ -276,7 +279,7 @@ class ShoppingListDetailViewModel
             _refreshing.value = true
             viewModelScope.launch {
                 // Already updates the list in the database in case it is newer
-                shoppingListRepository.read(shoppingListId, createdBy)
+                shoppingListRepository.read(ShoppingListPK(shoppingListId, createdBy))
                 withContext(Dispatchers.Main) {
                     _refreshing.value = false
                 }
@@ -288,7 +291,7 @@ class ShoppingListDetailViewModel
                 _previewItems.value = emptyList()
                 return
             }
-            localCoroutine.launch {
+            vmCoroutine.launch {
                 loadMatchingItems(enteredName)
             }
         }
@@ -299,17 +302,18 @@ class ShoppingListDetailViewModel
 
         private suspend fun loadMatchingItems(name: String) {
             withContext(Dispatchers.IO) {
-                val items = itemDao.getItemsFromName(name)
-                Log.d("ShoppinglistViewModel", "Got ${items.size} from database")
-                withContext(Dispatchers.Main) {
-                    _previewItems.value = items
-                }
+                // TODO:
+//                val items = itemDao.getItemsFromName(name)
+//                Log.d("ShoppinglistViewModel", "Got ${items.size} from database")
+//                withContext(Dispatchers.Main) {
+//                    _previewItems.value = items
+//                }
             }
         }
 
         private suspend fun addItemFromPreviewToList(itemId: Long) {
             withContext(Dispatchers.IO) {
-                shoppingListRepository.insertExistingItem(shoppingListId, createdBy, itemId)
+                shoppingListRepository.insertExistingItem(ShoppingListPK(shoppingListId, createdBy), itemId)
                 val lastPosition = itemsInList.value?.size ?: -1
                 withContext(Dispatchers.Main) {
                     scrollDown(lastPosition - 1)
@@ -318,7 +322,7 @@ class ShoppingListDetailViewModel
         }
 
         fun addTappedItem(itemId: Long) {
-            localCoroutine.launch {
+            vmCoroutine.launch {
                 addItemFromPreviewToList(itemId)
             }
             _finished.value = false
@@ -341,7 +345,7 @@ class ShoppingListDetailViewModel
         }
 
         private fun updateListPreference(order: Ordering) {
-            localCoroutine.launch {
+            vmCoroutine.launch {
                 updateOrCreatePreferenceInDatabase(order)
             }
         }

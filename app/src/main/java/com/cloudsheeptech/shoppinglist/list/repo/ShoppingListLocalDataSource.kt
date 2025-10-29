@@ -3,13 +3,13 @@ package com.cloudsheeptech.shoppinglist.list.repo
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.list.dao.ShoppingListDao
 import com.cloudsheeptech.shoppinglist.list.model.ItemToggleStatus
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListOperation
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -118,18 +118,34 @@ class ShoppingListLocalDataSource
                 when (operation) {
                     is ShoppingListOperation.AddItem -> {
                         val itemToAdd = operation.item
-                        shoppingListDao.addItem(itemToAdd, operation.listPk.listId, operation.listPk.createdBy)
+                        shoppingListDao.addItem(
+                            itemToAdd,
+                            operation.listPk.listId,
+                            operation.listPk.createdBy,
+                        )
                         listPk = operation.listPk
                     }
+
                     is ShoppingListOperation.AddItemById -> {
                         val itemIdToAdd = operation.itemId
-                        val user = userRepository.read() ?: throw IllegalStateException("user null after login")
-                        shoppingListDao.addItemById(itemIdToAdd, user.OnlineID, operation.listPk.listId, operation.listPk.createdBy)
+                        val user =
+                            userRepository.read()
+                                ?: throw IllegalStateException("user null after login")
+                        shoppingListDao.addItemById(
+                            itemIdToAdd,
+                            user.OnlineID,
+                            operation.listPk.listId,
+                            operation.listPk.createdBy,
+                        )
                         listPk = operation.listPk
                     }
+
                     is ShoppingListOperation.ChangeQuantityOfItem -> {
                         val listItems =
-                            shoppingListDao.getItems(operation.listPk.listId, operation.listPk.createdBy)
+                            shoppingListDao.getItems(
+                                operation.listPk.listId,
+                                operation.listPk.createdBy,
+                            )
                         val itemToUpdate = listItems.find { item -> item.id == operation.itemId }
                         if (itemToUpdate == null) {
                             throw IllegalArgumentException("item ${operation.itemId} is not contained in list ${operation.listPk}")
@@ -147,8 +163,13 @@ class ShoppingListLocalDataSource
                         )
                         listPk = operation.listPk
                     }
+
                     is ShoppingListOperation.SetItemCheckedStatus -> {
-                        val existingItems = shoppingListDao.getItems(operation.listPK.listId, operation.listPK.createdBy)
+                        val existingItems =
+                            shoppingListDao.getItems(
+                                operation.listPK.listId,
+                                operation.listPK.createdBy,
+                            )
                         val relevantItems =
                             existingItems.filter { item ->
                                 item.id == operation.itemId
@@ -167,7 +188,11 @@ class ShoppingListLocalDataSource
                             newStatus = !relevantItem.checked
                         }
                         relevantItem.checked = newStatus
-                        shoppingListDao.updateItem(relevantItem, operation.listPK.listId, operation.listPK.createdBy)
+                        shoppingListDao.updateItem(
+                            relevantItem,
+                            operation.listPK.listId,
+                            operation.listPK.createdBy,
+                        )
                         listPk = operation.listPK
                     }
 
@@ -186,7 +211,10 @@ class ShoppingListLocalDataSource
 
                     is ShoppingListOperation.RemoveItemById -> {
                         val listItems =
-                            shoppingListDao.getItems(operation.listPk.listId, operation.listPk.createdBy)
+                            shoppingListDao.getItems(
+                                operation.listPk.listId,
+                                operation.listPk.createdBy,
+                            )
                         val itemToRemove = listItems.find { item -> item.id == operation.itemId }
                         if (itemToRemove != null) {
                             shoppingListDao.removeItem(
@@ -200,7 +228,10 @@ class ShoppingListLocalDataSource
 
                     is ShoppingListOperation.RemoveItemByName -> {
                         val listItems =
-                            shoppingListDao.getItems(operation.listPk.listId, operation.listPk.createdBy)
+                            shoppingListDao.getItems(
+                                operation.listPk.listId,
+                                operation.listPk.createdBy,
+                            )
                         val itemToRemove =
                             listItems.find { item ->
                                 item.name.lowercase().equals(operation.itemName.lowercase())
@@ -271,7 +302,6 @@ class ShoppingListLocalDataSource
             }
         }
 
-        // TODO: I guess a context is required here
         fun readAllLive(): LiveData<List<ShoppingList>> {
             val liveLists = shoppingListDao.getAllListsLive()
             return liveLists
@@ -281,7 +311,7 @@ class ShoppingListLocalDataSource
                         list.createdBy.username = correspondingOnlineUser?.username ?: "Username"
                         list
                     }
-                }.asLiveData(EmptyCoroutineContext, 5000L)
+                }.asLiveData(Dispatchers.IO)
         }
 
         fun readAllListItemsLive(

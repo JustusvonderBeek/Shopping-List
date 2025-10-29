@@ -2,24 +2,10 @@ package com.cloudsheeptech.shoppinglist.database
 
 import android.content.Context
 import android.util.Log
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionDao
-import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptDescriptionMapping
-import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemDao
-import com.cloudsheeptech.shoppinglist.data.receiptItemAndDescriptionMapping.ReceiptItemMapping
-import com.cloudsheeptech.shoppinglist.data.recipe.DbRecipe
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeDao
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImage
-import com.cloudsheeptech.shoppinglist.data.recipe.RecipeImageDao
-import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreference
-import com.cloudsheeptech.shoppinglist.data.uiPreference.UIPreferencesDao
-import com.cloudsheeptech.shoppinglist.data.user.AppUser
-import com.cloudsheeptech.shoppinglist.data.user.AppUserDao
-import com.cloudsheeptech.shoppinglist.database.migrations.AppDatabaseMigration
 import com.cloudsheeptech.shoppinglist.list.dao.ItemDao
 import com.cloudsheeptech.shoppinglist.list.dao.ItemListMappingDao
 import com.cloudsheeptech.shoppinglist.list.dao.SharedDao
@@ -29,9 +15,21 @@ import com.cloudsheeptech.shoppinglist.list.model.DbListShare
 import com.cloudsheeptech.shoppinglist.list.model.DbShoppingList
 import com.cloudsheeptech.shoppinglist.list.model.ItemToList
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
+import com.cloudsheeptech.shoppinglist.recipe.dao.ReceiptDescriptionDao
+import com.cloudsheeptech.shoppinglist.recipe.dao.ReceiptItemDao
+import com.cloudsheeptech.shoppinglist.recipe.dao.RecipeDao
+import com.cloudsheeptech.shoppinglist.recipe.dao.RecipeImageDao
+import com.cloudsheeptech.shoppinglist.recipe.model.DbRecipe
+import com.cloudsheeptech.shoppinglist.recipe.model.ReceiptDescriptionMapping
+import com.cloudsheeptech.shoppinglist.recipe.model.ReceiptItemMapping
+import com.cloudsheeptech.shoppinglist.recipe.model.RecipeImage
 import com.cloudsheeptech.shoppinglist.sharing.dao.OnlineUserDao
 import com.cloudsheeptech.shoppinglist.sharing.dao.RecipeShareDao
 import com.cloudsheeptech.shoppinglist.sharing.model.RecipeShare
+import com.cloudsheeptech.shoppinglist.ui.uiPreference.UIPreference
+import com.cloudsheeptech.shoppinglist.ui.uiPreference.UIPreferencesDao
+import com.cloudsheeptech.shoppinglist.user.dao.AppUserDao
+import com.cloudsheeptech.shoppinglist.user.model.AppUser
 import com.cloudsheeptech.shoppinglist.util.DatabaseTypeConverter
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
@@ -45,12 +43,6 @@ import javax.inject.Singleton
         ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class,
     ],
     exportSchema = true,
-    autoMigrations = [
-        AutoMigration(from = 18, to = 19),
-        AutoMigration(from = 19, to = 20, AppDatabaseMigration.Database19To20Migration::class),
-        AutoMigration(from = 20, to = 21, AppDatabaseMigration.Database20To21Migration::class),
-        AutoMigration(from = 34, to = 35, AppDatabaseMigration.Database34To35Migration::class),
-    ],
 )
 @TypeConverters(value = [DatabaseTypeConverter::class])
 abstract class ShoppingListDatabase : RoomDatabase() {

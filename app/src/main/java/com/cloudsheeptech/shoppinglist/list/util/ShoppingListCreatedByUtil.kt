@@ -1,8 +1,8 @@
 package com.cloudsheeptech.shoppinglist.list.util
 
-import com.cloudsheeptech.shoppinglist.data.user.AppUser
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
+import com.cloudsheeptech.shoppinglist.user.model.AppUser
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import javax.inject.Inject
 
 class ShoppingListCreatedByUtil

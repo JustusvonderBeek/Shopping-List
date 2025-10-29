@@ -4,10 +4,6 @@ import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.data.items.ApiItem
-import com.cloudsheeptech.shoppinglist.data.user.AppUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRemoteDataSource
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
-import com.cloudsheeptech.shoppinglist.data.user.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
@@ -19,6 +15,10 @@ import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
+import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert

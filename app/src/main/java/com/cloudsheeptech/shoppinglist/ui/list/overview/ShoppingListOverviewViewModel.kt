@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.cloudsheeptech.shoppinglist.data.user.AppUserRepository
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +25,7 @@ class ShoppingListOverviewViewModel
         private val shoppingListRepository: ShoppingListRepository,
         private val userRepo: AppUserRepository,
     ) : ViewModel() {
+        // ------------------- Async variables -------------------
         private val job = Job()
         private val vmCoroutine = CoroutineScope(Dispatchers.Main + job)
 
@@ -44,10 +45,8 @@ class ShoppingListOverviewViewModel
         private val _navigateToConfig = MutableLiveData<Boolean>(false)
         val navigateToConfig: LiveData<Boolean> get() = _navigateToConfig
 
-        // Data
+        // ------------------- Data -------------------
         val user = userRepo.readLive()
-
-        // We only show the name and creator name
         val allShoppingLists = shoppingListRepository.readAllLive()
 
         // --------------------- Lists Handling --------------------------
@@ -73,8 +72,8 @@ class ShoppingListOverviewViewModel
         private suspend fun updateAllListsFromRemote() {
             withContext(Dispatchers.IO) {
                 shoppingListRepository.readAllRemote()
+            }
         }
-    }
 
         // --------------------- Drop Down Menu Handling --------------------------
 
@@ -105,7 +104,7 @@ class ShoppingListOverviewViewModel
             }
         }
 
-    // ------------------- Navigation functions -------------------
+        // ------------------- Navigation functions -------------------
 
         fun navigateToShoppingList(
             id: Long,

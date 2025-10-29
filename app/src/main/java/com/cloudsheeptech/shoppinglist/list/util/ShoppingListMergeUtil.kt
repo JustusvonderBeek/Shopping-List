@@ -1,6 +1,7 @@
 package com.cloudsheeptech.shoppinglist.list.util
 
 import android.util.Log
+import com.cloudsheeptech.shoppinglist.list.model.AppItem
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListOperation
 import io.ktor.util.toLowerCasePreservingASCIIRules
@@ -11,11 +12,11 @@ class ShoppingListMergeUtil {
         fun getListDelta(
             existingList: ShoppingList,
             newList: ShoppingList,
-        ): Map<ShoppingListOperation, List<ApiItem>> {
-            val addedItems = mutableListOf<ApiItem>()
-            val removeItems = mutableListOf<ApiItem>()
-            val changedQuantityItems = mutableListOf<ApiItem>()
-            val operationsPerformed = HashMap<ShoppingListOperation, List<ApiItem>>()
+        ): Map<ShoppingListOperation, List<AppItem>> {
+            val addedItems = mutableListOf<AppItem>()
+            val removeItems = mutableListOf<AppItem>()
+            val changedQuantityItems = mutableListOf<AppItem>()
+            val operationsPerformed = HashMap<ShoppingListOperation, List<AppItem>>()
 
             if (existingList.listId != newList.listId) {
                 throw IllegalArgumentException(
@@ -27,14 +28,14 @@ class ShoppingListMergeUtil {
                     "ShoppingListMergeHelper",
                     "existing list ${existingList.title}: ${existingList.listId} has different creator ${existingList.createdBy.onlineId} than new list ${newList.createdBy.onlineId}",
                 )
-                operationsPerformed.put(ShoppingListOperation.CHANGE_CREATOR, emptyList())
+//                operationsPerformed.put(ShoppingListOperation., emptyList())
             }
 
             if (existingList.title != newList.title) {
-                operationsPerformed.put(ShoppingListOperation.RENAME_LIST, emptyList())
+//                operationsPerformed.put(ShoppingListOperation.RENAME_LIST, emptyList())
             }
 
-            val newItems = HashMap<String, ApiItem>()
+            val newItems = HashMap<String, AppItem>()
             for (newItem in newList.items) {
                 newItems.put(newItem.name.toLowerCasePreservingASCIIRules(), newItem)
             }
@@ -51,16 +52,16 @@ class ShoppingListMergeUtil {
 
             addedItems.addAll(newItems.values)
             if (addedItems.isNotEmpty()) {
-                operationsPerformed.put(ShoppingListOperation.ADD_ITEM, addedItems)
+//                operationsPerformed.put(ShoppingListOperation.ADD_ITEM, addedItems)
             }
             if (removeItems.isNotEmpty()) {
-                operationsPerformed.put(ShoppingListOperation.REMOVE_ITEM, removeItems)
+//                operationsPerformed.put(ShoppingListOperation.REMOVE_ITEM, removeItems)
             }
             if (changedQuantityItems.isNotEmpty()) {
-                operationsPerformed.put(
-                    ShoppingListOperation.CHANGE_QUANTITY,
-                    changedQuantityItems,
-                )
+//                operationsPerformed.put(
+//                    ShoppingListOperation.CHANGE_QUANTITY,
+//                    changedQuantityItems,
+//                )
             }
 
             return operationsPerformed

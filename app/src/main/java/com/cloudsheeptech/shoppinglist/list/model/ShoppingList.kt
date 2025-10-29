@@ -14,9 +14,7 @@ data class ShoppingList(
     @Contextual
     var synchronized: OffsetDateTime,
     var items: MutableList<AppItem> = mutableListOf(),
-) : EntityIdentifier<ShoppingListPK> {
-    override fun getId(): ShoppingListPK = ShoppingListPK(listId, createdBy.onlineId)
-
+) {
     fun toEntities(): Triple<DbShoppingList, List<DbItem>, List<ItemToList>> {
         val dbList =
             DbShoppingList(

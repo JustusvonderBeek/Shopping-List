@@ -15,10 +15,7 @@ import com.cloudsheeptech.shoppinglist.list.util.ShoppingListCreatedByUtil
 import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import io.ktor.client.network.sockets.SocketTimeoutException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -39,10 +36,10 @@ class ShoppingListRepository
         private val userRepository: AppUserRepository,
     ) {
         init {
-            CoroutineScope(Dispatchers.Main + Job()).launch {
-                Log.d("ShoppingListRepository", "Starting updating process")
-                updateCreatedByToCurrentId()
-            }
+//            CoroutineScope(Dispatchers.Main + Job()).launch {
+//                Log.d("ShoppingListRepository", "Starting updating process")
+//                updateCreatedByToCurrentId()
+//            }
         }
 
         // ----------------------------- Core Functions --------------------------------

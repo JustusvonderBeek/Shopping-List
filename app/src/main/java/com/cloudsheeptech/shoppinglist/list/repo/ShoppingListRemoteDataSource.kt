@@ -2,6 +2,8 @@ package com.cloudsheeptech.shoppinglist.list.repo
 
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.list.api.AppApiProvider
+import com.cloudsheeptech.shoppinglist.list.model.AppItem
+import com.cloudsheeptech.shoppinglist.list.model.QuantityType
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListOperation
 import com.cloudsheeptech.shoppinglist.network.Networking
@@ -137,18 +139,38 @@ class ShoppingListRemoteDataSource
             withContext(Dispatchers.IO) {
                 try {
                     when (operation) {
-                        is ShoppingListOperation.AddItem -> TODO()
-                        is ShoppingListOperation.AddItemById -> TODO()
-                        is ShoppingListOperation.ChangeQuantityOfItem -> TODO()
-                        is ShoppingListOperation.Create -> TODO()
-                        is ShoppingListOperation.Delete -> TODO()
-                        is ShoppingListOperation.RemoveItemById -> TODO()
-                        is ShoppingListOperation.RemoveItemByName -> TODO()
+                        is ShoppingListOperation.AddItem -> {
+                            val response = shoppingListApi.addItem(operation.listPk.listId, operation.item)
+                            response.status == HttpStatusCode.OK
+                        }
+                        is ShoppingListOperation.AddItemById -> {
+                            // TODO: Update to retrieve correct item
+                            val itemToAdd = AppItem(0L, "", "", 1, QuantityType.PIECES, false, 1L)
+                            val response = shoppingListApi.addItem(operation.listPk.listId, itemToAdd)
+                            response.status == HttpStatusCode.OK
+                        }
+                        is ShoppingListOperation.ChangeQuantityOfItem -> {
+                            val response =
+                                shoppingListApi.changeQuantityItem(
+                                    operation.listPk.listId,
+                                    operation.quantityType!!,
+                                )
+                            response.status == HttpStatusCode.OK
+                        }
+                        is ShoppingListOperation.Create -> {
+                        }
+                        is ShoppingListOperation.Delete -> {
+                        }
+                        is ShoppingListOperation.RemoveItemById -> {
+                        }
+                        is ShoppingListOperation.RemoveItemByName -> {
+                        }
                         is ShoppingListOperation.RenameList -> {
                             val response = shoppingListApi.updateTitle(operation.listPk.listId, operation.newName)
                             response.status == HttpStatusCode.OK
                         }
-                        is ShoppingListOperation.SetItemCheckedStatus -> TODO()
+                        is ShoppingListOperation.SetItemCheckedStatus -> {
+                        }
                     }
 //                    val encodedList = json.encodeToString(operation)
 //                    networking.PUT(

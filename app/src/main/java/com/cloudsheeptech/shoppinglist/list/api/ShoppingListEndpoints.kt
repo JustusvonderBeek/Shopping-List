@@ -12,6 +12,7 @@ object ShoppingListEndpoints {
     // Endpoints for modification
     const val ENDPOINT_CREATE_LIST = "/create/list"
     const val ENDPOINT_UPDATE_TITLE = "/list/{listId}/title"
+    const val ENDPOINT_ADD_ITEM = "/list/{listId}/addItem"
 
     // Endpoints for reading data
     const val ENDPOINT_READ_ALL = "/lists"

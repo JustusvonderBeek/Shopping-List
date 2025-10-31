@@ -14,6 +14,7 @@ import com.cloudsheeptech.shoppinglist.list.model.ItemToList
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
 import com.cloudsheeptech.shoppinglist.list.model.QuantityType
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -30,7 +31,7 @@ interface ShoppingListDao {
     /**
      * @return The listId of the newly created list
      */
-    @Insert(onConflict = OnConflictStrategy.Companion.ABORT)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     @Transaction
     fun insertList(list: ShoppingList): Long {
         val (dbList, dbItems, dbItemToList) = list.toEntities()
@@ -46,13 +47,13 @@ interface ShoppingListDao {
         return listId
     }
 
-    @Insert(onConflict = OnConflictStrategy.Companion.ABORT)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertDbList(dbList: DbShoppingList): Long
 
-    @Insert(onConflict = OnConflictStrategy.Companion.ABORT)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertItem(item: DbItem): Long
 
-    @Insert(onConflict = OnConflictStrategy.Companion.ABORT)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertItemMapping(itemMapping: ItemToList): Long
 
     /**
@@ -84,7 +85,7 @@ interface ShoppingListDao {
         val items =
             baseItems.mapIndexed { index, item ->
                 val mapping = mappings[index]
-                AppItem.Companion.fromBaseAndMapping(item, mapping)
+                AppItem.fromBaseAndMapping(item, mapping)
             }
         return items
     }
@@ -251,7 +252,7 @@ interface ShoppingListDao {
             val baseItems = getBaseItemsLive(mappings.map { mapping -> mapping.itemId })
             baseItems.map { items ->
                 mappings.mapIndexed { index, mapping ->
-                    AppItem.Companion.fromBaseAndMapping(items[index], mapping)
+                    AppItem.fromBaseAndMapping(items[index], mapping)
                 }
             }
         }
@@ -274,20 +275,23 @@ interface ShoppingListDao {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getAllListsLive(): Flow<List<ShoppingList>> {
         val allBaseLists = getAllBaseListsLive()
         return allBaseLists.flatMapLatest { lists ->
-            return@flatMapLatest flow {
-                lists.map { list ->
-                    val items = getItems(list.listId, list.createdBy)
-                    ShoppingList(
-                        listId = list.listId,
-                        createdBy = ListCreator(list.createdBy, ""),
-                        title = list.title,
-                        synchronized = list.lastSynchronized,
-                        items = items.toMutableList(),
-                    )
-                }
+            flow {
+                emit(
+                    lists.map { list ->
+                        val items = getItems(list.listId, list.createdBy)
+                        ShoppingList(
+                            listId = list.listId,
+                            createdBy = ListCreator(list.createdBy, ""),
+                            title = list.title,
+                            synchronized = list.lastSynchronized,
+                            items = items.toMutableList(),
+                        )
+                    },
+                )
             }
         }
     }

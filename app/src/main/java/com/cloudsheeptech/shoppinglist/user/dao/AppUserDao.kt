@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.cloudsheeptech.shoppinglist.user.model.AppUser
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AppUserDao {
@@ -15,10 +16,10 @@ interface AppUserDao {
     // Ensure that the primary key of the class is fixed
     // and cannot be changed in the application
 
-    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertUser(appUser: AppUser)
 
-    @Update(onConflict = OnConflictStrategy.Companion.REPLACE)
+    @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateUser(appUser: AppUser)
 
     @Delete
@@ -35,6 +36,9 @@ interface AppUserDao {
 
     @Query("SELECT * FROM user LIMIT 1")
     fun getUserLive(): LiveData<AppUser>
+
+    @Query("SELECT * FROM user LIMIT 1")
+    fun getUserFlow(): Flow<AppUser>
 
     // IMPORTANT: This function is only meant for debugging purposes, not for
     // production

@@ -11,7 +11,7 @@ import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -305,10 +305,15 @@ class ShoppingListLocalDataSource
         fun readAllLive(): LiveData<List<ShoppingList>> {
             val liveLists = shoppingListDao.getAllListsLive()
             return liveLists
-                .map { lists ->
+                .combine(userRepository.readLiveFlow()) { lists, user ->
                     lists.map { list ->
-                        val correspondingOnlineUser = onlineUserRepository.read(list.createdBy.onlineId)
-                        list.createdBy.username = correspondingOnlineUser?.username ?: "Username"
+                        val correspondingCreatorName =
+                            if (list.createdBy.onlineId != user.OnlineID) {
+                                onlineUserRepository.read(list.createdBy.onlineId)?.username ?: "user not found"
+                            } else {
+                                user.Username
+                            }
+                        list.createdBy.username = correspondingCreatorName
                         list
                     }
                 }.asLiveData(Dispatchers.IO)

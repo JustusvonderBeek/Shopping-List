@@ -9,6 +9,7 @@ import com.cloudsheeptech.shoppinglist.user.model.AppUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
@@ -87,6 +88,8 @@ class AppUserLocalDataSource
         // TODO: Think again about this, can the data in the object be different
         // to the data in this object? -> Think YES
         fun getUserLive(): LiveData<AppUser> = appUserDao.getUserLive()
+
+        fun getUserFlow(): Flow<AppUser> = appUserDao.getUserFlow()
 
         private suspend fun loadUserFromDataStore(): AppUser? {
             var loadedUser: AppUser? = null

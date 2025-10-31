@@ -3,6 +3,7 @@ package com.cloudsheeptech.shoppinglist.user.repo
 import android.util.Log
 import androidx.lifecycle.LiveData
 import com.cloudsheeptech.shoppinglist.user.model.AppUser
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,6 +36,8 @@ class AppUserRepository
         fun read(): AppUser? = appUserLocalSource.getUser()
 
         fun readLive(): LiveData<AppUser> = appUserLocalSource.getUserLive()
+
+        fun readLiveFlow(): Flow<AppUser> = appUserLocalSource.getUserFlow()
 
         fun loaded(): Boolean = appUserLocalSource.loaded()
 

@@ -22,6 +22,8 @@ import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpStatusCode
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
@@ -229,6 +231,12 @@ object TestUtil {
                 shoppingListApi = Mockito.mock(ShoppingListApi::class.java)
                 shoppingListApi.stub {
                     onBlocking { create(any()) }.doReturn(ApiResult("success", null))
+                    val httpReponse = Mockito.mock(HttpResponse::class.java)
+                    Mockito
+                        .`when`(httpReponse.status)
+                        .doReturn(HttpStatusCode.OK)
+
+                    onBlocking { addItem(any(), any()) }.doReturn(httpReponse)
                 }
             }
             remoteShoppingListDataSource =

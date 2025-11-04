@@ -26,58 +26,69 @@ class ShoppingListRepositoryTest {
     @Rule
     val testRule: TestRule = DisableOnDebug(Timeout.seconds(500))
 
+    private suspend fun createList() {
+        val shoppingListApplication = TestUtil.shoppingListApplication
+        val appUserRepository = shoppingListApplication.appUserRepository
+        appUserRepository.create("test user")
+        val testUser = appUserRepository.read()
+        Assert.assertNotNull(testUser) // Even though this is not what we want to test, we need a valid online id in order to proceed
+
+        val shoppingListRepository = shoppingListApplication.shoppingListRepository
+        val newShoppingList = shoppingListRepository.create("new list")
+        Assert.assertNotNull(newShoppingList)
+
+        val emptyReadList =
+            shoppingListRepository.read(
+                ShoppingListPK(newShoppingList.listId, newShoppingList.createdBy.onlineId),
+            )
+        Assert.assertNotNull(emptyReadList)
+        Assert.assertEquals(newShoppingList, emptyReadList)
+
+        // Testing the same with items
+        val newListWithItems = shoppingListRepository.create("new list with items")
+        val operations = mutableListOf<ShoppingListOperation>()
+        for (i in 1..3) {
+            val item =
+                AppItem(
+                    name = "item $i",
+                    icon = "icon $i",
+                    quantity = i.toLong(),
+                    quantityType = QuantityType.PIECES,
+                    checked = false,
+                    addedBy = testUser!!.OnlineID,
+                )
+            val addItem =
+                ShoppingListOperation.AddItem(
+                    ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
+                    item,
+                )
+            operations.add(addItem)
+            item.id = i.toLong()
+            newListWithItems.items.add(item)
+        }
+        shoppingListRepository.update(operations)
+
+        // Offline should always be correct, but online as well?
+        val storedListWithItems =
+            shoppingListRepository.read(
+                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
+            )
+        Assert.assertNotNull(storedListWithItems)
+        Assert.assertEquals(newListWithItems, storedListWithItems)
+    }
+
     @Test
     fun testCreateListOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
             TestUtil.initialize(clearDatabase = true, true)
-            val shoppingListApplication = TestUtil.shoppingListApplication
-            val appUserRepository = shoppingListApplication.appUserRepository
-            appUserRepository.create("test user")
-            val testUser = appUserRepository.read()
-            Assert.assertNotNull(testUser) // Even though this is not what we want to test, we need a valid online id in order to proceed
+            createList()
+        }
 
-            val shoppingListRepository = shoppingListApplication.shoppingListRepository
-            val newShoppingList = shoppingListRepository.create("new list")
-            Assert.assertNotNull(newShoppingList)
-
-            val emptyReadList =
-                shoppingListRepository.read(
-                    ShoppingListPK(newShoppingList.listId, newShoppingList.createdBy.onlineId),
-                )
-            Assert.assertNotNull(emptyReadList)
-            Assert.assertEquals(newShoppingList, emptyReadList)
-
-            // Testing the same with items
-            val newListWithItems = shoppingListRepository.create("new list with items")
-            val operations = mutableListOf<ShoppingListOperation>()
-            for (i in 1..3) {
-                val item =
-                    AppItem(
-                        name = "item $i",
-                        icon = "icon $i",
-                        quantity = i.toLong(),
-                        quantityType = QuantityType.PIECES,
-                        checked = false,
-                        addedBy = testUser!!.OnlineID,
-                    )
-                val addItem =
-                    ShoppingListOperation.AddItem(
-                        ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                        item,
-                    )
-                operations.add(addItem)
-                item.id = i.toLong()
-                newListWithItems.items.add(item)
-            }
-            shoppingListRepository.update(operations)
-
-            // Offline should always be correct, but online as well?
-            val storedListWithItems =
-                shoppingListRepository.read(
-                    ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                )
-            Assert.assertNotNull(storedListWithItems)
-            Assert.assertEquals(newListWithItems, storedListWithItems)
+    @Test
+    fun testCreateList() =
+        runTest(EmptyCoroutineContext, Duration.parse("3m")) {
+            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = false)
+            createList()
         }
 
 //    @Test

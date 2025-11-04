@@ -1,19 +1,6 @@
 package com.cloudsheeptech.shoppinglist.data.recipe
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
-import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
-import com.cloudsheeptech.shoppinglist.recipe.repo.RecipeLocalDataSource
-import com.cloudsheeptech.shoppinglist.recipe.util.BinaryFileHandler
-import com.cloudsheeptech.shoppinglist.recipe.util.CompressionHandler
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
-import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,23 +8,23 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class RecipeOfflineTest {
-    private fun createRecipeLocalDataSource(): RecipeLocalDataSource {
-        val context = ApplicationProvider.getApplicationContext<Application>()
-        val database = ShoppingListDatabase.getInstance(context)
-        val localUserRepository = AppUserLocalDataSource(database)
-        val payloadProvider = UserCreationDataProvider(localUserRepository)
-        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp/")
-        val networking = Networking(tokenProvider)
-        val remoteUserRepository = AppUserRemoteDataSource(networking)
-        val appUserRepository = AppUserRepository(localUserRepository, remoteUserRepository)
-        val itemLocalDataSource = ItemLocalDataSource(database)
-        val itemRepository = ItemRepository(itemLocalDataSource)
-        val compressionHandler = CompressionHandler()
-        val binaryFileHandler = BinaryFileHandler(context, compressionHandler)
-        val recipeLocalDataSource =
-            RecipeLocalDataSource(database, appUserRepository, itemRepository, binaryFileHandler)
-        return recipeLocalDataSource
-    }
+//    private fun createRecipeLocalDataSource(): RecipeLocalDataSource {
+//        val context = ApplicationProvider.getApplicationContext<Application>()
+//        val database = ShoppingListDatabase.getInstance(context)
+//        val localUserRepository = AppUserLocalDataSource(database)
+//        val payloadProvider = UserCreationDataProvider(localUserRepository)
+//        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp/")
+//        val networking = Networking(tokenProvider)
+//        val remoteUserRepository = AppUserRemoteDataSource(networking)
+//        val appUserRepository = AppUserRepository(localUserRepository, remoteUserRepository)
+//        val itemLocalDataSource = ItemLocalDataSource(database)
+//        val itemRepository = ItemRepository(itemLocalDataSource)
+//        val compressionHandler = CompressionHandler()
+//        val binaryFileHandler = BinaryFileHandler(context, compressionHandler)
+//        val recipeLocalDataSource =
+//            RecipeLocalDataSource(database, appUserRepository, itemRepository, binaryFileHandler)
+//        return recipeLocalDataSource
+//    }
 
     private fun createNIngredients(items: Int): List<ApiIngredient> {
         val mutableIngredientList = mutableListOf<ApiIngredient>()

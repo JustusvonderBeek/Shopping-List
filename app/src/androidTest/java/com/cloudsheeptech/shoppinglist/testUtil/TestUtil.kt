@@ -7,6 +7,7 @@ import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.api.AppApiProvider
 import com.cloudsheeptech.shoppinglist.list.api.ShoppingListApi
 import com.cloudsheeptech.shoppinglist.list.api.interceptor.AuthInterceptor
+import com.cloudsheeptech.shoppinglist.list.model.ApiResult
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRemoteDataSource
@@ -22,6 +23,9 @@ import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.stub
 
 object TestUtil {
     var shoppingListApplication: ShoppingListApplication = ShoppingListApplication()
@@ -222,7 +226,10 @@ object TestUtil {
             val apiProvider = AppApiProvider(authInterceptor, appUserRepository)
             var shoppingListApi = apiProvider.shoppingListApi
             if (mockRemoteToDoNothing) {
-                shoppingListApi = Mockito.mock(ShoppingListApi::class.java, Mockito.RETURNS_DEFAULTS)
+                shoppingListApi = Mockito.mock(ShoppingListApi::class.java)
+                shoppingListApi.stub {
+                    onBlocking { create(any()) }.doReturn(ApiResult("success", null))
+                }
             }
             remoteShoppingListDataSource =
                 ShoppingListRemoteDataSource(networking, appUserRepository, shoppingListApi)

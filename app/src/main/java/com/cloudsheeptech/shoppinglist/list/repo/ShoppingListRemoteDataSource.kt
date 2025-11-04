@@ -1,7 +1,7 @@
 package com.cloudsheeptech.shoppinglist.list.repo
 
 import android.util.Log
-import com.cloudsheeptech.shoppinglist.list.api.AppApiProvider
+import com.cloudsheeptech.shoppinglist.list.api.ShoppingListApi
 import com.cloudsheeptech.shoppinglist.list.model.AppItem
 import com.cloudsheeptech.shoppinglist.list.model.QuantityType
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
@@ -27,7 +27,7 @@ class ShoppingListRemoteDataSource
     constructor(
         private val networking: Networking,
         private val userRepository: AppUserRepository,
-        private val appApiProvider: AppApiProvider,
+        private val shoppingListApi: ShoppingListApi,
     ) {
         private val json =
             Json {
@@ -40,8 +40,6 @@ class ShoppingListRemoteDataSource
                         contextual(OffsetDateTime::class, OffsetDateTimeFormatHandler())
                     }
             }
-
-        private val shoppingListApi = appApiProvider.shoppingListApi
 
         suspend fun create(list: ShoppingList): Boolean {
             return withContext(Dispatchers.IO) {

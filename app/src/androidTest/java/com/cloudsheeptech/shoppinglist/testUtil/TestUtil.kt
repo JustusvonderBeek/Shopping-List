@@ -4,10 +4,14 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.ShoppingListApplication
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.list.api.AppApiProvider
+import com.cloudsheeptech.shoppinglist.list.api.ShoppingListApi
+import com.cloudsheeptech.shoppinglist.list.api.interceptor.AuthInterceptor
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRemoteDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
+import com.cloudsheeptech.shoppinglist.list.util.ShoppingListCreatedByUtil
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserLocalDataSource
@@ -17,20 +21,26 @@ import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
+import org.mockito.Mockito
 
 object TestUtil {
     var shoppingListApplication: ShoppingListApplication = ShoppingListApplication()
+    var mockRemoteToDoNothing: Boolean = false
 
-    fun initialize(clearDatabase: Boolean = true) {
+    fun initialize(
+        clearDatabase: Boolean = true,
+        mockRemoteToDoNothing: Boolean = false,
+    ) {
+        this.mockRemoteToDoNothing = mockRemoteToDoNothing
         createDatabase(clearDatabase)
         createLocalAppUserDS()
         createNetworking()
         createRemoteAppUserDS()
         createAppUserRepository()
         createItemLocalDataSource()
-        createItemRepository()
-        createItemToListLocalDataSource()
-        createItemToListRepository()
+//        createItemRepository()
+//        createItemToListLocalDataSource()
+//        createItemToListRepository()
         createLocalShoppingListDataSource()
         createRemoteShoppingListDataSource()
         createShoppingListRepository()
@@ -62,7 +72,8 @@ object TestUtil {
             shoppingListApplication.database = database
         }
         if (clear) {
-            database.clearAllTables()
+            val application = ApplicationProvider.getApplicationContext<Application>()
+            application.deleteDatabase("shopping_list_database")
         }
         return database
     }
@@ -134,41 +145,41 @@ object TestUtil {
         return itemLocalDataSource
     }
 
-    private fun createItemRepository(): ItemRepository {
-        val itemRepository: ItemRepository?
-        if (shoppingListApplication.isItemRepositoryInitialized()) {
-            itemRepository = shoppingListApplication.itemRepository
-        } else {
-            val itemLocalDataSource = createItemLocalDataSource()
-            itemRepository = ItemRepository(itemLocalDataSource)
-            shoppingListApplication.itemRepository = itemRepository
-        }
-        return itemRepository
-    }
+//    private fun createItemRepository(): ItemRepository {
+//        val itemRepository: ItemRepository?
+//        if (shoppingListApplication.isItemRepositoryInitialized()) {
+//            itemRepository = shoppingListApplication.itemRepository
+//        } else {
+//            val itemLocalDataSource = createItemLocalDataSource()
+//            itemRepository = ItemRepository(itemLocalDataSource)
+//            shoppingListApplication.itemRepository = itemRepository
+//        }
+//        return itemRepository
+//    }
 
-    private fun createItemToListLocalDataSource(): ItemToListLocalDataSource {
-        val itemToListLocalDataSource: ItemToListLocalDataSource?
-        if (shoppingListApplication.isItemToListLocalDSInitialized()) {
-            itemToListLocalDataSource = shoppingListApplication.itemToListLocalDataSource
-        } else {
-            val database = createDatabase()
-            itemToListLocalDataSource = ItemToListLocalDataSource(database)
-            shoppingListApplication.itemToListLocalDataSource = itemToListLocalDataSource
-        }
-        return itemToListLocalDataSource
-    }
+//    private fun createItemToListLocalDataSource(): ItemToListLocalDataSource {
+//        val itemToListLocalDataSource: ItemToListLocalDataSource?
+//        if (shoppingListApplication.isItemToListLocalDSInitialized()) {
+//            itemToListLocalDataSource = shoppingListApplication.itemToListLocalDataSource
+//        } else {
+//            val database = createDatabase()
+//            itemToListLocalDataSource = ItemToListLocalDataSource(database)
+//            shoppingListApplication.itemToListLocalDataSource = itemToListLocalDataSource
+//        }
+//        return itemToListLocalDataSource
+//    }
 
-    private fun createItemToListRepository(): ItemToListRepository {
-        val itemToListRepository: ItemToListRepository?
-        if (shoppingListApplication.isItemToListRepositoryInitialized()) {
-            itemToListRepository = shoppingListApplication.itemToListRepository
-        } else {
-            val itemToListLocalDataSource = createItemToListLocalDataSource()
-            itemToListRepository = ItemToListRepository(itemToListLocalDataSource)
-            shoppingListApplication.itemToListRepository = itemToListRepository
-        }
-        return itemToListRepository
-    }
+//    private fun createItemToListRepository(): ItemToListRepository {
+//        val itemToListRepository: ItemToListRepository?
+//        if (shoppingListApplication.isItemToListRepositoryInitialized()) {
+//            itemToListRepository = shoppingListApplication.itemToListRepository
+//        } else {
+//            val itemToListLocalDataSource = createItemToListLocalDataSource()
+//            itemToListRepository = ItemToListRepository(itemToListLocalDataSource)
+//            shoppingListApplication.itemToListRepository = itemToListRepository
+//        }
+//        return itemToListRepository
+//    }
 
     private fun createLocalShoppingListDataSource(): ShoppingListLocalDataSource {
         val localShoppingListDataSource: ShoppingListLocalDataSource?
@@ -177,8 +188,8 @@ object TestUtil {
         } else {
             val database = createDatabase()
             val appUserRepository = createAppUserRepository()
-            val itemRepository = createItemRepository()
-            val itemToListRepository = createItemToListRepository()
+//            val itemRepository = createItemRepository()
+//            val itemToListRepository = createItemToListRepository()
             val localUserDs = AppUserLocalDataSource(database)
             val payloadProvider = UserCreationDataProvider(localUserDs)
             val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp")
@@ -189,11 +200,9 @@ object TestUtil {
                 OnlineUserRepository(onlineUserLocalDataSource, onlineUserRemoteDataSource)
             localShoppingListDataSource =
                 ShoppingListLocalDataSource(
-                    database,
+                    database.shoppingListDao(),
                     appUserRepository,
                     onlineUserRepository,
-                    itemRepository,
-                    itemToListRepository,
                 )
             shoppingListApplication.shoppingListLocalDataSource = localShoppingListDataSource
         }
@@ -207,8 +216,16 @@ object TestUtil {
         } else {
             val networking = createNetworking()
             val appUserRepository = createAppUserRepository()
+            val payloadProvider = UserCreationDataProvider(shoppingListApplication.appUserLocalDataSource)
+            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tokens/")
+            val authInterceptor = AuthInterceptor(tokenProvider)
+            val apiProvider = AppApiProvider(authInterceptor, appUserRepository)
+            var shoppingListApi = apiProvider.shoppingListApi
+            if (mockRemoteToDoNothing) {
+                shoppingListApi = Mockito.mock(ShoppingListApi::class.java, Mockito.RETURNS_DEFAULTS)
+            }
             remoteShoppingListDataSource =
-                ShoppingListRemoteDataSource(networking, appUserRepository)
+                ShoppingListRemoteDataSource(networking, appUserRepository, shoppingListApi)
             shoppingListApplication.shoppingListRemoteDataSource = remoteShoppingListDataSource
         }
         return remoteShoppingListDataSource
@@ -222,11 +239,15 @@ object TestUtil {
             val localShoppingListDataSource = createLocalShoppingListDataSource()
             val remoteShoppingListDataSource = createRemoteShoppingListDataSource()
             val appUserRepository = createAppUserRepository()
+            val onlineUserRepository = createOnlineUserRepository()
+            val listUtil = ShoppingListCreatedByUtil(appUserRepository)
             shoppingListRepository =
                 ShoppingListRepository(
+                    listUtil,
                     localShoppingListDataSource,
                     remoteShoppingListDataSource,
                     appUserRepository,
+                    onlineUserRepository,
                 )
             shoppingListApplication.shoppingListRepository = shoppingListRepository
         }

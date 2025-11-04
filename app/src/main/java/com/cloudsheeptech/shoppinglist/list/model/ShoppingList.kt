@@ -43,10 +43,12 @@ data class ShoppingList(
         val thisLastSync = synchronized.truncatedTo(ChronoUnit.SECONDS)
         val otherLastSync = other.synchronized.truncatedTo(ChronoUnit.SECONDS)
 
-        if (!OffsetDateTimeUtil.Companion.areDateTimesEqual(thisLastSync, otherLastSync)) return false
-        if (items != other.items) return false
-
-        return true
+        if (!OffsetDateTimeUtil.areDateTimesEqual(thisLastSync, otherLastSync)) return false
+        if (items.size != other.items.size) return false
+        // Expect the order to be equal when sorting alphabetically
+        val orderedItems = items.sortedBy { item -> item.name }
+        val otherOrderedItems = other.items.sortedBy { item -> item.name }
+        return orderedItems == otherOrderedItems
     }
 
     override fun hashCode(): Int {

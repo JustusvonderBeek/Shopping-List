@@ -68,13 +68,16 @@ interface ShoppingListDao {
         val list =
             ShoppingList(
                 listId = listId,
-                createdBy = ListCreator(createdBy, "todo"),
+                createdBy = ListCreator(createdBy, "username"),
                 title = baseList.title,
                 synchronized = baseList.lastSynchronized,
                 items = items.toMutableList(),
             )
         return list
     }
+
+    @Query("SELECT * FROM items WHERE lower(name) = lower(:name)")
+    fun getBaseItem(name: String): DbItem?
 
     fun getItems(
         listId: Long,
@@ -133,9 +136,12 @@ interface ShoppingListDao {
         createdBy: Long,
     ) {
         val (baseItem, itemMapping) = item.toEntities(Pair(listId, createdBy))
-        if (item.id == null || item.id!! <= 0) {
+        val dbItem = getBaseItem(item.name)
+        if (dbItem == null) {
             val itemId = insertItem(baseItem)
             itemMapping.itemId = itemId
+        } else {
+            itemMapping.itemId = dbItem.id
         }
         insertItemMapping(itemMapping)
     }

@@ -13,6 +13,7 @@ import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.list.model.UserNotAuthenticatedException
 import com.cloudsheeptech.shoppinglist.list.util.ShoppingListCreatedByUtil
 import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
+import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import io.ktor.client.network.sockets.SocketTimeoutException
 import kotlinx.coroutines.Dispatchers
@@ -34,14 +35,8 @@ class ShoppingListRepository
         private val localDataSource: ShoppingListLocalDataSource,
         private val remoteDataSource: ShoppingListRemoteDataSource,
         private val userRepository: AppUserRepository,
+        private val onlineUserRepository: OnlineUserRepository,
     ) {
-        init {
-//            CoroutineScope(Dispatchers.Main + Job()).launch {
-//                Log.d("ShoppingListRepository", "Starting updating process")
-//                updateCreatedByToCurrentId()
-//            }
-        }
-
         // ----------------------------- Core Functions --------------------------------
 
         suspend fun create(title: String): ShoppingList {
@@ -97,7 +92,16 @@ class ShoppingListRepository
 
         suspend fun read(listPk: ShoppingListPK): ShoppingList? =
             withContext(Dispatchers.IO) {
-                localDataSource.read(listPk.listId, listPk.createdBy)
+                val list = localDataSource.read(listPk.listId, listPk.createdBy)
+                val currentUser = userRepository.read() ?: return@withContext null
+                if (listPk.createdBy == currentUser.OnlineID) {
+                    list?.createdBy?.username = currentUser.Username
+                } else {
+                    val remoteUsername = onlineUserRepository.read(listPk.createdBy)?.username ?: "User not found"
+                    // TODO: Try to fetch username from remote
+                    list?.createdBy?.username = remoteUsername
+                }
+                list
             }
 
         suspend fun readAllRemote() {

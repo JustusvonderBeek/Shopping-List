@@ -60,5 +60,5 @@ data class ShoppingList(
         return result
     }
 
-    override fun toString(): String = "$title ($listId,${createdBy.onlineId})"
+    override fun toString(): String = "$title ($listId,${createdBy.onlineId}, ${createdBy.username}, Items: ${items.size})"
 }

@@ -14,6 +14,7 @@ import com.cloudsheeptech.shoppinglist.list.model.ItemToList
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
 import com.cloudsheeptech.shoppinglist.list.model.QuantityType
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
+import com.cloudsheeptech.shoppinglist.user.model.AppUser
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -65,16 +66,34 @@ interface ShoppingListDao {
     ): ShoppingList? {
         val baseList = getBaseList(listId, createdBy) ?: return null
         val items = getItems(listId, createdBy)
+        val onlineUser = getUser(createdBy)
+        val localUser = getLocalUser()
+        val username =
+            if (localUser == null && onlineUser == null) {
+                "User not found"
+            } else if (localUser != null && createdBy == localUser.OnlineID) {
+                localUser.Username
+            } else if (onlineUser != null && createdBy == onlineUser.onlineId) {
+                onlineUser.username
+            } else {
+                "User not found"
+            }
         val list =
             ShoppingList(
                 listId = listId,
-                createdBy = ListCreator(createdBy, "username"),
+                createdBy = ListCreator(createdBy, username),
                 title = baseList.title,
                 synchronized = baseList.lastSynchronized,
                 items = items.toMutableList(),
             )
         return list
     }
+
+    @Query("SELECT * FROM online_user WHERE onlineId = :userId")
+    fun getUser(userId: Long): ListCreator?
+
+    @Query("SELECT * FROM user LIMIT 1")
+    fun getLocalUser(): AppUser?
 
     @Query("SELECT * FROM items WHERE lower(name) = lower(:name)")
     fun getBaseItem(name: String): DbItem?

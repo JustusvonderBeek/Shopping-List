@@ -92,16 +92,7 @@ class ShoppingListRepository
 
         suspend fun read(listPk: ShoppingListPK): ShoppingList? =
             withContext(Dispatchers.IO) {
-                val list = localDataSource.read(listPk.listId, listPk.createdBy)
-                val currentUser = userRepository.read() ?: return@withContext null
-                if (listPk.createdBy == currentUser.OnlineID) {
-                    list?.createdBy?.username = currentUser.Username
-                } else {
-                    val remoteUsername = onlineUserRepository.read(listPk.createdBy)?.username ?: "User not found"
-                    // TODO: Try to fetch username from remote
-                    list?.createdBy?.username = remoteUsername
-                }
-                list
+                localDataSource.read(listPk.listId, listPk.createdBy)
             }
 
         suspend fun readAllRemote() {

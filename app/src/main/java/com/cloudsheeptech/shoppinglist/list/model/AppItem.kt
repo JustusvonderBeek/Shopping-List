@@ -28,7 +28,7 @@ data class AppItem(
                 quantityType = this.quantityType,
                 checked = this.checked,
                 addedBy = this.addedBy,
-                opCount = 0,
+                opCount = this.opCount,
             )
 
         return Pair(baseItem, itemMapping)
@@ -49,4 +49,6 @@ data class AppItem(
                 opCount = mapping.opCount,
             )
     }
+
+    override fun toString(): String = "($name, $icon, $quantity, $quantityType, $checked, $addedBy, $opCount)"
 }

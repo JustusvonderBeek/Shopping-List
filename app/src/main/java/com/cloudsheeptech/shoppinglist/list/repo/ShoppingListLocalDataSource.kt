@@ -118,13 +118,13 @@ class ShoppingListLocalDataSource
                 when (operation) {
                     is ShoppingListOperation.AddItem -> {
                         val itemToAdd = operation.item
-                        itemToAdd.opCount.plus(1)
                         shoppingListDao.addItemAndItemMapping(
                             itemToAdd,
                             operation.listPk.listId,
                             operation.listPk.createdBy,
                         )
                         listPk = operation.listPk
+                        Log.i("ShoppingListLocalDataSource", "Added item ${operation.item} to list ${operation.listPk}")
                     }
 
                     is ShoppingListOperation.AddItemByName -> {
@@ -139,9 +139,14 @@ class ShoppingListLocalDataSource
                             operation.listPk.createdBy,
                         )
                         listPk = operation.listPk
+                        Log.i("ShoppingListLocalDataSource", "Added item ${operation.itemName} to list ${operation.listPk}")
                     }
 
                     is ShoppingListOperation.ChangeQuantityOfItem -> {
+                        if (operation.quantity <= 0) {
+                            Log.w("ShoppingListLocalDataSource", "${operation.quantity} <= 0: change quantity is skipped")
+                            return@withContext null
+                        }
                         val listItems =
                             shoppingListDao.getItems(
                                 operation.listPk.listId,
@@ -149,18 +154,22 @@ class ShoppingListLocalDataSource
                             )
                         val itemToUpdate = listItems.find { item -> item.name.equals(operation.itemName, ignoreCase = true) }
                         if (itemToUpdate == null) {
-                            throw IllegalArgumentException("item ${operation.itemName} is not contained in list ${operation.listPk}")
+//                            throw IllegalArgumentException("item ${operation.itemName} is not contained in list ${operation.listPk}")
+                            return@withContext null
                         }
-                        if (operation.quantity != null) {
-                            itemToUpdate.quantity = operation.quantity
-                        }
+                        itemToUpdate.quantity = operation.quantity
                         if (operation.quantityType != null) {
                             itemToUpdate.quantityType = operation.quantityType
                         }
+                        itemToUpdate.opCount = itemToUpdate.opCount.plus(1)
                         shoppingListDao.updateItem(
                             itemToUpdate,
                             operation.listPk.listId,
                             operation.listPk.createdBy,
+                        )
+                        Log.i(
+                            "ShoppingListLocalDataSource",
+                            "Updated quantity of ${operation.itemName} to ${operation.quantity} of type ${operation.quantityType ?: "not given"}",
                         )
                         listPk = operation.listPk
                     }
@@ -175,9 +184,14 @@ class ShoppingListLocalDataSource
                             existingItems.filter { item ->
                                 item.name.equals(operation.itemName, ignoreCase = true)
                             }
-                        if (relevantItems.size == 0) {
+                        if (relevantItems.isEmpty()) {
+                            Log.w("ShoppingListLocalDataSource", "Item ${operation.itemName} to toggle not found, skipping update")
                             listPk = operation.listPK
                             return@withContext null
+                        } else if (relevantItems.size > 1) {
+                            throw IllegalStateException(
+                                "More than one item with name ${operation.itemName} found! THIS SHOULD NEVER BE POSSIBLE",
+                            )
                         }
                         val relevantItem = relevantItems[0]
                         var newStatus: Boolean
@@ -189,10 +203,15 @@ class ShoppingListLocalDataSource
                             newStatus = !relevantItem.checked
                         }
                         relevantItem.checked = newStatus
+                        relevantItem.opCount = relevantItem.opCount.plus(1)
                         shoppingListDao.updateItem(
                             relevantItem,
                             operation.listPK.listId,
                             operation.listPK.createdBy,
+                        )
+                        Log.i(
+                            "ShoppingListLocalDataSource",
+                            "Update checked of ${operation.itemName} in list ${operation.listPK} to ${relevantItem.checked}",
                         )
                         listPk = operation.listPK
                     }
@@ -208,6 +227,7 @@ class ShoppingListLocalDataSource
                             )
                         val newListId = shoppingListDao.insertList(newList)
                         listPk = ShoppingListPK(newListId, operation.creator.onlineId)
+                        Log.i("ShoppingListLocalDataSource", "Created new list $newList")
                     }
 
                     is ShoppingListOperation.RemoveItemByName -> {
@@ -226,6 +246,12 @@ class ShoppingListLocalDataSource
                                 operation.listPk.listId,
                                 operation.listPk.createdBy,
                             )
+                            Log.i("ShoppingListLocalDataSource", "Removed item ${operation.itemName} from list ${operation.listPk}")
+                        } else {
+                            Log.i(
+                                "ShoppingListLocalDataSource",
+                                "Item ${operation.itemName} not removed because not found in list ${operation.listPk}",
+                            )
                         }
                         listPk = operation.listPk
                     }
@@ -236,11 +262,13 @@ class ShoppingListLocalDataSource
                             operation.listPk.listId,
                             operation.listPk.createdBy,
                         )
+                        Log.i("ShoppingListLocalDataSource", "Renamed list ${operation.listPk} to ${operation.newName}")
                         listPk = operation.listPk
                     }
 
                     is ShoppingListOperation.Delete -> {
                         shoppingListDao.deleteList(operation.listPk.listId, operation.listPk.createdBy)
+                        Log.i("ShoppingListLocalDataSource", "Delete list ${operation.listPk}")
                         return@withContext null
                     }
                 }
@@ -328,19 +356,6 @@ class ShoppingListLocalDataSource
             listId: Long,
             createdBy: Long,
         ): LiveData<ShoppingList> = shoppingListDao.getListLive(listId, createdBy).asLiveData(EmptyCoroutineContext, 5000L)
-
-        /**
-         * Removes the list from the local data storage.
-         * Returns immediately if the list cannot be found
-         */
-        suspend fun delete(
-            listId: Long,
-            createdBy: Long,
-        ) {
-            withContext(Dispatchers.IO) {
-                shoppingListDao.deleteList(listId, createdBy)
-            }
-        }
 
         suspend fun deleteAll() {
             withContext(Dispatchers.IO) {

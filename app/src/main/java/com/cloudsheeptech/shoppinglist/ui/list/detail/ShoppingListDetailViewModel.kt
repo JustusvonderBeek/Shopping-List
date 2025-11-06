@@ -402,7 +402,7 @@ class ShoppingListDetailViewModel
         fun onDeleteConfirmed() {
             _confirmDelete.value = false
             viewModelScope.launch {
-                shoppingListRepository.delete(shoppingListId, createdBy)
+//                shoppingListRepository.delete(shoppingListId, createdBy)
                 withContext(Dispatchers.Main) {
                     navigateUp()
                 }

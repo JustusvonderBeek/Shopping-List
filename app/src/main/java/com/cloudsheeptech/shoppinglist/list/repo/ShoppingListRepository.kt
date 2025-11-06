@@ -203,18 +203,6 @@ class ShoppingListRepository
             return updateListOnlineAndRetryOnFailure(updateListTitleOperation)
         }
 
-        suspend fun delete(
-            listId: Long,
-            createdBy: Long,
-        ) {
-            try {
-                localDataSource.delete(listId, createdBy)
-                remoteDataSource.deleteShoppingList(listId, createdBy)
-            } catch (ex: Exception) {
-                Log.e("ShoppingListRepository", "Failed to delete list: $ex")
-            }
-        }
-
         suspend fun deleteAll() {
             localDataSource.deleteAll()
             remoteDataSource.deleteAll()

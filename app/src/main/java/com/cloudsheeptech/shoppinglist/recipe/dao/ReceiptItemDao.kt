@@ -30,7 +30,7 @@ interface ReceiptItemDao {
         createdBy: Long,
     ): List<ReceiptItemMapping>
 
-    @Query("SELECT * FROM recipe_to_item JOIN items ON itemId = items.id WHERE recipeId = :receiptId AND createdBy = :createdBy")
+    @Query("SELECT * FROM recipe_to_item JOIN items ON itemId = items.name WHERE recipeId = :receiptId AND createdBy = :createdBy")
     fun readAllForReceiptJoined(
         receiptId: Long,
         createdBy: Long,

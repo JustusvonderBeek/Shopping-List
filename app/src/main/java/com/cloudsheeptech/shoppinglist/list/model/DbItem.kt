@@ -1,14 +1,18 @@
 package com.cloudsheeptech.shoppinglist.list.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "items")
 data class DbItem(
-    @PrimaryKey(autoGenerate = true)
-    var id: Long,
+//    @PrimaryKey(autoGenerate = true)
+//    var id: Long,
+    @PrimaryKey(autoGenerate = false)
+    @ColumnInfo(collate = ColumnInfo.NOCASE, index = true)
     var name: String,
     // Can be null or "" in case no icon is specified
+    @ColumnInfo(defaultValue = "")
     var icon: String,
 ) : Comparable<DbItem> {
     override fun equals(other: Any?): Boolean {
@@ -20,18 +24,10 @@ data class DbItem(
         return false
     }
 
-    override fun compareTo(other: DbItem): Int {
-        if (other.id == this.id) {
-            return 0
-        }
-        if (other.id > this.id) {
-            return -1
-        }
-        return 1
-    }
+    override fun compareTo(other: DbItem): Int = other.name.compareTo(this.name, ignoreCase = true)
 
     override fun hashCode(): Int {
-        var result = id.hashCode()
+        var result = name.hashCode()
         result = 31 * result + name.hashCode()
         return result
     }

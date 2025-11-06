@@ -239,47 +239,47 @@ class ShoppingListRepository
                 Log.e("ShoppingListRepository", "User null after login screen: $ex")
                 throw ex
             } catch (ex: Exception) {
-                Log.e("ShoppingListRepository", "Failed to insert item ${item.id}: $ex")
+                Log.e("ShoppingListRepository", "Failed to insert item ${item.name}: $ex")
             }
         }
 
         suspend fun insertExistingItem(
             listPk: ShoppingListPK,
-            itemId: Long,
+            itemName: String,
         ) {
             try {
-                val addItemOperation = ShoppingListOperation.AddItemById(listPk, itemId)
+                val addItemOperation = ShoppingListOperation.AddItemByName(listPk, itemName)
                 val updatedLocalList = localDataSource.update(addItemOperation)
                 if (updatedLocalList == null) {
-                    Log.e("ShoppingListRepository", "Failed to add item $itemId")
+                    Log.e("ShoppingListRepository", "Failed to add item $itemName")
                     return
                 }
                 updateListOnlineAndRetryOnFailure(addItemOperation)
             } catch (ex: Exception) {
-                Log.e("ShoppingListRepository", "Failed to add item $itemId: $ex")
+                Log.e("ShoppingListRepository", "Failed to add item $itemName: $ex")
             }
         }
 
         suspend fun removeItem(
             listPK: ShoppingListPK,
-            itemId: Long,
+            itemName: String,
         ) {
             try {
-                val removeItemOperation = ShoppingListOperation.RemoveItemById(listPK, itemId)
+                val removeItemOperation = ShoppingListOperation.RemoveItemByName(listPK, itemName)
                 val updatedLocalList = localDataSource.update(removeItemOperation)
                 if (updatedLocalList == null) {
-                    Log.e("ShoppingListRepository", "Failed to remove item $itemId")
+                    Log.e("ShoppingListRepository", "Failed to remove item $itemName")
                     return
                 }
                 updateListOnlineAndRetryOnFailure(removeItemOperation)
             } catch (ex: Exception) {
-                Log.e("ShoppingListRepository", "Failed to remove item $itemId: $ex")
+                Log.e("ShoppingListRepository", "Failed to remove item $itemName: $ex")
             }
         }
 
         suspend fun updateItemCount(
             listPK: ShoppingListPK,
-            itemId: Long,
+            itemName: String,
             quantity: Long,
             quantityType: QuantityType? = null,
         ): Boolean {
@@ -287,14 +287,14 @@ class ShoppingListRepository
                 val quantityOperation =
                     ShoppingListOperation.ChangeQuantityOfItem(
                         listPK,
-                        itemId,
+                        itemName,
                         quantity,
                         quantityType,
                     )
                 val updatedLocalList =
                     localDataSource.update(quantityOperation)
                 if (updatedLocalList == null) {
-                    Log.e("ShoppingListRepository", "Failed to update quantity for item $itemId")
+                    Log.e("ShoppingListRepository", "Failed to update quantity for item $itemName")
                     return false
                 }
                 updateListOnlineAndRetryOnFailure(quantityOperation)
@@ -304,7 +304,7 @@ class ShoppingListRepository
             } catch (ex: UserNotAuthenticatedException) {
                 Log.e("ShoppingListRepository", "User not authenticated: $ex")
             } catch (ex: Exception) {
-                Log.e("ShoppingListRepository", "Failed to update quantity for item $itemId: $ex")
+                Log.e("ShoppingListRepository", "Failed to update quantity for item $itemName: $ex")
             }
             return false
         }
@@ -321,18 +321,18 @@ class ShoppingListRepository
 
         suspend fun toggleItem(
             listPk: ShoppingListPK,
-            itemId: Long,
+            itemName: String,
         ): Boolean {
             try {
                 val toggleOperation =
                     ShoppingListOperation.SetItemCheckedStatus(
                         listPk,
-                        itemId,
+                        itemName,
                         ItemToggleStatus.TOGGLE,
                     )
                 val updatedLocalList = localDataSource.update(toggleOperation)
                 if (updatedLocalList == null) {
-                    Log.e("ShoppingListRepository", "Failed to toggle item $itemId in list $listPk")
+                    Log.e("ShoppingListRepository", "Failed to toggle item $itemName in list $listPk")
                     return false
                 }
                 updateListOnlineAndRetryOnFailure(toggleOperation)

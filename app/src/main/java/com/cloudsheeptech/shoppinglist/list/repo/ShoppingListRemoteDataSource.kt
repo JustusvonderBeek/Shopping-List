@@ -141,9 +141,9 @@ class ShoppingListRemoteDataSource
                             val response = shoppingListApi.addItem(operation.listPk.listId, operation.item)
                             response.status == HttpStatusCode.OK
                         }
-                        is ShoppingListOperation.AddItemById -> {
+                        is ShoppingListOperation.AddItemByName -> {
                             // TODO: Update to retrieve correct item
-                            val itemToAdd = AppItem(0L, "", "", 1, QuantityType.PIECES, false, 1L)
+                            val itemToAdd = AppItem("", "", 1, QuantityType.PIECES, false, 1L, opCount = 0)
                             val response = shoppingListApi.addItem(operation.listPk.listId, itemToAdd)
                             response.status == HttpStatusCode.OK
                         }
@@ -159,7 +159,7 @@ class ShoppingListRemoteDataSource
                         }
                         is ShoppingListOperation.Delete -> {
                         }
-                        is ShoppingListOperation.RemoveItemById -> {
+                        is ShoppingListOperation.RemoveItemByName -> {
                         }
                         is ShoppingListOperation.RemoveItemByName -> {
                         }

@@ -17,29 +17,29 @@ interface ItemDao {
     @Update
     fun updateItem(dbItem: DbItem)
 
-    @Query("DELETE FROM items WHERE id = :key")
-    fun deleteItem(key: Long)
+    @Query("DELETE FROM items WHERE name = :name")
+    fun deleteItem(name: String)
 
     @Query("DELETE FROM items")
     fun deleteAll()
 
-    @Query("SELECT * FROM items WHERE id = :key")
-    fun getItemLive(key: Long): LiveData<DbItem?>
+    @Query("SELECT * FROM items WHERE name = :name")
+    fun getItemLive(name: String): LiveData<DbItem?>
 
-    @Query("SELECT * FROM items WHERE id = :key")
-    fun getItemFlow(key: Long): Flow<DbItem>
+    @Query("SELECT * FROM items WHERE name = :name")
+    fun getItemFlow(name: String): Flow<DbItem>
 
-    @Query("SELECT * FROM items WHERE id = :key")
-    fun getItem(key: Long): DbItem?
+    @Query("SELECT * FROM items WHERE name = :name")
+    fun getItem(name: String): DbItem?
 
-    @Query("SELECT * FROM items WHERE id IN (:keys)")
-    fun getItems(keys: List<Long>): List<DbItem>
+    @Query("SELECT * FROM items WHERE name IN (:names)")
+    fun getItems(names: List<String>): List<DbItem>
 
-    @Query("SELECT * FROM items WHERE id IN (:keys)")
-    fun getItemsLive(keys: List<Long>): LiveData<List<DbItem>>
+    @Query("SELECT * FROM items WHERE name IN (:names)")
+    fun getItemsLive(names: List<String>): LiveData<List<DbItem>>
 
     @Query(
-        "SELECT i.id, i.name, i.icon,m.quantity as quantity, m.quantityType as quantityType ,m.checked as checked,m.addedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.itemId WHERE m.listId = :listId AND m.createdBy = :createdBy",
+        "SELECT i.name, i.icon,m.quantity as quantity, m.quantityType as quantityType, m.checked as checked, m.addedBy as addedBy, m.opCount as opCount FROM items i INNER JOIN item_to_list_mapping m ON i.name = m.item WHERE m.listId = :listId AND m.createdBy = :createdBy",
     )
     fun getItemsWithQuantityInListLive(
         listId: Long,
@@ -47,7 +47,7 @@ interface ItemDao {
     ): LiveData<List<AppItem>>
 
     @Query(
-        "SELECT i.id, i.name, i.icon,m.quantity as quantity, m.quantityType as quantityType ,m.checked as checked,m.addedBy as addedBy FROM items i INNER JOIN item_to_list_mapping m ON i.id = m.itemId WHERE m.listId = :listId AND m.createdBy = :createdBy",
+        "SELECT i.name, i.icon,m.quantity as quantity, m.quantityType as quantityType ,m.checked as checked,m.addedBy as addedBy, m.opCount as opCount FROM items i INNER JOIN item_to_list_mapping m ON i.name = m.item WHERE m.listId = :listId AND m.createdBy = :createdBy",
     )
     fun getItemsWithQuantityInList(
         listId: Long,
@@ -66,6 +66,6 @@ interface ItemDao {
     @Query("SELECT * FROM items")
     fun getAllItems(): List<DbItem>
 
-    @Query("SELECT COUNT(id) FROM items")
+    @Query("SELECT COUNT(name) FROM items")
     fun getCurrentId(): Long
 }

@@ -26,8 +26,8 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.cloudsheeptech.shoppinglist.R
 import com.cloudsheeptech.shoppinglist.databinding.FragmentListDetailBinding
-import com.cloudsheeptech.shoppinglist.ui.list.SwipeToDeleteHandler
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
+import com.cloudsheeptech.shoppinglist.ui.list.SwipeToDeleteHandler
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -137,7 +137,7 @@ class ShoppingListDetailFragment :
                 },
                 ShoppingListItemAdapter.ShoppingItemCheckboxClickListener { itemId ->
                     Log.d("ShoppinglistFragment", "Tapped on item $itemId to toggle checkbox")
-                    viewModel.toggleItem(itemId.toLong())
+                    viewModel.toggleItem(itemId)
                 },
                 amountName,
                 ShoppingListPK(listId = shoppingListId, createdBy = createdBy),

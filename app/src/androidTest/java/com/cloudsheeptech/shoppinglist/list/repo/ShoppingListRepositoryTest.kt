@@ -56,6 +56,7 @@ class ShoppingListRepositoryTest {
                     quantityType = QuantityType.PIECES,
                     checked = false,
                     addedBy = testUser!!.OnlineID,
+                    opCount = 0,
                 )
             val addItem =
                 ShoppingListOperation.AddItem(
@@ -63,7 +64,6 @@ class ShoppingListRepositoryTest {
                     item,
                 )
             operations.add(addItem)
-            item.id = i.toLong()
             newListWithItems.items.add(item)
         }
         shoppingListRepository.update(operations)

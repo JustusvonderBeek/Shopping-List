@@ -47,16 +47,16 @@ class ItemPreviewAdapter(
     }
 
     class ItemPreviewClickListener(
-        val clickListener: (id: Long) -> Unit,
+        val clickListener: (id: String) -> Unit,
     ) {
-        fun onClick(item: AppItem) = clickListener(item.id!!)
+        fun onClick(item: AppItem) = clickListener(item.name!!)
     }
 
     class ItemDiffCallback : DiffUtil.ItemCallback<AppItem>() {
         override fun areItemsTheSame(
             oldAppItem: AppItem,
             newAppItem: AppItem,
-        ): Boolean = oldAppItem.id == newAppItem.id && oldAppItem.name == newAppItem.name && oldAppItem.icon == newAppItem.icon
+        ): Boolean = oldAppItem.name.equals(newAppItem.name, ignoreCase = true) && oldAppItem.icon == newAppItem.icon
 
         override fun areContentsTheSame(
             oldAppItem: AppItem,

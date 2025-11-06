@@ -10,16 +10,16 @@ import com.cloudsheeptech.shoppinglist.list.model.ItemToList
 
 @Dao
 interface ItemListMappingDao {
-    @Insert(onConflict = OnConflictStrategy.Companion.ABORT)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertMapping(itemToList: ItemToList): Long
 
-    @Update(onConflict = OnConflictStrategy.Companion.REPLACE)
+    @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateMapping(itemToList: ItemToList)
 
 //    @Query("DELETE FROM item_to_list_mapping WHERE  = :key")
 //    fun deleteMapping(key: Long)
 
-    @Query("DELETE FROM item_to_list_mapping WHERE itemId = :itemId AND listId = :listId AND createdBy = :createdBy")
+    @Query("DELETE FROM item_to_list_mapping WHERE item = :itemId AND listId = :listId AND createdBy = :createdBy")
     fun deleteMappingItemListId(
         itemId: Long,
         listId: Long,
@@ -56,13 +56,13 @@ interface ItemListMappingDao {
         createdBy: Long,
     ): LiveData<List<ItemToList>>
 
-    @Query("SELECT * FROM item_to_list_mapping WHERE itemId = :itemId")
+    @Query("SELECT * FROM item_to_list_mapping WHERE item = :itemId")
     fun getMappingsForItem(itemId: Long): List<ItemToList>
 
-    @Query("SELECT * FROM item_to_list_mapping WHERE itemId = :itemId")
+    @Query("SELECT * FROM item_to_list_mapping WHERE item = :itemId")
     fun getMappingsForItemLive(itemId: Long): LiveData<List<ItemToList>>
 
-    @Query("SELECT * FROM item_to_list_mapping WHERE itemId = :itemId AND listId = :listId AND createdBy = :createdBy")
+    @Query("SELECT * FROM item_to_list_mapping WHERE item = :itemId AND listId = :listId AND createdBy = :createdBy")
     fun getMappingForItemAndList(
         itemId: Long,
         listId: Long,

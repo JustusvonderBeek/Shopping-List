@@ -30,19 +30,19 @@ class ShoppingListItemAdapter(
                     return@withContext
                 }
                 val item = currentList[position]
-                if (item.id == null) {
+                if (item.name == null) {
                     Log.e("ShoppingListItemAdapter", "Cannot remove item ${item.name} in list $listPk because id is not set")
                     return@withContext
                 }
                 Log.d("ShoppingListItemAdapter", "Removing item ${item.name} at $position")
-                shoppingListRepository.removeItem(listPk, item.id!!)
+                shoppingListRepository.removeItem(listPk, item.name!!)
             } catch (ex: Exception) {
                 Log.e("ShoppingListItemAdapter", "Failed to remove item: $ex")
             }
         }
     }
 
-    override fun getItemId(position: Int): Long = currentList[position].id ?: 0L
+    override fun getItemId(position: Int): Long = currentList[position].name.toByte().toLong()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -90,25 +90,25 @@ class ShoppingListItemAdapter(
     }
 
     class ShoppingItemClickListener(
-        val clickListener: (wordId: Int, count: Int) -> Unit,
+        val clickListener: (wordId: String, count: Int) -> Unit,
     ) {
         fun onClick(
             item: AppItem,
             count: Int,
-        ) = clickListener(item.id!!.toInt(), count)
+        ) = clickListener(item.name, count)
     }
 
     class ShoppingItemCheckboxClickListener(
-        val clickListener: (itemId: Int) -> Unit,
+        val clickListener: (itemId: String) -> Unit,
     ) {
-        fun onClick(item: AppItem) = clickListener(item.id!!.toInt())
+        fun onClick(item: AppItem) = clickListener(item.name)
     }
 
     class WordDiffCallback : DiffUtil.ItemCallback<AppItem>() {
         override fun areItemsTheSame(
             oldItem: AppItem,
             newItem: AppItem,
-        ): Boolean = oldItem.id == newItem.id
+        ): Boolean = oldItem.name.equals(newItem.name, ignoreCase = true)
 
         override fun areContentsTheSame(
             oldItem: AppItem,

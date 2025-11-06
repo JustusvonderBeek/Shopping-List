@@ -118,7 +118,8 @@ class ShoppingListLocalDataSource
                 when (operation) {
                     is ShoppingListOperation.AddItem -> {
                         val itemToAdd = operation.item
-                        shoppingListDao.addItem(
+                        itemToAdd.opCount.plus(1)
+                        shoppingListDao.addItemAndItemMapping(
                             itemToAdd,
                             operation.listPk.listId,
                             operation.listPk.createdBy,
@@ -126,13 +127,13 @@ class ShoppingListLocalDataSource
                         listPk = operation.listPk
                     }
 
-                    is ShoppingListOperation.AddItemById -> {
-                        val itemIdToAdd = operation.itemId
+                    is ShoppingListOperation.AddItemByName -> {
+                        val itemNameToAdd = operation.itemName
                         val user =
                             userRepository.read()
                                 ?: throw IllegalStateException("user null after login")
                         shoppingListDao.addItemById(
-                            itemIdToAdd,
+                            itemNameToAdd,
                             user.OnlineID,
                             operation.listPk.listId,
                             operation.listPk.createdBy,
@@ -146,9 +147,9 @@ class ShoppingListLocalDataSource
                                 operation.listPk.listId,
                                 operation.listPk.createdBy,
                             )
-                        val itemToUpdate = listItems.find { item -> item.id == operation.itemId }
+                        val itemToUpdate = listItems.find { item -> item.name.equals(operation.itemName, ignoreCase = true) }
                         if (itemToUpdate == null) {
-                            throw IllegalArgumentException("item ${operation.itemId} is not contained in list ${operation.listPk}")
+                            throw IllegalArgumentException("item ${operation.itemName} is not contained in list ${operation.listPk}")
                         }
                         if (operation.quantity != null) {
                             itemToUpdate.quantity = operation.quantity
@@ -172,7 +173,7 @@ class ShoppingListLocalDataSource
                             )
                         val relevantItems =
                             existingItems.filter { item ->
-                                item.id == operation.itemId
+                                item.name.equals(operation.itemName, ignoreCase = true)
                             }
                         if (relevantItems.size == 0) {
                             listPk = operation.listPK
@@ -207,23 +208,6 @@ class ShoppingListLocalDataSource
                             )
                         val newListId = shoppingListDao.insertList(newList)
                         listPk = ShoppingListPK(newListId, operation.creator.onlineId)
-                    }
-
-                    is ShoppingListOperation.RemoveItemById -> {
-                        val listItems =
-                            shoppingListDao.getItems(
-                                operation.listPk.listId,
-                                operation.listPk.createdBy,
-                            )
-                        val itemToRemove = listItems.find { item -> item.id == operation.itemId }
-                        if (itemToRemove != null) {
-                            shoppingListDao.removeItem(
-                                itemToRemove,
-                                operation.listPk.listId,
-                                operation.listPk.createdBy,
-                            )
-                        }
-                        listPk = operation.listPk
                     }
 
                     is ShoppingListOperation.RemoveItemByName -> {

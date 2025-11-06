@@ -40,7 +40,7 @@ interface ShoppingListDao {
         for ((index, item) in dbItems.withIndex()) {
             val itemId = insertItem(item)
             dbItemToList[index].listId = listId
-            dbItemToList[index].itemId = itemId
+            dbItemToList[index].item = item.name
         }
         for (itemToList in dbItemToList) {
             insertItemMapping(itemToList)
@@ -52,7 +52,7 @@ interface ShoppingListDao {
     fun insertDbList(dbList: DbShoppingList): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insertItem(item: DbItem): Long
+    fun insertItem(item: DbItem)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertItemMapping(itemMapping: ItemToList): Long
@@ -103,7 +103,7 @@ interface ShoppingListDao {
         createdBy: Long,
     ): List<AppItem> {
         val mappings = getItemMappings(listId, createdBy)
-        val baseItems = getBaseItems(mappings.map { itemToList -> itemToList.itemId })
+        val baseItems = getBaseItems(mappings.map { itemToList -> itemToList.item })
         val items =
             baseItems.mapIndexed { index, item ->
                 val mapping = mappings[index]
@@ -124,8 +124,8 @@ interface ShoppingListDao {
         createdBy: Long,
     ): List<ItemToList>
 
-    @Query("SELECT * FROM items WHERE id in (:id)")
-    fun getBaseItems(id: List<Long>): List<DbItem>
+    @Query("SELECT * FROM items WHERE name in (:names)")
+    fun getBaseItems(names: List<String>): List<DbItem>
 
     suspend fun getAllLists(): List<ShoppingList> {
         val baseLists = getBaseLists()
@@ -149,7 +149,7 @@ interface ShoppingListDao {
     fun getBaseLists(): List<DbShoppingList>
 
     @Transaction
-    suspend fun addItem(
+    suspend fun addItemAndItemMapping(
         item: AppItem,
         listId: Long,
         createdBy: Long,
@@ -157,33 +157,31 @@ interface ShoppingListDao {
         val (baseItem, itemMapping) = item.toEntities(Pair(listId, createdBy))
         val dbItem = getBaseItem(item.name)
         if (dbItem == null) {
-            val itemId = insertItem(baseItem)
-            itemMapping.itemId = itemId
-        } else {
-            itemMapping.itemId = dbItem.id
+            insertItem(baseItem)
         }
         insertItemMapping(itemMapping)
     }
 
     suspend fun addItemById(
-        itemId: Long,
+        itemName: String,
         userId: Long,
         listId: Long,
         createdBy: Long,
     ) {
-        val item = getBaseItems(listOf(itemId))
+        val item = getBaseItems(listOf(itemName))
         if (item.size != 1) {
-            throw IllegalArgumentException("Item with id $itemId not found")
+            throw IllegalArgumentException("Item with name $itemName not found")
         }
         val itemMapping =
             ItemToList(
-                itemId = itemId,
+                item = item[0].name,
                 listId = listId,
                 createdBy = createdBy,
                 quantity = 1L,
                 quantityType = QuantityType.PIECES,
                 checked = false,
                 addedBy = userId,
+                opCount = 0,
             )
         insertItemMapping(itemMapping)
     }
@@ -195,9 +193,6 @@ interface ShoppingListDao {
         createdBy: Long,
     ) {
         val (baseItem, itemMapping) = item.toEntities(Pair(listId, createdBy))
-        if (item.id == null || item.id!! <= 0L) {
-            return
-        }
         removeMapping(itemMapping)
     }
 
@@ -225,8 +220,9 @@ interface ShoppingListDao {
         createdBy: Long,
     ) {
         val (baseItem, itemMapping) = item.toEntities(Pair(listId, createdBy))
-        if (item.id == null || item.id!! <= 0L) {
-            addItem(item, listId, createdBy)
+        val dbItem = getBaseItem(baseItem.name)
+        if (dbItem == null) {
+            addItemAndItemMapping(item, listId, createdBy)
             return
         }
         updateItemMapping(itemMapping)
@@ -253,8 +249,8 @@ interface ShoppingListDao {
 
     // LiveData Functions
 
-    @Query("SELECT * FROM items WHERE id IN (:itemIds)")
-    fun getBaseItemsLive(itemIds: List<Long>): Flow<List<DbItem>>
+    @Query("SELECT * FROM items WHERE name IN (:itemNames)")
+    fun getBaseItemsLive(itemNames: List<String>): Flow<List<DbItem>>
 
     @Query("SELECT * FROM item_to_list_mapping WHERE listId = :listId AND createdBy = :createdBy")
     fun getItemToListLive(
@@ -274,7 +270,7 @@ interface ShoppingListDao {
     ): Flow<List<AppItem>> {
         val itemMappings = getItemToListLive(listId, createdBy)
         return itemMappings.flatMapLatest { mappings ->
-            val baseItems = getBaseItemsLive(mappings.map { mapping -> mapping.itemId })
+            val baseItems = getBaseItemsLive(mappings.map { mapping -> mapping.item })
             baseItems.map { items ->
                 mappings.mapIndexed { index, mapping ->
                     AppItem.fromBaseAndMapping(items[index], mapping)

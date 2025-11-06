@@ -15,10 +15,10 @@ class ItemLocalDataSource
     ) {
         private val itemDao = database.itemDao()
 
-        suspend fun read(itemId: Long): DbItem? {
+        suspend fun read(itemName: String): DbItem? {
             var dbItem: DbItem? = null
             withContext(Dispatchers.IO) {
-                val dbItemList = readByIds(listOf(itemId))
+                val dbItemList = readByIds(listOf(itemName))
                 if (dbItemList.isEmpty()) {
                     return@withContext
                 }
@@ -27,10 +27,10 @@ class ItemLocalDataSource
             return dbItem
         }
 
-        suspend fun readByIds(itemIds: List<Long>): List<DbItem> {
+        suspend fun readByIds(itemNames: List<String>): List<DbItem> {
             val finalList = mutableListOf<DbItem>()
             withContext(Dispatchers.IO) {
-                val dbItems = itemDao.getItems(itemIds)
+                val dbItems = itemDao.getItems(itemNames)
                 finalList.addAll(dbItems)
             }
             return finalList
@@ -106,20 +106,20 @@ class ItemLocalDataSource
                 // Fix an error in case the item did exist, but was received from
                 // remote without a matching local id
                 // and prevent clustering with too many items
-                item.id = matchingItem.id
-                itemId = matchingItem.id
+                item.name = matchingItem.name
+                itemId = 0L
                 itemDao.updateItem(item)
             }
             return itemId
         }
 
         suspend fun delete(item: DbItem) {
-            delete(item.id)
+            delete(item.name)
         }
 
-        suspend fun delete(itemId: Long) {
+        suspend fun delete(itemName: String) {
             withContext(Dispatchers.IO) {
-                itemDao.deleteItem(itemId)
+                itemDao.deleteItem(itemName)
             }
         }
     }

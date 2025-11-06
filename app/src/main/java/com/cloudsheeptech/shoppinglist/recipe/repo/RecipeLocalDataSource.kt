@@ -227,7 +227,7 @@ class RecipeLocalDataSource
                 val storedIngredients = recipeItemDao.readAllForReceipt(recipeId, createdBy)
                 storedRecipe.ingredients =
                     storedIngredients.map { ingredient ->
-                        val storedItem = itemDao.getItem(ingredient.itemId)
+                        val storedItem = itemDao.getItem("TODO")
                         ApiIngredient(
                             ingredient.itemId,
                             storedItem!!.name,

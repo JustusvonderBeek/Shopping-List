@@ -222,7 +222,9 @@ class RecipeDetailViewModel
                     "RecipeViewModel",
                     "Adding ${selectedIngredients.size} items from $recipeId by $createdBy to list $listId",
                 )
-                listRepository.addAll(listId, createdBy, selectedIngredients)
+                for (ingredient in selectedIngredients) {
+//                    listRepository.insertItem(ShoppingListPK(listId, createdBy), ingredient)
+                }
                 val list = listRepository.read(ShoppingListPK(listId, createdBy)) ?: return@launch
                 makeToast(selectedIngredients.size, list.title)
                 withContext(Dispatchers.Main) {

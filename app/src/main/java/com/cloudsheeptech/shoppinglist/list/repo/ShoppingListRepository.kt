@@ -12,7 +12,6 @@ import com.cloudsheeptech.shoppinglist.list.model.ShoppingListOperation
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.list.model.UserNotAuthenticatedException
 import com.cloudsheeptech.shoppinglist.list.util.ShoppingListCreatedByUtil
-import com.cloudsheeptech.shoppinglist.recipe.model.ApiIngredient
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import io.ktor.client.network.sockets.SocketTimeoutException
@@ -39,62 +38,14 @@ class ShoppingListRepository
     ) {
         // ----------------------------- Core Functions --------------------------------
 
-        suspend fun create(title: String): ShoppingList {
-            var newList =
-                ShoppingList(
-                    listId = 0L, // Created by DB
-                    createdBy = ListCreator(0, ""),
-                    title = title,
-                    synchronized = OffsetDateTime.now(),
-                    items = mutableListOf(),
-                )
-            listUtil.updateListToCurrentUser(newList)
-
-            val createdByBeforeOnlineOperation = newList.createdBy
-            newList = localDataSource.create(newList)
-            Log.i("ShoppingListRepository", "Stored list $newList offline, creating online next...")
-            try {
-                var success = remoteDataSource.create(newList)
-                if (!success) {
-                    Log.i(
-                        "ShoppingListRepository",
-                        "Failed to create list online, might be because a new user was created. Trying again with updated id...",
-                    )
-                    listUtil.updateListToCurrentUser(newList)
-                    if (newList.createdBy.onlineId != createdByBeforeOnlineOperation.onlineId) {
-                        localDataSource.updateCreatedByForOwnLists(
-                            createdByBeforeOnlineOperation.onlineId,
-                            newList.createdBy.onlineId,
-                        )
-                        Log.i(
-                            "ShoppingListRepository",
-                            "Updated createdBy to new id ${newList.createdBy.onlineId}",
-                        )
-                    }
-                    success = remoteDataSource.create(newList)
-                    if (!success) {
-                        Log.e(
-                            "ShoppingListRepository",
-                            "Failed to create new list with new createdBy ${newList.createdBy.onlineId}. Is the user created online?",
-                        )
-                    }
-                }
-                if (success) {
-                    Log.d("ShoppingListRepository", "Successfully create list $newList online")
-                }
-            } catch (ex: IllegalAccessException) {
-                Log.w("ShoppingListRepository", "Ex: $ex")
-            } catch (ex: UserNotAuthenticatedException) {
-                Log.w("ShoppingListRepository", "User not authenticated: $ex")
-            }
-            return newList
-        }
-
         suspend fun read(listPk: ShoppingListPK): ShoppingList? =
             withContext(Dispatchers.IO) {
                 localDataSource.read(listPk.listId, listPk.createdBy)
             }
 
+        fun readAllLive(): LiveData<List<ShoppingList>> = localDataSource.readAllLive()
+
+        // TODO: Fully write and test this function
         suspend fun readAllRemote() {
             try {
                 val allRemoteLists = remoteDataSource.readAll()
@@ -120,9 +71,6 @@ class ShoppingListRepository
             }
         }
 
-        // This is only relevant for the overview, therefore the basic infos (title, creator) suffice
-        fun readAllLive(): LiveData<List<ShoppingList>> = localDataSource.readAllLive()
-
         fun readAllListItemsLive(listPk: ShoppingListPK): LiveData<List<AppItem>> =
             localDataSource
                 .readAllListItemsLive(listPk.listId, listPk.createdBy)
@@ -137,6 +85,7 @@ class ShoppingListRepository
          * Idea of this function would be after the synchronisation with online to perform update
          * I dont know if this interface is needed for this or should be private
          * Even for testing I would prefer the direct methods like addItem
+         * Necessary for a list of online operations
          */
         suspend fun update(updateOperations: List<ShoppingListOperation>): ShoppingList? {
             var updatedList: ShoppingList? = null
@@ -186,95 +135,190 @@ class ShoppingListRepository
             return false
         }
 
-        suspend fun updateTitle(
-            listPk: ShoppingListPK,
-            title: String,
-        ): Boolean {
-            val updateListTitleOperation =
-                ShoppingListOperation.RenameList(
-                    listPk,
-                    title,
-                )
-            val updatedList = localDataSource.update(updateListTitleOperation)
-            if (updatedList == null) {
-                Log.e("ShoppingListRepository", "Failed to update list title for list $listPk")
-                return false
-            }
-            return updateListOnlineAndRetryOnFailure(updateListTitleOperation)
-        }
-
         suspend fun deleteAll() {
             localDataSource.deleteAll()
             remoteDataSource.deleteAll()
         }
 
-        // ---------------- Convenience Item Operations -------------------
+        // ---------------- Convenience Operations -------------------
+
+        suspend fun create(title: String): ShoppingList {
+            var newList =
+                ShoppingList(
+                    listId = 0L, // Created by DB
+                    createdBy = ListCreator(0, ""),
+                    title = title,
+                    synchronized = OffsetDateTime.now(),
+                    items = mutableListOf(),
+                )
+            listUtil.updateListToCurrentUser(newList)
+
+            val createdByBeforeOnlineOperation = newList.createdBy
+            newList = localDataSource.create(newList)
+            Log.i("ShoppingListRepository", "Stored list $newList offline, creating online next...")
+            try {
+                var success = remoteDataSource.create(newList)
+                if (!success) {
+                    Log.i(
+                        "ShoppingListRepository",
+                        "Failed to create list online, might be because the user was created online. Trying again with updated id...",
+                    )
+                    listUtil.updateListToCurrentUser(newList)
+                    if (newList.createdBy.onlineId != createdByBeforeOnlineOperation.onlineId) {
+                        localDataSource.updateCreatedByForOwnLists(
+                            createdByBeforeOnlineOperation.onlineId,
+                            newList.createdBy.onlineId,
+                        )
+                        Log.i(
+                            "ShoppingListRepository",
+                            "Updated createdBy to new id ${newList.createdBy.onlineId}",
+                        )
+                    }
+                    success = remoteDataSource.create(newList)
+                    if (!success) {
+                        Log.e(
+                            "ShoppingListRepository",
+                            "Failed to create new list with new createdBy ${newList.createdBy.onlineId}. Is the user created online?",
+                        )
+                    }
+                }
+                if (success) {
+                    Log.d("ShoppingListRepository", "Successfully create list $newList online")
+                }
+            } catch (ex: IllegalAccessException) {
+                Log.w("ShoppingListRepository", "Ex: $ex")
+            } catch (ex: UserNotAuthenticatedException) {
+                Log.w("ShoppingListRepository", "User not authenticated: $ex")
+            }
+            return newList
+        }
+
+        suspend fun syncListOnline(listPk: ShoppingListPK): ShoppingList? =
+            try {
+                // TODO: Implement
+                null
+            } catch (ex: Exception) {
+                Log.e("ShoppingListRepository", "Failed to sync list online: $ex")
+                null
+            }
+
+        suspend fun renameList(
+            listPk: ShoppingListPK,
+            newTitle: String,
+        ): ShoppingList? {
+            return try {
+                val updateListTitleOperation =
+                    ShoppingListOperation.RenameList(
+                        listPk,
+                        newTitle,
+                    )
+                val updatedLocalList = localDataSource.update(updateListTitleOperation)
+                if (updatedLocalList == null) {
+                    Log.e("ShoppingListRepository", "Failed to update list title for list $listPk")
+                    return null
+                }
+                val success = updateListOnlineAndRetryOnFailure(updateListTitleOperation)
+                if (success) {
+                    Log.i("ShoppingListRepository", "Successfully updated list title $newTitle of list $listPk online")
+                } else {
+                    Log.w("ShoppingListRepository", "Failed to set title $newTitle of list $listPk online")
+                }
+                updatedLocalList
+            } catch (ex: Exception) {
+                Log.e("ShoppingListRepository", "Failed to update list title to $newTitle: $ex")
+                null
+            }
+        }
 
         suspend fun insertItem(
-            listPK: ShoppingListPK,
+            listPk: ShoppingListPK,
             item: AppItem,
-        ) {
-            try {
-                val addItemOperation = ShoppingListOperation.AddItem(listPK, item)
-                val updatedLocalList = localDataSource.update(addItemOperation)
+        ): ShoppingList? {
+            return try {
+                val addItemOperation = ShoppingListOperation.AddItem(listPk, item)
+                val updatedLocalList =
+                    localDataSource.update(addItemOperation)
                 if (updatedLocalList == null) {
-                    throw IllegalArgumentException("failed to update list, maybe because list doesn't exist?")
+                    Log.e("ShoppingListRepository", "Failed to add item $item")
+                    return null
                 }
-                updateListOnlineAndRetryOnFailure(addItemOperation)
+                val success = updateListOnlineAndRetryOnFailure(addItemOperation)
+                if (success) {
+                    Log.i("ShoppingListRepository", "Added item $item successfully to list $listPk online")
+                } else {
+                    Log.w("ShoppingListRepository", "Failed to add item $item into list $listPk online")
+                }
+                updatedLocalList
             } catch (ex: IllegalArgumentException) {
-                Log.e("ShoppingListRepository", "List $listPK not found: $ex")
+                Log.e("ShoppingListRepository", "List $listPk not found: $ex")
+                null
             } catch (ex: IllegalStateException) {
                 Log.e("ShoppingListRepository", "User null after login screen: $ex")
-                throw ex
+                null
             } catch (ex: Exception) {
                 Log.e("ShoppingListRepository", "Failed to insert item ${item.name}: $ex")
+                null
             }
         }
 
         suspend fun insertExistingItem(
             listPk: ShoppingListPK,
             itemName: String,
-        ) {
-            try {
+        ): ShoppingList? {
+            return try {
                 val addItemOperation = ShoppingListOperation.AddItemByName(listPk, itemName)
                 val updatedLocalList = localDataSource.update(addItemOperation)
                 if (updatedLocalList == null) {
                     Log.e("ShoppingListRepository", "Failed to add item $itemName")
-                    return
+                    return null
                 }
-                updateListOnlineAndRetryOnFailure(addItemOperation)
+                val success = updateListOnlineAndRetryOnFailure(addItemOperation)
+                if (success) {
+                    Log.i("ShoppingListRepository", "Successfully added item $itemName into list $listPk online online")
+                } else {
+                    Log.w("ShoppingListRepository", "Failed to add item $itemName into list $listPk online")
+                }
+                updatedLocalList
             } catch (ex: Exception) {
                 Log.e("ShoppingListRepository", "Failed to add item $itemName: $ex")
+                null
             }
         }
 
-        suspend fun removeItem(
-            listPK: ShoppingListPK,
+        suspend fun removeItemByName(
+            listPk: ShoppingListPK,
             itemName: String,
-        ) {
-            try {
-                val removeItemOperation = ShoppingListOperation.RemoveItemByName(listPK, itemName)
+        ): ShoppingList? {
+            return try {
+                val removeItemOperation = ShoppingListOperation.RemoveItemByName(listPk, itemName)
                 val updatedLocalList = localDataSource.update(removeItemOperation)
                 if (updatedLocalList == null) {
                     Log.e("ShoppingListRepository", "Failed to remove item $itemName")
-                    return
+                    return null
                 }
-                updateListOnlineAndRetryOnFailure(removeItemOperation)
+                val success = updateListOnlineAndRetryOnFailure(removeItemOperation)
+                if (success) {
+                    Log.i("ShoppingListRepository", "Successfully removed item $itemName from list $listPk online")
+                } else {
+                    Log.w("ShoppingListRepository", "Failed to remove item $itemName from list $listPk online")
+                }
+                updatedLocalList
             } catch (ex: Exception) {
                 Log.e("ShoppingListRepository", "Failed to remove item $itemName: $ex")
+                null
             }
         }
 
-        suspend fun updateItemCount(
-            listPK: ShoppingListPK,
+        suspend fun setItemQuantity(
+            listPk: ShoppingListPK,
             itemName: String,
             quantity: Long,
             quantityType: QuantityType? = null,
-        ): Boolean {
-            try {
+        ): ShoppingList? {
+            return try {
                 val quantityOperation =
                     ShoppingListOperation.ChangeQuantityOfItem(
-                        listPK,
+                        listPk,
                         itemName,
                         quantity,
                         quantityType,
@@ -283,91 +327,154 @@ class ShoppingListRepository
                     localDataSource.update(quantityOperation)
                 if (updatedLocalList == null) {
                     Log.e("ShoppingListRepository", "Failed to update quantity for item $itemName")
-                    return false
+                    return null
                 }
-                updateListOnlineAndRetryOnFailure(quantityOperation)
-                return true
+                val success = updateListOnlineAndRetryOnFailure(quantityOperation)
+                if (success) {
+                    Log.i(
+                        "ShoppingListRepository",
+                        "Successfully set quantity $quantity (${quantityType ?: "---"}) of $itemName in list $listPk online",
+                    )
+                } else {
+                    Log.w(
+                        "ShoppingListRepository",
+                        "Failed to set quantity $quantity (${quantityType ?: "---"}) of $itemName in list $listPk online",
+                    )
+                }
+                updatedLocalList
             } catch (ex: IllegalArgumentException) {
-                Log.e("ShoppingListRepository", "List $listPK not found")
+                Log.e("ShoppingListRepository", "List $listPk not found: $ex")
+                null
             } catch (ex: UserNotAuthenticatedException) {
                 Log.e("ShoppingListRepository", "User not authenticated: $ex")
+                null
             } catch (ex: Exception) {
-                Log.e("ShoppingListRepository", "Failed to update quantity for item $itemName: $ex")
+                Log.e("ShoppingListRepository", "Failed to set quantity for item $itemName: $ex")
+                null
             }
-            return false
         }
 
-        // TODO: Fix the signature of this function (ApiIngredients -> DbItems ??? )
-        suspend fun addAll(
-            listId: Long,
-            createdBy: Long,
-            ingredients: List<ApiIngredient>,
-        ) {
-//            val updatedLocalList = localDataSource.addAll(listId, createdBy, ingredients)
-//            update(updatedLocalList)
-        }
-
-        suspend fun toggleItem(
+        suspend fun setItemToggle(
             listPk: ShoppingListPK,
             itemName: String,
-        ): Boolean {
-            try {
+            toggleStatus: ItemToggleStatus = ItemToggleStatus.TOGGLE,
+        ): ShoppingList? {
+            return try {
                 val toggleOperation =
                     ShoppingListOperation.SetItemCheckedStatus(
                         listPk,
                         itemName,
-                        ItemToggleStatus.TOGGLE,
+                        toggleStatus,
                     )
                 val updatedLocalList = localDataSource.update(toggleOperation)
                 if (updatedLocalList == null) {
                     Log.e("ShoppingListRepository", "Failed to toggle item $itemName in list $listPk")
-                    return false
+                    return null
                 }
-                updateListOnlineAndRetryOnFailure(toggleOperation)
-                return true
+                val success = updateListOnlineAndRetryOnFailure(toggleOperation)
+                if (success) {
+                    Log.i(
+                        "ShoppingListRepository",
+                        "Successfully set toggle $toggleStatus of $itemName in list $listPk online",
+                    )
+                } else {
+                    Log.w(
+                        "ShoppingListRepository",
+                        "Failed to set toggle $toggleStatus of $itemName in list $listPk online",
+                    )
+                }
+                updatedLocalList
             } catch (ex: IllegalArgumentException) {
-                Log.e("ShoppingListRepository", "List $listPk not found")
+                Log.e("ShoppingListRepository", "List $listPk not found: $ex")
+                null
             } catch (ex: UserNotAuthenticatedException) {
                 Log.e("ShoppingListRepository", "User not authenticated: $ex")
+                null
             } catch (ex: Exception) {
                 Log.e("ShoppingListRepository", "Failed to toggle item: $ex")
+                null
             }
-            return false
         }
 
-        suspend fun deleteAllCheckedItems(
-            listId: Long,
-            createdBy: Long,
-        ) {
-            try {
-//                val updatedList = localDataSource.remoteCheckedItems(listId, createdBy)
-//                remoteDataSource.update(updatedList)
+        suspend fun removeAllCheckedItemsFromList(listPk: ShoppingListPK): ShoppingList? {
+            return try {
+                val currentList = localDataSource.read(listPk.listId, listPk.createdBy)
+                if (currentList == null) {
+                    Log.e("ShoppingListRepository", "Skipping removing checked items from list $listPk because the list cannot be found")
+                    return null
+                }
+                val checkedItems = currentList.items.filter { item -> item.checked }
+                val removeOperations = mutableListOf<ShoppingListOperation>()
+                for (item in checkedItems) {
+                    removeOperations.add(
+                        ShoppingListOperation.RemoveItemByName(
+                            listPk,
+                            item.name,
+                        ),
+                    )
+                }
+                return update(removeOperations)
             } catch (ex: Exception) {
-                Log.e("ShoppingListRepository", "Failed to delete all checked items: $ex")
+                Log.e("ShoppingListRepository", "Failed to remove all checked items from list $listPk: $ex")
+                null
             }
         }
 
-        suspend fun resetCreatedBy() {
-            withContext(Dispatchers.IO) {
-                val user = userRepository.read() ?: throw IllegalStateException("user null after login")
-                localDataSource.updateCreatedByForOwnLists(0L, user.OnlineID)
+        suspend fun deleteList(listPk: ShoppingListPK): Boolean {
+            return try {
+                val removeOperation =
+                    ShoppingListOperation.Delete(
+                        listPk,
+                    )
+                val updatedLocalList = localDataSource.update(removeOperation)
+                if (updatedLocalList != null) {
+                    Log.e("ShoppingListRepository", "Failed to delete list $listPk")
+                    return false
+                }
+                val success = remoteDataSource.update(removeOperation)
+                if (success) {
+                    Log.i(
+                        "ShoppingListRepository",
+                        "Successfully deleted list $listPk online",
+                    )
+                    return true
+                } else {
+                    Log.w(
+                        "ShoppingListRepository",
+                        "Failed to delete list $listPk online",
+                    )
+                }
+                false
+            } catch (ex: Exception) {
+                Log.e("ShoppingListRepository", "Failed to delete list: $listPk: $ex")
+                false
             }
         }
 
         suspend fun updateCreatedByToCurrentId() {
             val currUser = userRepository.read() ?: throw IllegalStateException("user null after login")
             if (currUser.OnlineID == 0L) {
+                Log.i("ShoppingListRepository", "Skipping update of createdBy because local user onlineId is 0")
                 return
             }
-            localDataSource.updateCreatedByForOwnLists(0L, currUser.OnlineID)
-            val allLists = localDataSource.readAll()
-            allLists.forEach { list -> remoteDataSource.create(list) }
+            try {
+                localDataSource.updateCreatedByForOwnLists(0L, currUser.OnlineID)
+                // TODO: Careful with this and the operation semantics. It could break the IDs and update statements...?
+                val allLists = localDataSource.readAll()
+                allLists.forEach { list -> remoteDataSource.create(list) }
+            } catch (ex: Exception) {
+                Log.e("ShoppingListRepository", "Failed to update createdBy to currentId: $ex")
+            }
         }
 
         suspend fun resetCreatedByForOwnLists() {
             withContext(Dispatchers.IO) {
                 val user = userRepository.read() ?: throw IllegalStateException("user null after login")
-                localDataSource.updateCreatedByForOwnLists(user.OnlineID, 0L)
+                try {
+                    localDataSource.updateCreatedByForOwnLists(user.OnlineID, 0L)
+                } catch (ex: Exception) {
+                    Log.e("ShoppingListRepository", "Failed to reset created by to 0: $ex")
+                }
             }
         }
     }

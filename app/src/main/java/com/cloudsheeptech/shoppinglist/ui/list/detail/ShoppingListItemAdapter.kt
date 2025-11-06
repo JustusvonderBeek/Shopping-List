@@ -35,7 +35,7 @@ class ShoppingListItemAdapter(
                     return@withContext
                 }
                 Log.d("ShoppingListItemAdapter", "Removing item ${item.name} at $position")
-                shoppingListRepository.removeItem(listPk, item.name!!)
+                shoppingListRepository.removeItemByName(listPk, item.name!!)
             } catch (ex: Exception) {
                 Log.e("ShoppingListItemAdapter", "Failed to remove item: $ex")
             }

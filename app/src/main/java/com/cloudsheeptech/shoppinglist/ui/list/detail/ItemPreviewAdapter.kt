@@ -6,11 +6,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cloudsheeptech.shoppinglist.databinding.ShoppingItemPreviewBinding
-import com.cloudsheeptech.shoppinglist.list.model.AppItem
+import com.cloudsheeptech.shoppinglist.list.model.DbItem
 
 class ItemPreviewAdapter(
     val clickListener: ItemPreviewClickListener,
-) : ListAdapter<AppItem, ItemPreviewAdapter.ItemViewHolder>(
+) : ListAdapter<DbItem, ItemPreviewAdapter.ItemViewHolder>(
         ItemDiffCallback(),
     ) {
     override fun onCreateViewHolder(
@@ -30,7 +30,7 @@ class ItemPreviewAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             clickListener: ItemPreviewClickListener,
-            item: AppItem,
+            item: DbItem,
         ) {
             binding.item = item
             binding.clickListener = clickListener
@@ -49,18 +49,18 @@ class ItemPreviewAdapter(
     class ItemPreviewClickListener(
         val clickListener: (id: String) -> Unit,
     ) {
-        fun onClick(item: AppItem) = clickListener(item.name!!)
+        fun onClick(item: DbItem) = clickListener(item.name)
     }
 
-    class ItemDiffCallback : DiffUtil.ItemCallback<AppItem>() {
+    class ItemDiffCallback : DiffUtil.ItemCallback<DbItem>() {
         override fun areItemsTheSame(
-            oldAppItem: AppItem,
-            newAppItem: AppItem,
+            oldAppItem: DbItem,
+            newAppItem: DbItem,
         ): Boolean = oldAppItem.name.equals(newAppItem.name, ignoreCase = true) && oldAppItem.icon == newAppItem.icon
 
         override fun areContentsTheSame(
-            oldAppItem: AppItem,
-            newAppItem: AppItem,
+            oldAppItem: DbItem,
+            newAppItem: DbItem,
         ): Boolean = oldAppItem == newAppItem
     }
 }

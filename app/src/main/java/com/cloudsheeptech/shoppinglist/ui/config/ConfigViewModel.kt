@@ -74,7 +74,7 @@ class ConfigViewModel
                 Log.w("ConfigViewModel", "The current user is not registered online")
                 return
             }
-            shoppingListRepository.resetCreatedBy()
+            shoppingListRepository.resetCreatedByForOwnLists()
             userRepository.delete()
         }
     }

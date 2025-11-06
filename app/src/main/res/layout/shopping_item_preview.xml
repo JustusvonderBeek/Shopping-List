@@ -4,7 +4,7 @@
     <data>
         <variable
             name="item"
-            type="com.cloudsheeptech.shoppinglist.list.model.AppItem" />
+            type="com.cloudsheeptech.shoppinglist.list.model.DbItem" />
         <variable
             name="clickListener"
             type="com.cloudsheeptech.shoppinglist.ui.list.detail.ItemPreviewAdapter.ItemPreviewClickListener" />

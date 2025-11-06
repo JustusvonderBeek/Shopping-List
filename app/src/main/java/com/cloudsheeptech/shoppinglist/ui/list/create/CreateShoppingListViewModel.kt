@@ -59,7 +59,7 @@ class CreateShoppingListViewModel
                 if (listIdToEdit > 0L) {
                     val user = userRepository.read() ?: throw IllegalStateException("user is null")
                     try {
-                        shoppingListRepository.updateTitle(
+                        shoppingListRepository.renameList(
                             ShoppingListPK(listIdToEdit, user.OnlineID),
                             title.value!!,
                         )

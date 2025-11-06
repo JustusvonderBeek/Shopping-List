@@ -11,7 +11,9 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.model.AppItem
+import com.cloudsheeptech.shoppinglist.list.model.DbItem
 import com.cloudsheeptech.shoppinglist.list.model.ItemClassifier
+import com.cloudsheeptech.shoppinglist.list.model.ItemToggleStatus
 import com.cloudsheeptech.shoppinglist.list.model.QuantityType
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
@@ -61,8 +63,8 @@ class ShoppingListDetailViewModel
         private val itemsInList =
             shoppingListRepository.readAllListItemsLive(ShoppingListPK(this.shoppingListId, this.createdBy))
 
-        private val _previewItems = MutableLiveData<List<AppItem>>()
-        val previewItems: LiveData<List<AppItem>> get() = _previewItems
+        private val _previewItems = MutableLiveData<List<DbItem>>()
+        val previewItems: LiveData<List<DbItem>> get() = _previewItems
 
         private val _listInformation =
             listDao.getListLive(shoppingListId, createdBy).asLiveData(Dispatchers.IO)
@@ -71,6 +73,9 @@ class ShoppingListDetailViewModel
         val orderedItemsInList = MediatorLiveData<List<AppItem>>()
 
         // --------------- Navigation and UI variables ---------------------------
+
+        private val _toastMessage = MutableLiveData<String>("")
+        val toastMessage: LiveData<String> get() = _toastMessage
 
         private val _ordering = MutableLiveData<Ordering>(Ordering.DEFAULT)
         val ordering: LiveData<Ordering> get() = _ordering
@@ -210,12 +215,18 @@ class ShoppingListDetailViewModel
         fun addItem() {
             Log.d("ShoppinglistViewModel", "Adding new item to list")
             if (itemName.value == null || itemName.value!!.isEmpty()) {
-                Log.i("ShoppinglistViewModel", "Do not add empty item")
+                Log.i("ShoppinglistViewModel", "Skipping addItem because itemName is null or empty")
                 return
             }
             vmCoroutine.launch {
                 val item = createNewItemWithName(itemName.value!!)
-                shoppingListRepository.insertItem(ShoppingListPK(shoppingListId, createdBy), item)
+                val updatedList = shoppingListRepository.insertItem(ShoppingListPK(shoppingListId, createdBy), item)
+                if (updatedList == null) {
+                    Log.e("ShoppingListDetailViewModel", "Failed to insert item")
+                    // TODO: I8N
+                    toastMessage("Adding item failed...")
+                    return@launch
+                }
                 val lastPosition = itemsInList.value?.size ?: -1
                 withContext(Dispatchers.Main) {
                     hideKeyboard()
@@ -228,11 +239,20 @@ class ShoppingListDetailViewModel
         fun toggleItem(itemName: String) {
             Log.d("ShoppinListViewModel", "Toggle item $itemName")
             vmCoroutine.launch {
-                val migratedToNewId =
-                    shoppingListRepository.toggleItem(ShoppingListPK(shoppingListId, createdBy), itemName)
+                val updatedList =
+                    shoppingListRepository.setItemToggle(
+                        ShoppingListPK(shoppingListId, createdBy),
+                        itemName,
+                        ItemToggleStatus.TOGGLE,
+                    )
+                if (updatedList == null) {
+                    Log.e("ShoppingListDetailViewModel", "Failed to toggle item $itemName")
+                    toastMessage("Failed to toggle item $itemName")
+                    return@launch
+                }
                 withContext(Dispatchers.Main) {
                     _finished.value = false
-                    if (migratedToNewId) {
+                    if (createdBy != updatedList.createdBy.onlineId) {
                         navigateUp()
                     }
                 }
@@ -245,13 +265,18 @@ class ShoppingListDetailViewModel
         ) {
             Log.d("ShoppingListViewModel", "Change quantity of item $itemName by $quantity")
             vmCoroutine.launch {
-                val migratedToNewId =
-                    shoppingListRepository.updateItemCount(
+                val updatedList =
+                    shoppingListRepository.setItemQuantity(
                         ShoppingListPK(shoppingListId, createdBy),
                         itemName,
                         quantity,
                     )
-                if (migratedToNewId) {
+                if (updatedList == null) {
+                    Log.e("ShoppingListDetailViewModel", "Failed to increase count of $itemName")
+                    toastMessage("Failed to increase item count of $itemName")
+                    return@launch
+                }
+                if (createdBy != updatedList.createdBy.onlineId) {
                     withContext(Dispatchers.Main) {
                         navigateUp()
                     }
@@ -261,13 +286,18 @@ class ShoppingListDetailViewModel
 
         fun decreaseItemCount(itemName: String) {
             vmCoroutine.launch {
-                val migratedToNewId =
-                    shoppingListRepository.updateItemCount(
+                val updatedList =
+                    shoppingListRepository.setItemQuantity(
                         ShoppingListPK(shoppingListId, createdBy),
                         itemName,
                         -1L,
                     )
-                if (migratedToNewId) {
+                if (updatedList == null) {
+                    Log.e("ShoppingListDetailViewModel", "Failed to decrease count of $itemName")
+                    toastMessage("Failed to decrease item count of $itemName")
+                    return@launch
+                }
+                if (createdBy != updatedList.createdBy.onlineId) {
                     withContext(Dispatchers.Main) {
                         navigateUp()
                     }
@@ -275,11 +305,13 @@ class ShoppingListDetailViewModel
             }
         }
 
-        fun updateShoppinglist() {
-            _refreshing.value = true
+        fun syncListOnline() {
             viewModelScope.launch {
+                withContext(Dispatchers.Main) {
+                    _refreshing.value = true
+                }
                 // Already updates the list in the database in case it is newer
-                shoppingListRepository.read(ShoppingListPK(shoppingListId, createdBy))
+                shoppingListRepository.syncListOnline(ShoppingListPK(shoppingListId, createdBy))
                 withContext(Dispatchers.Main) {
                     _refreshing.value = false
                 }
@@ -302,18 +334,22 @@ class ShoppingListDetailViewModel
 
         private suspend fun loadMatchingItems(name: String) {
             withContext(Dispatchers.IO) {
-                // TODO:
-//                val items = itemDao.getItemsFromName(name)
-//                Log.d("ShoppinglistViewModel", "Got ${items.size} from database")
-//                withContext(Dispatchers.Main) {
-//                    _previewItems.value = items
-//                }
+                val matchingItems = itemDao.getItemsFromName(name)
+                Log.d("ShoppinglistViewModel", "Got ${matchingItems.size} from database")
+                withContext(Dispatchers.Main) {
+                    _previewItems.value = matchingItems
+                }
             }
         }
 
         private suspend fun addItemFromPreviewToList(itemName: String) {
             withContext(Dispatchers.IO) {
-                shoppingListRepository.insertExistingItem(ShoppingListPK(shoppingListId, createdBy), itemName)
+                val updatedList = shoppingListRepository.insertExistingItem(ShoppingListPK(shoppingListId, createdBy), itemName)
+                if (updatedList == null) {
+                    Log.e("ShoppingListDetailViewModel", "Failed to insert existing item $itemName")
+                    toastMessage("Failed to insert $itemName")
+                    return@withContext
+                }
                 val lastPosition = itemsInList.value?.size ?: -1
                 withContext(Dispatchers.Main) {
                     scrollDown(lastPosition - 1)
@@ -324,8 +360,10 @@ class ShoppingListDetailViewModel
         fun addTappedItem(itemName: String) {
             vmCoroutine.launch {
                 addItemFromPreviewToList(itemName)
+                withContext(Dispatchers.Main) {
+                    _finished.value = false
+                }
             }
-            _finished.value = false
         }
 
         fun shareThisList() {
@@ -387,6 +425,16 @@ class ShoppingListDetailViewModel
             _finished.value = false
         }
 
+        suspend fun toastMessage(message: String) {
+            withContext(Dispatchers.Main) {
+                _toastMessage.value = message
+            }
+        }
+
+        fun onToastMessageDisplayed() {
+            _toastMessage.value = ""
+        }
+
         fun deleteThisList() {
             _confirmDelete.value = true
         }
@@ -402,7 +450,7 @@ class ShoppingListDetailViewModel
         fun onDeleteConfirmed() {
             _confirmDelete.value = false
             viewModelScope.launch {
-//                shoppingListRepository.delete(shoppingListId, createdBy)
+                shoppingListRepository.deleteList(ShoppingListPK(shoppingListId, createdBy))
                 withContext(Dispatchers.Main) {
                     navigateUp()
                 }
@@ -419,9 +467,11 @@ class ShoppingListDetailViewModel
         }
 
         fun onClearAllItemsPositive() {
-            _confirmClear.value = false
             viewModelScope.launch {
-                shoppingListRepository.deleteAllCheckedItems(shoppingListId, createdBy)
+                withContext(Dispatchers.Main) {
+                    _confirmClear.value = false
+                }
+                shoppingListRepository.removeAllCheckedItemsFromList(ShoppingListPK(shoppingListId, createdBy))
                 withContext(Dispatchers.Main) {
                     resetFinished()
                 }

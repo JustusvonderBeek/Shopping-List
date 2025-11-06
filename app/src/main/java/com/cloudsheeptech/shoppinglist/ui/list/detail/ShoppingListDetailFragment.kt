@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
@@ -121,7 +122,7 @@ class ShoppingListDetailFragment :
         binding.lifecycleOwner = requireActivity()
 
         // Per default update the list once navigated
-        viewModel.updateShoppinglist()
+        viewModel.syncListOnline()
 
         // TODO: Clean up this mess...
         val amountName = getString(R.string.list_item_amount_name)
@@ -232,9 +233,19 @@ class ShoppingListDetailFragment :
             },
         )
 
+        viewModel.toastMessage.observe(
+            viewLifecycleOwner,
+            Observer { message ->
+                if (!message.isNullOrBlank()) {
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG)
+                    viewModel.onToastMessageDisplayed()
+                }
+            },
+        )
+
         binding.refreshLayout.setOnRefreshListener {
             Log.i("EditFragment", "On refresh called")
-            viewModel.updateShoppinglist()
+            viewModel.syncListOnline()
         }
 
         viewModel.refreshing.observe(

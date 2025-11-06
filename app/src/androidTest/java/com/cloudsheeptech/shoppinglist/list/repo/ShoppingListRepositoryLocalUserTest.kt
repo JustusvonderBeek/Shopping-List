@@ -3,7 +3,6 @@ package com.cloudsheeptech.shoppinglist.list.repo
 import com.cloudsheeptech.shoppinglist.list.model.AppItem
 import com.cloudsheeptech.shoppinglist.list.model.ItemToggleStatus
 import com.cloudsheeptech.shoppinglist.list.model.QuantityType
-import com.cloudsheeptech.shoppinglist.list.model.ShoppingListOperation
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
@@ -22,7 +21,7 @@ import kotlin.time.Duration
 
 @RunWith(MockitoJUnitRunner::class)
 @FixMethodOrder(MethodSorters.DEFAULT)
-class ShoppingListRepositoryTest {
+class ShoppingListRepositoryLocalUserTest {
     @JvmField
     @Rule
     val testRule: TestRule = DisableOnDebug(Timeout.seconds(500))
@@ -47,7 +46,6 @@ class ShoppingListRepositoryTest {
 
         // Testing the same with items
         val newListWithItems = shoppingListRepository.create("new list with items")
-        val operations = mutableListOf<ShoppingListOperation>()
         for (i in 1..3) {
             val item =
                 AppItem(
@@ -59,15 +57,9 @@ class ShoppingListRepositoryTest {
                     addedBy = testUser!!.OnlineID,
                     opCount = 0,
                 )
-            val addItem =
-                ShoppingListOperation.AddItem(
-                    ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                    item,
-                )
-            operations.add(addItem)
+            shoppingListRepository.insertItem(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId), item)
             newListWithItems.items.add(item)
         }
-        shoppingListRepository.update(operations)
 
         // Offline should always be correct, but online as well?
         val storedListWithItems =
@@ -102,7 +94,6 @@ class ShoppingListRepositoryTest {
         // Testing the same with items
         val shoppingListRepository = shoppingListApplication.shoppingListRepository
         val newListWithItems = shoppingListRepository.create("new list with items")
-        val operations = mutableListOf<ShoppingListOperation>()
         for (i in 1..3) {
             val item =
                 AppItem(
@@ -114,15 +105,9 @@ class ShoppingListRepositoryTest {
                     addedBy = testUser!!.OnlineID,
                     opCount = 0,
                 )
-            val addItem =
-                ShoppingListOperation.AddItem(
-                    ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                    item,
-                )
-            operations.add(addItem)
+            shoppingListRepository.insertItem(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId), item)
             newListWithItems.items.add(item)
         }
-        shoppingListRepository.update(operations)
         // Should have a list with 3 items now
 
         // Offline should always be correct, but online as well?
@@ -149,17 +134,16 @@ class ShoppingListRepositoryTest {
             // We need to implement sharing for this first
         }
 
-    private suspend fun removeItemOperation() {
+    private suspend fun removeItemByNameOperation() {
         val shoppingListApplication = TestUtil.shoppingListApplication
         val appUserRepository = shoppingListApplication.appUserRepository
         appUserRepository.create("test user")
         val testUser = appUserRepository.read()
         Assert.assertNotNull(testUser) // Even though this is not what we want to test, we need a valid online id in order to proceed
 
-        // Testing the same with items
         val shoppingListRepository = shoppingListApplication.shoppingListRepository
         val newListWithItems = shoppingListRepository.create("new list with items")
-        val operations = mutableListOf<ShoppingListOperation>()
+        val listPk = ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId)
         for (i in 1..3) {
             val item =
                 AppItem(
@@ -171,59 +155,44 @@ class ShoppingListRepositoryTest {
                     addedBy = testUser!!.OnlineID,
                     opCount = 0,
                 )
-            val addItem =
-                ShoppingListOperation.AddItem(
-                    ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                    item,
-                )
-            operations.add(addItem)
+            shoppingListRepository.insertItem(listPk, item)
             newListWithItems.items.add(item)
         }
-        shoppingListRepository.update(operations)
 
         var storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
         Assert.assertTrue(newListWithItems.items.isNotEmpty())
-        var rmvOp =
-            ShoppingListOperation.RemoveItemByName(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                newListWithItems.items[0].name,
-            )
-        shoppingListRepository.update(listOf(rmvOp))
+        shoppingListRepository.removeItemByName(listPk, newListWithItems.items[0].name)
 
         newListWithItems.items.removeAt(0)
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
-        rmvOp =
-            ShoppingListOperation.RemoveItemByName(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                "item with name that cannot be found",
-            )
-        shoppingListRepository.update(listOf(rmvOp))
+        shoppingListRepository.removeItemByName(listPk, "item with name that cannot be found")
+
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
     }
 
     @Test
-    fun testRemoveItemListOperationOfflineOnly() =
+    fun testRemoveItemByNameListOperationOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
             TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = true)
-            removeItemOperation()
+            removeItemByNameOperation()
         }
 
     @Test
-    fun testRemoveItemListOperation() =
+    fun testRemoveItemByNameListOperation() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
             TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = false)
-            removeItemOperation()
+            removeItemByNameOperation()
         }
 
     private suspend fun changeQtyItemOperation() {
@@ -233,10 +202,9 @@ class ShoppingListRepositoryTest {
         val testUser = appUserRepository.read()
         Assert.assertNotNull(testUser) // Even though this is not what we want to test, we need a valid online id in order to proceed
 
-        // Testing the same with items
         val shoppingListRepository = shoppingListApplication.shoppingListRepository
         val newListWithItems = shoppingListRepository.create("new list with items")
-        val operations = mutableListOf<ShoppingListOperation>()
+        val listPk = ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId)
         for (i in 1..3) {
             val item =
                 AppItem(
@@ -248,82 +216,55 @@ class ShoppingListRepositoryTest {
                     addedBy = testUser!!.OnlineID,
                     opCount = 0,
                 )
-            val addItem =
-                ShoppingListOperation.AddItem(
-                    ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                    item,
-                )
-            operations.add(addItem)
+            shoppingListRepository.insertItem(listPk, item)
             newListWithItems.items.add(item)
         }
-        shoppingListRepository.update(operations)
 
         var storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
         val newQuantity = 33L
-        var qtyOp =
-            ShoppingListOperation.ChangeQuantityOfItem(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                newListWithItems.items[0].name,
-                newQuantity,
-                null,
-            )
-        shoppingListRepository.update(listOf(qtyOp))
+        shoppingListRepository.setItemQuantity(listPk, newListWithItems.items[0].name, newQuantity)
 
         newListWithItems.items[0].quantity = newQuantity
         newListWithItems.items[0].opCount = newListWithItems.items[0].opCount.plus(1)
 
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
-        qtyOp =
-            ShoppingListOperation.ChangeQuantityOfItem(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                "definitely not existing item",
-                newQuantity,
-                null,
-            )
-        shoppingListRepository.update(listOf(qtyOp))
+        shoppingListRepository.setItemQuantity(listPk, "definitely not existing item", newQuantity)
+
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
         val negativeQuantity = -1L
-        qtyOp =
-            ShoppingListOperation.ChangeQuantityOfItem(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                newListWithItems.items[0].name,
-                negativeQuantity,
-                null,
-            )
-        shoppingListRepository.update(listOf(qtyOp))
+        shoppingListRepository.setItemQuantity(listPk, newListWithItems.items[0].name, negativeQuantity)
 
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
         val kgQuantity = 123L
-        qtyOp =
-            ShoppingListOperation.ChangeQuantityOfItem(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                newListWithItems.items[1].name,
-                kgQuantity,
-                QuantityType.KILO,
-            )
-        shoppingListRepository.update(listOf(qtyOp))
+        shoppingListRepository.setItemQuantity(
+            listPk,
+            newListWithItems.items[1].name,
+            kgQuantity,
+            QuantityType.KILO,
+        )
 
         newListWithItems.items[1].quantity = kgQuantity
         newListWithItems.items[1].quantityType = QuantityType.KILO
         newListWithItems.items[1].opCount = newListWithItems.items[1].opCount.plus(1)
+
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
     }
@@ -342,17 +283,16 @@ class ShoppingListRepositoryTest {
             changeQtyItemOperation()
         }
 
-    private suspend fun toggleItemOperation() {
+    private suspend fun setItemToggleOperation() {
         val shoppingListApplication = TestUtil.shoppingListApplication
         val appUserRepository = shoppingListApplication.appUserRepository
         appUserRepository.create("test user")
         val testUser = appUserRepository.read()
         Assert.assertNotNull(testUser) // Even though this is not what we want to test, we need a valid online id in order to proceed
 
-        // Testing the same with items
         val shoppingListRepository = shoppingListApplication.shoppingListRepository
         val newListWithItems = shoppingListRepository.create("new list with items")
-        val operations = mutableListOf<ShoppingListOperation>()
+        val listPk = ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId)
         for (i in 1..3) {
             val item =
                 AppItem(
@@ -364,76 +304,65 @@ class ShoppingListRepositoryTest {
                     addedBy = testUser!!.OnlineID,
                     opCount = 0,
                 )
-            val addItem =
-                ShoppingListOperation.AddItem(
-                    ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                    item,
-                )
-            operations.add(addItem)
+            shoppingListRepository.insertItem(listPk, item)
             newListWithItems.items.add(item)
         }
-        shoppingListRepository.update(operations)
 
         var storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
-        var qtyOp =
-            ShoppingListOperation.SetItemCheckedStatus(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                newListWithItems.items[0].name,
-                ItemToggleStatus.TRUE,
-            )
-        shoppingListRepository.update(listOf(qtyOp))
-
+        shoppingListRepository.setItemToggle(
+            listPk,
+            newListWithItems.items[0].name,
+            ItemToggleStatus.TRUE,
+        )
         newListWithItems.items[0].checked = true
         newListWithItems.items[0].opCount = newListWithItems.items[0].opCount.plus(1)
+
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
-        qtyOp =
-            ShoppingListOperation.SetItemCheckedStatus(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                newListWithItems.items[0].name,
-                ItemToggleStatus.TOGGLE,
-            )
-        shoppingListRepository.update(listOf(qtyOp))
-
+        shoppingListRepository.setItemToggle(
+            listPk,
+            newListWithItems.items[0].name,
+            ItemToggleStatus.TOGGLE,
+        )
         newListWithItems.items[0].checked = !newListWithItems.items[0].checked
         newListWithItems.items[0].opCount = newListWithItems.items[0].opCount.plus(1)
+
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
-        qtyOp =
-            ShoppingListOperation.SetItemCheckedStatus(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                "item definitely not found",
-                ItemToggleStatus.TOGGLE,
-            )
-        shoppingListRepository.update(listOf(qtyOp))
+        shoppingListRepository.setItemToggle(
+            listPk,
+            "item definitely not found",
+            ItemToggleStatus.TOGGLE,
+        )
+
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
     }
 
     @Test
-    fun testToggleItemListOperationOfflineOnly() =
+    fun testSetItemToggleListOperationOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
             TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = true)
-            toggleItemOperation()
+            setItemToggleOperation()
         }
 
     @Test
-    fun testToggleItemListOperation() =
+    fun testSetItemToggleListOperation() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
             TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = false)
-            toggleItemOperation()
+            setItemToggleOperation()
         }
 
     private suspend fun renameListOperation() {
@@ -443,10 +372,9 @@ class ShoppingListRepositoryTest {
         val testUser = appUserRepository.read()
         Assert.assertNotNull(testUser) // Even though this is not what we want to test, we need a valid online id in order to proceed
 
-        // Testing the same with items
         val shoppingListRepository = shoppingListApplication.shoppingListRepository
         val newListWithItems = shoppingListRepository.create("new list with items")
-        val operations = mutableListOf<ShoppingListOperation>()
+        val listPk = ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId)
         for (i in 1..3) {
             val item =
                 AppItem(
@@ -458,32 +386,21 @@ class ShoppingListRepositoryTest {
                     addedBy = testUser!!.OnlineID,
                     opCount = 0,
                 )
-            val addItem =
-                ShoppingListOperation.AddItem(
-                    ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                    item,
-                )
-            operations.add(addItem)
+            shoppingListRepository.insertItem(listPk, item)
             newListWithItems.items.add(item)
         }
-        shoppingListRepository.update(operations)
 
         var storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
         val newName = "new list name with long name"
-        val renameOp =
-            ShoppingListOperation.RenameList(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                newName,
-            )
-        shoppingListRepository.update(listOf(renameOp))
-
+        shoppingListRepository.renameList(listPk, newName)
         newListWithItems.title = newName
+
         storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
     }
@@ -502,10 +419,9 @@ class ShoppingListRepositoryTest {
         val testUser = appUserRepository.read()
         Assert.assertNotNull(testUser) // Even though this is not what we want to test, we need a valid online id in order to proceed
 
-        // Testing the same with items
         val shoppingListRepository = shoppingListApplication.shoppingListRepository
         val newListWithItems = shoppingListRepository.create("new list with items")
-        val operations = mutableListOf<ShoppingListOperation>()
+        val listPk = ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId)
         for (i in 1..3) {
             val item =
                 AppItem(
@@ -517,26 +433,16 @@ class ShoppingListRepositoryTest {
                     addedBy = testUser!!.OnlineID,
                     opCount = 0,
                 )
-            val addItem =
-                ShoppingListOperation.AddItem(
-                    ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-                    item,
-                )
-            operations.add(addItem)
+            shoppingListRepository.insertItem(listPk, item)
             newListWithItems.items.add(item)
         }
-        shoppingListRepository.update(operations)
 
         var storedListWithItems =
-            shoppingListRepository.read(ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId))
+            shoppingListRepository.read(listPk)
         Assert.assertNotNull(storedListWithItems)
         Assert.assertEquals(newListWithItems, storedListWithItems)
 
-        val rmvOp =
-            ShoppingListOperation.Delete(
-                ShoppingListPK(newListWithItems.listId, newListWithItems.createdBy.onlineId),
-            )
-        shoppingListRepository.update(listOf(rmvOp))
+        shoppingListRepository.deleteList(listPk)
 
         val deletedListWithItems =
             shoppingListRepository.read(ShoppingListPK(storedListWithItems!!.listId, storedListWithItems.createdBy.onlineId))

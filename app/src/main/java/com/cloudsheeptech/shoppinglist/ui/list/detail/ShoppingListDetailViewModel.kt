@@ -261,15 +261,21 @@ class ShoppingListDetailViewModel
 
         fun increaseItemCount(
             itemName: String,
-            quantity: Long = 1L,
+            quantity: Int = 1,
         ) {
             Log.d("ShoppingListViewModel", "Change quantity of item $itemName by $quantity")
             vmCoroutine.launch {
+                val currentItems = itemsInList.value?.filter { item -> item.name.equals(itemName, ignoreCase = true) }
+                if (currentItems.isNullOrEmpty()) {
+                    Log.e("ShoppingListDetailViewModel", "Item $itemName not found in list ($shoppingListId, $createdBy)")
+                    return@launch
+                }
+                val itemToUpdate = currentItems[0]
                 val updatedList =
                     shoppingListRepository.setItemQuantity(
                         ShoppingListPK(shoppingListId, createdBy),
                         itemName,
-                        quantity,
+                        itemToUpdate.quantity + quantity,
                     )
                 if (updatedList == null) {
                     Log.e("ShoppingListDetailViewModel", "Failed to increase count of $itemName")
@@ -284,14 +290,32 @@ class ShoppingListDetailViewModel
             }
         }
 
-        fun decreaseItemCount(itemName: String) {
+        fun decreaseItemCount(
+            itemName: String,
+            quantity: Int = -1,
+        ) {
             vmCoroutine.launch {
-                val updatedList =
-                    shoppingListRepository.setItemQuantity(
-                        ShoppingListPK(shoppingListId, createdBy),
-                        itemName,
-                        -1L,
+                val currentItems = itemsInList.value?.filter { item -> item.name.equals(itemName, ignoreCase = true) }
+                if (currentItems.isNullOrEmpty()) {
+                    Log.e("ShoppingListDetailViewModel", "Item $itemName not found in list ($shoppingListId, $createdBy)")
+                    return@launch
+                }
+                val itemToUpdate = currentItems[0]
+                var updatedList: ShoppingList? = null
+                if (itemToUpdate.quantity + quantity <= 0) {
+                    Log.i(
+                        "ShoppingListDetailView",
+                        "Removing $itemName because quantity is decreased by $quantity and therefore value is <= 0",
                     )
+                    updatedList = shoppingListRepository.removeItemByName(ShoppingListPK(shoppingListId, createdBy), itemName)
+                } else {
+                    updatedList =
+                        shoppingListRepository.setItemQuantity(
+                            ShoppingListPK(shoppingListId, createdBy),
+                            itemName,
+                            itemToUpdate.quantity + quantity,
+                        )
+                }
                 if (updatedList == null) {
                     Log.e("ShoppingListDetailViewModel", "Failed to decrease count of $itemName")
                     toastMessage("Failed to decrease item count of $itemName")

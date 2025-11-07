@@ -131,9 +131,9 @@ class ShoppingListDetailFragment :
                 ShoppingListItemAdapter.ShoppingItemClickListener { itemId, count ->
                     Log.i("ShoppinglistFragment", "Tapped on item $itemId to increase count")
                     if (count > 0) {
-                        viewModel.increaseItemCount(itemId)
+                        viewModel.increaseItemCount(itemId, count)
                     } else if (count < 0) {
-                        viewModel.decreaseItemCount(itemId)
+                        viewModel.decreaseItemCount(itemId, count)
                     }
                 },
                 ShoppingListItemAdapter.ShoppingItemCheckboxClickListener { itemId ->

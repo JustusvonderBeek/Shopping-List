@@ -35,5 +35,5 @@ class OffsetDateTimeFormatHandler :
         out?.value(formattedTime)
     }
 
-    override fun read(`in`: JsonReader?): OffsetDateTime? = OffsetDateTime.parse(`in`?.toString(), formatter)
+    override fun read(`in`: JsonReader?): OffsetDateTime? = OffsetDateTime.parse(`in`?.nextString() ?: "", formatter)
 }

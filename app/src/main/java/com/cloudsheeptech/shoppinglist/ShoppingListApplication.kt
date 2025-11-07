@@ -3,6 +3,8 @@ package com.cloudsheeptech.shoppinglist
 
 import android.app.Application
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
+import com.cloudsheeptech.shoppinglist.list.api.interceptor.AuthInterceptor
+import com.cloudsheeptech.shoppinglist.list.api.interceptor.CreateUserInterceptor
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRemoteDataSource
@@ -18,6 +20,8 @@ import com.cloudsheeptech.shoppinglist.sharing.repo.ListShareRepository
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
+import com.cloudsheeptech.shoppinglist.user.api.UserAuthenticatedApi
+import com.cloudsheeptech.shoppinglist.user.api.UserUnauthenticatedApi
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
@@ -46,6 +50,18 @@ class ShoppingListApplication : Application() {
 
     @Inject
     lateinit var networking: Networking
+
+    @Inject
+    lateinit var userUnauthenticatedApi: UserUnauthenticatedApi
+
+    @Inject
+    lateinit var authInterceptor: AuthInterceptor
+
+    @Inject
+    lateinit var createUserInterceptor: CreateUserInterceptor
+
+    @Inject
+    lateinit var userAuthenticatedApi: UserAuthenticatedApi
 
     @Inject
     lateinit var shoppingListLocalDataSource: ShoppingListLocalDataSource
@@ -100,6 +116,14 @@ class ShoppingListApplication : Application() {
     fun isAppUserRepositoryInitialized() = ::appUserRepository.isInitialized
 
     fun isNetworkingInitialized() = ::networking.isInitialized
+
+    fun isAuthInterceptorInitialized() = ::authInterceptor.isInitialized
+
+    fun isCreateUserInterceptorInitialized() = ::createUserInterceptor.isInitialized
+
+    fun isUserUnauthenticatedApiInitialized() = ::userUnauthenticatedApi.isInitialized
+
+    fun isUserAuthenticatedApiInitialized() = ::userAuthenticatedApi.isInitialized
 
     fun isItemLocalDSInitialized() = ::itemLocalDataSource.isInitialized
 

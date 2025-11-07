@@ -9,9 +9,11 @@ object UserApiEndpoints {
     //    const val BASE_ENDPOINT = "$PROTOCOL://shop.cloudsheeptech.com$PORT"
     const val BASE_ENDPOINT = "$PROTOCOL://10.0.2.2$PORT"
 
-    const val ENDPOINT_CREATE_USER = "/create"
+    const val ENDPOINT_PING = "/v1/ping"
 
-    const val ENDPOINT_LOGIN_USER = "/login"
+    const val ENDPOINT_CREATE_USER = "/v1/users"
 
-    const val ENDPOINT_DELETE_USER = "/delete"
+    const val ENDPOINT_LOGIN_USER = "/v1/login"
+
+    const val ENDPOINT_DELETE_USER = "/v1/delete"
 }

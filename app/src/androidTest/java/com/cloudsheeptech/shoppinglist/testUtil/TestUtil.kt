@@ -4,9 +4,9 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.ShoppingListApplication
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.list.api.AppApiProvider
 import com.cloudsheeptech.shoppinglist.list.api.ShoppingListApi
 import com.cloudsheeptech.shoppinglist.list.api.interceptor.AuthInterceptor
+import com.cloudsheeptech.shoppinglist.list.api.interceptor.CreateUserInterceptor
 import com.cloudsheeptech.shoppinglist.list.model.ApiResult
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
@@ -18,10 +18,14 @@ import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationT
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRepository
+import com.cloudsheeptech.shoppinglist.user.api.UserAuthenticatedApi
+import com.cloudsheeptech.shoppinglist.user.api.UserUnauthenticatedApi
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
+import com.cloudsheeptech.shoppinglist.util.AppAuthenticatedApiProvider
+import com.cloudsheeptech.shoppinglist.util.AppUnauthenticatedApiProvider
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import org.mockito.Mockito
@@ -50,6 +54,8 @@ object TestUtil {
         createLocalShoppingListDataSource()
         createRemoteShoppingListDataSource()
         createShoppingListRepository()
+        createUserUnauthenticatedApi()
+        createUserAuthenticatedApi()
         createOnlineUserLocalDS()
         createOnlineUserRemoteDS()
         createOnlineUserRepository()
@@ -222,11 +228,13 @@ object TestUtil {
         } else {
             val networking = createNetworking()
             val appUserRepository = createAppUserRepository()
-            val payloadProvider = UserCreationDataProvider(shoppingListApplication.appUserLocalDataSource)
-            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tokens/")
-            val authInterceptor = AuthInterceptor(tokenProvider)
-            val apiProvider = AppApiProvider(authInterceptor, appUserRepository)
-            var shoppingListApi = apiProvider.shoppingListApi
+            val createUserInterceptor = createCreateUserInterceptor()
+            val authInterceptor = createUserAuthInterceptorApi()
+            val apiProvider = AppAuthenticatedApiProvider()
+            var shoppingListApi =
+                apiProvider.provideShoppingListApi(
+                    apiProvider.provideAuthRetrofitProvider(apiProvider.provideAuthClient(authInterceptor, createUserInterceptor)),
+                )
             if (mockRemoteToDoNothing) {
                 shoppingListApi = Mockito.mock(ShoppingListApi::class.java)
                 shoppingListApi.stub {
@@ -305,5 +313,61 @@ object TestUtil {
             shoppingListApplication.onlineUserRepository = onlineUserRepository
         }
         return onlineUserRepository
+    }
+
+    private fun createUserUnauthenticatedApi(): UserUnauthenticatedApi {
+        val userUnauthenticatedApi: UserUnauthenticatedApi?
+        if (shoppingListApplication.isUserUnauthenticatedApiInitialized()) {
+            userUnauthenticatedApi = shoppingListApplication.userUnauthenticatedApi
+        } else {
+            val appUnauthProvider = AppUnauthenticatedApiProvider()
+            userUnauthenticatedApi = appUnauthProvider.provideUnauthApi()
+            shoppingListApplication.userUnauthenticatedApi = userUnauthenticatedApi
+        }
+        return userUnauthenticatedApi
+    }
+
+    private fun createUserAuthenticatedApi(): UserAuthenticatedApi {
+        val userAuthenticatedApi: UserAuthenticatedApi?
+        if (shoppingListApplication.isUserAuthenticatedApiInitialized()) {
+            userAuthenticatedApi = shoppingListApplication.userAuthenticatedApi
+        } else {
+            val createUserInterceptor = createCreateUserInterceptor()
+            val authInterceptor = createUserAuthInterceptorApi()
+            val userRepo = createAppUserRepository()
+            val apiProvider = AppAuthenticatedApiProvider()
+            userAuthenticatedApi =
+                apiProvider.provideUserAuthenticatedApi(
+                    apiProvider.provideAuthRetrofitProvider(apiProvider.provideAuthClient(authInterceptor, createUserInterceptor)),
+                )
+            shoppingListApplication.userAuthenticatedApi = userAuthenticatedApi
+        }
+        return userAuthenticatedApi
+    }
+
+    private fun createUserAuthInterceptorApi(): AuthInterceptor {
+        val authInterceptor: AuthInterceptor?
+        if (shoppingListApplication.isAuthInterceptorInitialized()) {
+            authInterceptor = shoppingListApplication.authInterceptor
+        } else {
+            val payloadProvider = UserCreationDataProvider(createLocalAppUserDS())
+            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tokens/")
+            authInterceptor = AuthInterceptor(tokenProvider)
+            shoppingListApplication.authInterceptor = authInterceptor
+        }
+        return authInterceptor
+    }
+
+    private fun createCreateUserInterceptor(): CreateUserInterceptor {
+        val createUserInterceptor: CreateUserInterceptor?
+        if (shoppingListApplication.isCreateUserInterceptorInitialized()) {
+            createUserInterceptor = shoppingListApplication.createUserInterceptor
+        } else {
+            val userRepo = createAppUserRepository()
+            val unauthApi = createUserUnauthenticatedApi()
+            createUserInterceptor = CreateUserInterceptor(userRepo, unauthApi)
+            shoppingListApplication.createUserInterceptor = createUserInterceptor
+        }
+        return createUserInterceptor
     }
 }

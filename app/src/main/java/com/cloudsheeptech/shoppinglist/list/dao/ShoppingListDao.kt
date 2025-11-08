@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import java.time.OffsetDateTime
 
 /**
  * This class should abstract for the multiple local repositories handling only DB data
@@ -262,7 +263,7 @@ interface ShoppingListDao {
     fun getBaseListLive(
         listId: Long,
         createdBy: Long,
-    ): Flow<DbShoppingList>
+    ): Flow<DbShoppingList?>
 
     fun getItemsLive(
         listId: Long,
@@ -283,14 +284,15 @@ interface ShoppingListDao {
         listId: Long,
         createdBy: Long,
     ): Flow<ShoppingList> {
+        // Can return null IFF just deleted
         val baseList = getBaseListLive(listId, createdBy)
         val listItems = getItemsLive(listId, createdBy)
         return combine(baseList, listItems) { list, items ->
             ShoppingList(
-                listId = list.listId,
+                listId = list?.listId ?: 0L,
                 createdBy = ListCreator(createdBy, ""),
-                title = list.title,
-                synchronized = list.lastSynchronized,
+                title = list?.title ?: "",
+                synchronized = list?.lastSynchronized ?: OffsetDateTime.now(),
                 items = items.toMutableList(),
             )
         }

@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.network
+package com.cloudsheeptech.shoppinglist.user.api
 
 import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
@@ -41,6 +41,27 @@ class AuthenticationFlowTest {
             userApi.ping()
 
             val currentUser = userRepo.read()
+            Assert.assertNotNull(currentUser)
+            Assert.assertNotEquals(0L, currentUser!!.OnlineID)
+        }
+
+    @Test
+    fun testAuthFlowWithCreateList() =
+        runTest(EmptyCoroutineContext, Duration.parse("3m")) {
+            TestUtil.initialize(true, false)
+            val userRepo = TestUtil.shoppingListApplication.appUserRepository
+            val shoppingListRepo = TestUtil.shoppingListApplication.shoppingListRepository
+
+            userRepo.create("test user for online")
+
+            var currentUser = userRepo.read()
+            Assert.assertNotNull(currentUser)
+            Assert.assertEquals(0L, currentUser!!.OnlineID)
+
+            val newList = shoppingListRepo.create("new list")
+            Assert.assertNotNull(newList)
+
+            currentUser = userRepo.read()
             Assert.assertNotNull(currentUser)
             Assert.assertNotEquals(0L, currentUser!!.OnlineID)
         }

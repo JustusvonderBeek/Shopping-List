@@ -26,8 +26,6 @@ class AppUserRepository
             // Online user creation can take place anytime
             // and is therefore explicitly build into the
             // networking modules
-            // No need to perform this action here
-//            appUserRemoteSource.create()
         }
 
         // Should only provide the local user, since the online
@@ -41,24 +39,34 @@ class AppUserRepository
 
         fun loaded(): Boolean = appUserLocalSource.loaded()
 
-        // Update the information offline and online
         suspend fun update(user: AppUser) {
-            // Currently, we don't want to update the other
-            // parameters of the user
-            appUserLocalSource.setUsername(user.Username)
-            appUserLocalSource.store()
-            appUserRemoteSource.update(user)
+            try {
+                // Currently, we don't want to update the other
+                // parameters of the user
+                appUserLocalSource.setUsername(user.Username)
+                appUserLocalSource.store()
+                appUserRemoteSource.update(user)
+            } catch (ex: Exception) {
+                Log.e("AppUserRepository", "Failed to update user information: $ex")
+            }
         }
 
         suspend fun updateOnlineId(onlineId: Long) {
-            appUserLocalSource.setOnlineId(onlineId)
-            appUserLocalSource.store()
-            Log.i("AppUserRepository", "Updated onlineId to $onlineId and stored user")
+            try {
+                appUserLocalSource.setOnlineId(onlineId)
+                appUserLocalSource.store()
+                Log.i("AppUserRepository", "Updated onlineId to $onlineId and stored user")
+            } catch (ex: Exception) {
+                Log.e("AppUserRepository", "Failed to update onlineId to $onlineId: $ex")
+            }
         }
 
-        // Delete the user offline and online
         suspend fun delete() {
-            val localUser = appUserLocalSource.getUser() ?: return
+            val localUser = appUserLocalSource.getUser()
+            if (localUser == null) {
+                Log.w("AppUserRepository", "Currently stored user is null, skipping delete")
+                return
+            }
             var success = false
             try {
                 success = appUserRemoteSource.delete(localUser)

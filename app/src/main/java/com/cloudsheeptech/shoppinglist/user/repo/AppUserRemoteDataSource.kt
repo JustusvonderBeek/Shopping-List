@@ -3,18 +3,13 @@ package com.cloudsheeptech.shoppinglist.user.repo
 import android.util.Log
 import com.cloudsheeptech.shoppinglist.list.model.UserAuthenticationFailedException
 import com.cloudsheeptech.shoppinglist.list.model.UserNotCreatedException
-import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
+import com.cloudsheeptech.shoppinglist.user.api.UserAuthenticatedApi
 import com.cloudsheeptech.shoppinglist.user.model.ApiUser
 import com.cloudsheeptech.shoppinglist.user.model.AppUser
 import com.cloudsheeptech.shoppinglist.user.util.UserFormatAdapter
-import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,97 +21,62 @@ import javax.inject.Singleton
 class AppUserRemoteDataSource
     @Inject
     constructor(
-        private val remoteApi: Networking,
+        private val userAuthApi: UserAuthenticatedApi,
     ) {
-        val json =
-            Json {
-                serializersModule =
-                    SerializersModule {
-                        contextual(OffsetDateTime::class, OffsetDateTimeFormatHandler())
-                    }
-                // Because this class is only used to handle the user information and not
-                // arbitrary user data, unknown keys represent a protocol violation
-                ignoreUnknownKeys = false
-                // Again, all information should be contained in the serialized JSON
-                // that is sent to the server
-                encodeDefaults = true
-            }
-
         // Because the creation is handled by the request itself, we only
         // ping the endpoint which should be enough to create a new account
         suspend fun create() {
             withContext(Dispatchers.IO) {
-                var requestSuccess = false
                 try {
-                    remoteApi.get(
-                        "${UrlProviderEnum.PING.url}",
-                    ) { resp ->
-                        if (resp.status != HttpStatusCode.OK) {
-                            Log.e("AppUserRemoteRepository", "Current status is not online")
-                            return@get
-                        }
-                        requestSuccess = true
+                    val response = userAuthApi.ping()
+                    if (response.status != HttpStatusCode.OK) {
+                        Log.e("AppUserRemoteDataSource", "Pinging the endpoint failed")
                     }
-                    return@withContext requestSuccess
                 } catch (ex: UserNotCreatedException) {
-                    Log.e("AppUserRemoteRepository", "User is not authenticated online")
+                    Log.e("AppUserRemoteRepository", "User is not authenticated online: $ex")
                 } catch (ex: UserAuthenticationFailedException) {
-                    Log.e("AppUserRemoteRepository", "User authentication failed")
+                    Log.e("AppUserRemoteRepository", "User authentication failed: $ex")
+                } catch (ex: Exception) {
+                    Log.e("AppUserRemoteDataSource", "Failed to create user by pinging endpoint: $ex")
                 }
-                return@withContext false
             }
-            return
         }
 
         suspend fun read(): ApiUser = throw NotImplementedError("this method should never be called")
 
         suspend fun update(user: AppUser): Boolean {
-            val success =
-                withContext(Dispatchers.IO) {
-                    try {
-                        val encodedUser = json.encodeToString(UserFormatAdapter.Companion.fromAppToApiUser(user))
-                        remoteApi.PUT(
-                            "${UrlProviderEnum.BASE_USER_URL.url}/${user.OnlineID}",
-                            encodedUser,
-                        ) { resp ->
-                            if (resp.status != HttpStatusCode.OK) {
-                                throw IllegalStateException("update failed with status: ${resp.status}")
-                            }
-                            Log.i("AppUserRemoteDataSource", "Updated user ${user.OnlineID} online")
-                        }
-                        return@withContext true
-                    } catch (ex: UserNotCreatedException) {
-                        Log.e("AppUserRemoteRepository", "User is not authenticated online")
-                    } catch (ex: UserAuthenticationFailedException) {
-                        Log.e("AppUserRemoteRepository", "User authentication failed")
-                    }
-                    return@withContext false
+            return withContext(Dispatchers.IO) {
+                try {
+                    val response = userAuthApi.updateUser(UserFormatAdapter.fromAppToApiUser(user))
+                    return@withContext response.status == HttpStatusCode.OK
+                } catch (ex: UserNotCreatedException) {
+                    Log.e("AppUserRemoteRepository", "User is not authenticated online: $ex")
+                } catch (ex: UserAuthenticationFailedException) {
+                    Log.e("AppUserRemoteRepository", "User authentication failed: $ex")
+                } catch (ex: Exception) {
+                    Log.e("AppUserRemoteDataSource", "Failed to update user: $ex")
                 }
-            return success
+                return@withContext false
+            }
         }
 
         suspend fun delete(user: AppUser): Boolean {
             if (user.OnlineID == 0L) {
+                Log.e("AppUserRemoteDataSource", "UserId is 0 therefore nothing to delete online")
                 return true
             }
-            val success =
-                withContext(Dispatchers.IO) {
-                    try {
-                        remoteApi.DELETE("${UrlProviderEnum.BASE_USER_URL.url}/${user.OnlineID}") { resp ->
-                            if (resp.status != HttpStatusCode.OK) {
-                                Log.w("AppUserRemoteDataSource", "Failed to delete user online!")
-                                // In case the server cannot be reached, the call throws a
-                                // ConnectException, therefore this only happens when the request was bad
-                                throw IllegalArgumentException("bad request")
-                            }
-                            Log.i("AppUserRemoteDataSource", "Deleted user ${user.OnlineID} online")
-                        }
+            return withContext(Dispatchers.IO) {
+                try {
+                    val response = userAuthApi.delete(user.OnlineID)
+                    if (response.status == HttpStatusCode.OK) {
+                        Log.i("AppUserRemoteDataSource", "Successfully deleted user ${user.OnlineID} online")
                         return@withContext true
-                    } catch (ex: IllegalAccessException) {
-                        Log.w("AppUserRemoteDataSource", "Failed to delete user online: $ex")
                     }
-                    return@withContext false
+                    Log.e("AppUserRemoteDataSource", "Failed to delete user ${user.OnlineID} online")
+                } catch (ex: IllegalAccessException) {
+                    Log.w("AppUserRemoteDataSource", "Failed to delete user online: $ex")
                 }
-            return success
+                return@withContext false
+            }
         }
     }

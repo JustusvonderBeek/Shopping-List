@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.onlineUser
+package com.cloudsheeptech.shoppinglist.user.repo
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider

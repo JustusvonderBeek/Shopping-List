@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.sharing
+package com.cloudsheeptech.shoppinglist.sharing
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider

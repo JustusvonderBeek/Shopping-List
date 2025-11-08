@@ -1,10 +1,9 @@
-package com.cloudsheeptech.shoppinglist.repository
+package com.cloudsheeptech.shoppinglist.user.repo
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith

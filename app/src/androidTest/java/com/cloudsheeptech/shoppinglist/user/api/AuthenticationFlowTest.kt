@@ -1,6 +1,6 @@
 package com.cloudsheeptech.shoppinglist.user.api
 
-import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
+import com.cloudsheeptech.shoppinglist.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test

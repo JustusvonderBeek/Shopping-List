@@ -1,12 +1,12 @@
-package com.cloudsheeptech.shoppinglist.data.database
+package com.cloudsheeptech.shoppinglist.database
 
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.IOException
 import java.time.OffsetDateTime
 
 @RunWith(AndroidJUnit4::class)
@@ -21,7 +21,7 @@ class MigrationTest {
         )
 
     @Test
-    @Throws(java.io.IOException::class)
+    @Throws(IOException::class)
     fun migrate18To21() {
         var db =
             helper.createDatabase(TEST_DB, 18).apply {

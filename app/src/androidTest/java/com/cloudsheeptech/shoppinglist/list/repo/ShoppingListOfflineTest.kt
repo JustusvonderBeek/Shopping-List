@@ -1,10 +1,10 @@
-package com.cloudsheeptech.shoppinglist.data.list
+package com.cloudsheeptech.shoppinglist.list.repo
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import com.cloudsheeptech.shoppinglist.TestUtil
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
-import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert

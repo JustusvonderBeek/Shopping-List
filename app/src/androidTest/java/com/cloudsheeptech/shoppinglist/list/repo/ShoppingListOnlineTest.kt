@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.list
+package com.cloudsheeptech.shoppinglist.list.repo
 
 import com.cloudsheeptech.shoppinglist.user.model.ApiUser
 import com.cloudsheeptech.shoppinglist.user.model.AppUser

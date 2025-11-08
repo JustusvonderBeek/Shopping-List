@@ -1,8 +1,7 @@
-package com.cloudsheeptech.shoppinglist.testUtil
+package com.cloudsheeptech.shoppinglist
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.ShoppingListApplication
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.api.ShoppingListApi
 import com.cloudsheeptech.shoppinglist.list.api.interceptor.AddTokenToHeaderInterceptor

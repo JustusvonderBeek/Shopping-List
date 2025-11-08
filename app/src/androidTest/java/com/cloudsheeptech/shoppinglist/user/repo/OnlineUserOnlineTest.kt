@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist.data.onlineUser
+package com.cloudsheeptech.shoppinglist.user.repo
 
 import android.app.Application
 import android.util.Log
@@ -9,9 +9,6 @@ import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationT
 import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.user.model.ApiUser
 import com.cloudsheeptech.shoppinglist.user.model.UserRightsEnum
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
 import io.ktor.client.statement.bodyAsText

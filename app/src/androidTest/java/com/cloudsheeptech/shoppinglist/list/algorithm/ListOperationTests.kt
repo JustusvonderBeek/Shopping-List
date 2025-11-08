@@ -1,4 +1,4 @@
-package com.cloudsheeptech.shoppinglist
+package com.cloudsheeptech.shoppinglist.list.algorithm
 
 import android.app.Application
 import android.util.Log

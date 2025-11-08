@@ -1,10 +1,10 @@
 package com.cloudsheeptech.shoppinglist.list.repo
 
+import com.cloudsheeptech.shoppinglist.TestUtil
 import com.cloudsheeptech.shoppinglist.list.model.AppItem
 import com.cloudsheeptech.shoppinglist.list.model.ItemToggleStatus
 import com.cloudsheeptech.shoppinglist.list.model.QuantityType
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
-import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.FixMethodOrder

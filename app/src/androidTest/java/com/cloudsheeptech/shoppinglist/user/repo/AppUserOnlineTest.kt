@@ -1,16 +1,14 @@
-package com.cloudsheeptech.shoppinglist.data.user
+package com.cloudsheeptech.shoppinglist.user.repo
 
 import android.app.Application
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cloudsheeptech.shoppinglist.ShoppingListApplication
+import com.cloudsheeptech.shoppinglist.TestUtil
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
-import com.cloudsheeptech.shoppinglist.testUtil.TestUtil
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserRemoteDataSource
 import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert

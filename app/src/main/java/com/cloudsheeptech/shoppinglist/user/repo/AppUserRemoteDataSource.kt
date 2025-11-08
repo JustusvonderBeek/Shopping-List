@@ -29,7 +29,7 @@ class AppUserRemoteDataSource
             withContext(Dispatchers.IO) {
                 try {
                     val response = userAuthApi.ping()
-                    if (response.status != HttpStatusCode.OK) {
+                    if (!response.isSuccessful) {
                         Log.e("AppUserRemoteDataSource", "Pinging the endpoint failed")
                     }
                 } catch (ex: UserNotCreatedException) {

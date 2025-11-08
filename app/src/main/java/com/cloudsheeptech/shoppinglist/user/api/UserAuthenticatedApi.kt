@@ -2,6 +2,7 @@ package com.cloudsheeptech.shoppinglist.user.api
 
 import com.cloudsheeptech.shoppinglist.user.model.ApiUser
 import io.ktor.client.statement.HttpResponse
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -11,7 +12,7 @@ import retrofit2.http.Path
 
 interface UserAuthenticatedApi {
     @GET(UserApiEndpoints.ENDPOINT_PING)
-    suspend fun ping(): HttpResponse
+    suspend fun ping(): Response<Unit>
 
     @PUT(UserApiEndpoints.ENDPOINT_UPDATE_USER)
     suspend fun updateUser(

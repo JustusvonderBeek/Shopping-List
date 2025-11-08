@@ -5,7 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.cloudsheeptech.shoppinglist.ShoppingListApplication
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.api.ShoppingListApi
-import com.cloudsheeptech.shoppinglist.list.api.interceptor.AuthInterceptor
+import com.cloudsheeptech.shoppinglist.list.api.interceptor.AddTokenToHeaderInterceptor
 import com.cloudsheeptech.shoppinglist.list.api.interceptor.CreateUserInterceptor
 import com.cloudsheeptech.shoppinglist.list.model.ApiResult
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
@@ -32,6 +32,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.stub
+import kotlin.io.path.Path
 
 object TestUtil {
     var shoppingListApplication: ShoppingListApplication = ShoppingListApplication()
@@ -345,17 +346,17 @@ object TestUtil {
         return userAuthenticatedApi
     }
 
-    private fun createUserAuthInterceptorApi(): AuthInterceptor {
-        val authInterceptor: AuthInterceptor?
+    private fun createUserAuthInterceptorApi(): AddTokenToHeaderInterceptor {
+        val addTokenToHeaderInterceptor: AddTokenToHeaderInterceptor?
         if (shoppingListApplication.isAuthInterceptorInitialized()) {
-            authInterceptor = shoppingListApplication.authInterceptor
+            addTokenToHeaderInterceptor = shoppingListApplication.addTokenToHeaderInterceptor
         } else {
             val payloadProvider = UserCreationDataProvider(createLocalAppUserDS())
             val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tokens/")
-            authInterceptor = AuthInterceptor(tokenProvider)
-            shoppingListApplication.authInterceptor = authInterceptor
+            addTokenToHeaderInterceptor = AddTokenToHeaderInterceptor(tokenProvider)
+            shoppingListApplication.addTokenToHeaderInterceptor = addTokenToHeaderInterceptor
         }
-        return authInterceptor
+        return addTokenToHeaderInterceptor
     }
 
     private fun createCreateUserInterceptor(): CreateUserInterceptor {
@@ -365,9 +366,15 @@ object TestUtil {
         } else {
             val userRepo = createAppUserRepository()
             val unauthApi = createUserUnauthenticatedApi()
-            createUserInterceptor = CreateUserInterceptor(userRepo, unauthApi)
+            val tokenFileDir = createAppFileDirString()
+            createUserInterceptor = CreateUserInterceptor(userRepo, unauthApi, tokenFileDir)
             shoppingListApplication.createUserInterceptor = createUserInterceptor
         }
         return createUserInterceptor
+    }
+
+    private fun createAppFileDirString(): String {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        return Path(application.applicationContext.filesDir.path, "token.txt").toString()
     }
 }

@@ -7,7 +7,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AuthInterceptor
+class AddTokenToHeaderInterceptor
     @Inject
     constructor(
         private val tokenProvider: ShoppingListAuthenticationTokenProvider,

@@ -31,13 +31,15 @@ class AuthenticationFlowTest {
 
     @Test
     fun testAuthFlowWithPing() =
-        runTest {
-            val testUtil = TestUtil.initialize(true, false)
+        runTest(EmptyCoroutineContext, Duration.parse("3m")) {
+            TestUtil.initialize(true, false)
+            val userRepo = TestUtil.shoppingListApplication.appUserRepository
             val userApi = TestUtil.shoppingListApplication.userAuthenticatedApi
+
+            userRepo.create("test user for online")
 
             userApi.ping()
 
-            val userRepo = TestUtil.shoppingListApplication.appUserRepository
             val currentUser = userRepo.read()
             Assert.assertNotNull(currentUser)
             Assert.assertNotEquals(0L, currentUser!!.OnlineID)

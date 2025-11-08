@@ -2,7 +2,7 @@ package com.cloudsheeptech.shoppinglist.util
 
 import com.cloudsheeptech.shoppinglist.list.api.ShoppingListApi
 import com.cloudsheeptech.shoppinglist.list.api.ShoppingListEndpoints
-import com.cloudsheeptech.shoppinglist.list.api.interceptor.AuthInterceptor
+import com.cloudsheeptech.shoppinglist.list.api.interceptor.AddTokenToHeaderInterceptor
 import com.cloudsheeptech.shoppinglist.list.api.interceptor.CreateUserInterceptor
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.user.api.UserAuthenticatedApi
@@ -44,25 +44,27 @@ class AppAuthenticatedApiProvider {
 
     @Provides
     @Singleton
-    fun provideAuthInterceptor(shopingListAuthenticationTokenProvider: ShoppingListAuthenticationTokenProvider): AuthInterceptor =
-        AuthInterceptor(shopingListAuthenticationTokenProvider)
+    fun provideAuthInterceptor(
+        shopingListAuthenticationTokenProvider: ShoppingListAuthenticationTokenProvider,
+    ): AddTokenToHeaderInterceptor = AddTokenToHeaderInterceptor(shopingListAuthenticationTokenProvider)
 
     @Provides
     @Singleton
     fun provideCreateUserInterceptor(
         userRepository: AppUserRepository,
         userUnauthenticatedApi: UserUnauthenticatedApi,
-    ): CreateUserInterceptor = CreateUserInterceptor(userRepository, userUnauthenticatedApi)
+        appFileDir: String,
+    ): CreateUserInterceptor = CreateUserInterceptor(userRepository, userUnauthenticatedApi, appFileDir)
 
     @Provides
     @Singleton
     fun provideAuthClient(
-        authInterceptor: AuthInterceptor,
+        addTokenToHeaderInterceptor: AddTokenToHeaderInterceptor,
         createUserInterceptor: CreateUserInterceptor,
     ): OkHttpClient =
         OkHttpClient
             .Builder()
-            .addInterceptor(authInterceptor)
+            .addInterceptor(addTokenToHeaderInterceptor)
             .authenticator(createUserInterceptor)
             .build()
 

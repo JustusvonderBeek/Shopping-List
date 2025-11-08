@@ -50,6 +50,12 @@ class AppUserRepository
             appUserRemoteSource.update(user)
         }
 
+        suspend fun updateOnlineId(onlineId: Long) {
+            appUserLocalSource.setOnlineId(onlineId)
+            appUserLocalSource.store()
+            Log.i("AppUserRepository", "Updated onlineId to $onlineId and stored user")
+        }
+
         // Delete the user offline and online
         suspend fun delete() {
             val localUser = appUserLocalSource.getUser() ?: return

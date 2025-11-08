@@ -13,7 +13,7 @@ object UserApiEndpoints {
 
     const val ENDPOINT_CREATE_USER = "/v1/users"
 
-    const val ENDPOINT_LOGIN_USER = "/v1/login"
+    const val ENDPOINT_LOGIN_USER = "/v1/users/login/{onlineId}"
 
     const val ENDPOINT_DELETE_USER = "/v1/delete"
 }

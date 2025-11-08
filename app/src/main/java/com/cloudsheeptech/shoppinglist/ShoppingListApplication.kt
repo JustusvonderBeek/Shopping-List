@@ -3,7 +3,7 @@ package com.cloudsheeptech.shoppinglist
 
 import android.app.Application
 import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.list.api.interceptor.AuthInterceptor
+import com.cloudsheeptech.shoppinglist.list.api.interceptor.AddTokenToHeaderInterceptor
 import com.cloudsheeptech.shoppinglist.list.api.interceptor.CreateUserInterceptor
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
@@ -55,7 +55,7 @@ class ShoppingListApplication : Application() {
     lateinit var userUnauthenticatedApi: UserUnauthenticatedApi
 
     @Inject
-    lateinit var authInterceptor: AuthInterceptor
+    lateinit var addTokenToHeaderInterceptor: AddTokenToHeaderInterceptor
 
     @Inject
     lateinit var createUserInterceptor: CreateUserInterceptor
@@ -117,7 +117,7 @@ class ShoppingListApplication : Application() {
 
     fun isNetworkingInitialized() = ::networking.isInitialized
 
-    fun isAuthInterceptorInitialized() = ::authInterceptor.isInitialized
+    fun isAuthInterceptorInitialized() = ::addTokenToHeaderInterceptor.isInitialized
 
     fun isCreateUserInterceptorInitialized() = ::createUserInterceptor.isInitialized
 

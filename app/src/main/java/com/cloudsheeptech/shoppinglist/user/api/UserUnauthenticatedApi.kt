@@ -5,6 +5,7 @@ import com.cloudsheeptech.shoppinglist.user.model.ApiUser
 import com.cloudsheeptech.shoppinglist.user.model.AppUser
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface UserUnauthenticatedApi {
     @POST(UserApiEndpoints.ENDPOINT_CREATE_USER)
@@ -14,6 +15,7 @@ interface UserUnauthenticatedApi {
 
     @POST(UserApiEndpoints.ENDPOINT_LOGIN_USER)
     suspend fun login(
+        @Path("onlineId") onlineId: Long,
         @Body user: ApiUser,
     ): NetworkToken?
 }

@@ -53,6 +53,10 @@ class AppUserRepository
 
         suspend fun updateOnlineId(onlineId: Long) {
             try {
+                val currentUser = read() ?: return
+                if (currentUser.OnlineID == onlineId) {
+                    return
+                }
                 appUserLocalSource.setOnlineId(onlineId)
                 appUserLocalSource.store()
                 Log.i("AppUserRepository", "Updated onlineId to $onlineId and stored user")

@@ -4,7 +4,7 @@ import android.util.Log
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListTokenStorage
 import com.cloudsheeptech.shoppinglist.user.api.UserUnauthenticatedApi
 import com.cloudsheeptech.shoppinglist.user.model.AppUser
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
 import com.cloudsheeptech.shoppinglist.user.util.UserFormatAdapter
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
@@ -18,7 +18,7 @@ import javax.inject.Singleton
 class CreateUserInterceptor
     @Inject
     constructor(
-        private val userRepository: AppUserRepository,
+        private val userLocalDataSource: AppUserLocalDataSource, // We make use of the local DS here to break a dependency cycle
         private val userUnauthenticatedApi: UserUnauthenticatedApi,
         private val appFileDir: String,
     ) : Authenticator {
@@ -34,9 +34,10 @@ class CreateUserInterceptor
                     return null
                 }
                 runBlocking {
-                    userRepository.updateOnlineId(userCreated!!.OnlineID)
+                    userLocalDataSource.setOnlineId(userCreated!!.OnlineID)
+                    userLocalDataSource.store()
                 }
-                val currentUser = userRepository.read()
+                val currentUser = userLocalDataSource.getUser()
                 if (currentUser == null) {
                     Log.e("CreateUserInterceptor", "The current user is null, cannot authenticate!")
                     return null
@@ -62,7 +63,7 @@ class CreateUserInterceptor
         }
 
         private fun createUserIfNotExists(): AppUser? {
-            val user = userRepository.read() ?: return null
+            val user = userLocalDataSource.getUser() ?: return null
             if (user.OnlineID > 0) {
                 return user
             }

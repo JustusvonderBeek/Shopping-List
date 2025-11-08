@@ -7,7 +7,7 @@ import com.cloudsheeptech.shoppinglist.list.api.interceptor.CreateUserIntercepto
 import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
 import com.cloudsheeptech.shoppinglist.user.api.UserAuthenticatedApi
 import com.cloudsheeptech.shoppinglist.user.api.UserUnauthenticatedApi
-import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
+import com.cloudsheeptech.shoppinglist.user.repo.AppUserLocalDataSource
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
@@ -51,10 +51,10 @@ class AppAuthenticatedApiProvider {
     @Provides
     @Singleton
     fun provideCreateUserInterceptor(
-        userRepository: AppUserRepository,
+        userLocalDataSource: AppUserLocalDataSource,
         userUnauthenticatedApi: UserUnauthenticatedApi,
         appFileDir: String,
-    ): CreateUserInterceptor = CreateUserInterceptor(userRepository, userUnauthenticatedApi, appFileDir)
+    ): CreateUserInterceptor = CreateUserInterceptor(userLocalDataSource, userUnauthenticatedApi, appFileDir)
 
     @Provides
     @Singleton

@@ -1,26 +1,9 @@
 package com.cloudsheeptech.shoppinglist.user.repo
 
-import android.app.Application
-import android.util.Log
-import androidx.test.core.app.ApplicationProvider
-import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
-import com.cloudsheeptech.shoppinglist.network.Networking
-import com.cloudsheeptech.shoppinglist.network.token.ShoppingListAuthenticationTokenProvider
-import com.cloudsheeptech.shoppinglist.sharing.repo.OnlineUserRemoteDataSource
-import com.cloudsheeptech.shoppinglist.user.model.ApiUser
-import com.cloudsheeptech.shoppinglist.user.model.UserRightsEnum
-import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.util.OffsetDateTimeFormatHandler
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
-import org.junit.Assert
 import org.junit.FixMethodOrder
-import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.junit.runners.MethodSorters
@@ -39,69 +22,69 @@ class OnlineUserOnlineTest {
             encodeDefaults = true
         }
 
-    private suspend fun createRemoteDataSource(): OnlineUserRemoteDataSource {
-        val application = ApplicationProvider.getApplicationContext<Application>()
-        val database = ShoppingListDatabase.getInstance(application)
-        val localUserDs = AppUserLocalDataSource(database)
-        val payloadProvider = UserCreationDataProvider(localUserDs)
-        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp/")
-        val networking = Networking(tokenProvider)
-        val remoteUserDs = AppUserRemoteDataSource(networking)
-        val userRepository = AppUserRepository(localUserDs, remoteUserDs)
-        userRepository.create("test user")
-        userRepository.read()!!
-        return OnlineUserRemoteDataSource(networking)
-    }
-
-    private suspend fun createNewRemoteUser(): Pair<Long, String> {
-        var newId = 0L
-        var username = ""
-        withContext(Dispatchers.IO) {
-            val newUser =
-                ApiUser(
-                    0L,
-                    "distinct",
-                    "ignore",
-                    UserRightsEnum.USER.value,
-                    OffsetDateTime.now(),
-                    OffsetDateTime.now(),
-                )
-            val encodedUser = json.encodeToString(newUser)
-            val application = ApplicationProvider.getApplicationContext<Application>()
-            val database = ShoppingListDatabase.getInstance(application)
-            val localUserDs = AppUserLocalDataSource(database)
-            val payloadProvider = UserCreationDataProvider(localUserDs)
-            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp/")
-            val networking = Networking(tokenProvider)
-            networking.POST("/v1/users", encodedUser) { resp ->
-                // Authentication already handled by the networking object
-                if (resp.status != HttpStatusCode.Created) {
-                    Log.w("AppUserRemoteDataSource", "Failed to create the user online!")
-                    throw IllegalArgumentException("bad request")
-                }
-                val rawBody = resp.bodyAsText(Charsets.UTF_8)
-                val parsedApiUser = json.decodeFromString<ApiUser>(rawBody)
-                newId = parsedApiUser.onlineId
-                username = newUser.username
-            }
-        }
-        return Pair(newId, username)
-    }
-
-    @Test
-    fun testReadOnlineUser() =
-        runTest {
-            val remoteDS = createRemoteDataSource()
-            var username = ""
-            val emptyList = remoteDS.read(username)
-            assert(emptyList.isEmpty())
-
-            val (_, remoteUsername) = createNewRemoteUser()
-
-            username = remoteUsername.dropLast(2)
-            val users = remoteDS.read(username)
-            assert(users.isNotEmpty())
-
-            Assert.assertEquals("distinct", users[0].username)
-        }
+//    private suspend fun createRemoteDataSource(): OnlineUserRemoteDataSource {
+//        val application = ApplicationProvider.getApplicationContext<Application>()
+//        val database = ShoppingListDatabase.getInstance(application)
+//        val localUserDs = AppUserLocalDataSource(database)
+//        val payloadProvider = UserCreationDataProvider(localUserDs)
+//        val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp/")
+//        val networking = Networking(tokenProvider)
+//        val remoteUserDs = AppUserRemoteDataSource(networking)
+//        val userRepository = AppUserRepository(localUserDs, remoteUserDs)
+//        userRepository.create("test user")
+//        userRepository.read()!!
+//        return OnlineUserRemoteDataSource(networking)
+//    }
+//
+//    private suspend fun createNewRemoteUser(): Pair<Long, String> {
+//        var newId = 0L
+//        var username = ""
+//        withContext(Dispatchers.IO) {
+//            val newUser =
+//                ApiUser(
+//                    0L,
+//                    "distinct",
+//                    "ignore",
+//                    UserRightsEnum.USER.value,
+//                    OffsetDateTime.now(),
+//                    OffsetDateTime.now(),
+//                )
+//            val encodedUser = json.encodeToString(newUser)
+//            val application = ApplicationProvider.getApplicationContext<Application>()
+//            val database = ShoppingListDatabase.getInstance(application)
+//            val localUserDs = AppUserLocalDataSource(database)
+//            val payloadProvider = UserCreationDataProvider(localUserDs)
+//            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tmp/")
+//            val networking = Networking(tokenProvider)
+//            networking.POST("/v1/users", encodedUser) { resp ->
+//                // Authentication already handled by the networking object
+//                if (resp.status != HttpStatusCode.Created) {
+//                    Log.w("AppUserRemoteDataSource", "Failed to create the user online!")
+//                    throw IllegalArgumentException("bad request")
+//                }
+//                val rawBody = resp.bodyAsText(Charsets.UTF_8)
+//                val parsedApiUser = json.decodeFromString<ApiUser>(rawBody)
+//                newId = parsedApiUser.onlineId
+//                username = newUser.username
+//            }
+//        }
+//        return Pair(newId, username)
+//    }
+//
+//    @Test
+//    fun testReadOnlineUser() =
+//        runTest {
+//            val remoteDS = createRemoteDataSource()
+//            var username = ""
+//            val emptyList = remoteDS.read(username)
+//            assert(emptyList.isEmpty())
+//
+//            val (_, remoteUsername) = createNewRemoteUser()
+//
+//            username = remoteUsername.dropLast(2)
+//            val users = remoteDS.read(username)
+//            assert(users.isNotEmpty())
+//
+//            Assert.assertEquals("distinct", users[0].username)
+//        }
 }

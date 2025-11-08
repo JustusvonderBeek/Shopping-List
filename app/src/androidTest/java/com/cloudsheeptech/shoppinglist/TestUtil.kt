@@ -125,8 +125,8 @@ object TestUtil {
         if (shoppingListApplication.isAppUserRemoteDSInitialized()) {
             remoteAppUserDataSource = shoppingListApplication.appUserRemoteDataSource
         } else {
-            val networking = createNetworking()
-            remoteAppUserDataSource = AppUserRemoteDataSource(networking)
+            val authenticatedApi = createUserAuthenticatedApi()
+            remoteAppUserDataSource = AppUserRemoteDataSource(authenticatedApi)
             shoppingListApplication.appUserRemoteDataSource = remoteAppUserDataSource
         }
         return remoteAppUserDataSource
@@ -334,7 +334,6 @@ object TestUtil {
         } else {
             val createUserInterceptor = createCreateUserInterceptor()
             val authInterceptor = createUserAuthInterceptorApi()
-            val userRepo = createAppUserRepository()
             val apiProvider = AppAuthenticatedApiProvider()
             userAuthenticatedApi =
                 apiProvider.provideUserAuthenticatedApi(
@@ -363,10 +362,10 @@ object TestUtil {
         if (shoppingListApplication.isCreateUserInterceptorInitialized()) {
             createUserInterceptor = shoppingListApplication.createUserInterceptor
         } else {
-            val userRepo = createAppUserRepository()
+            val localAppUserDataSource = createLocalAppUserDS()
             val unauthApi = createUserUnauthenticatedApi()
             val tokenFileDir = createAppFileDirString()
-            createUserInterceptor = CreateUserInterceptor(userRepo, unauthApi, tokenFileDir)
+            createUserInterceptor = CreateUserInterceptor(localAppUserDataSource, unauthApi, tokenFileDir)
             shoppingListApplication.createUserInterceptor = createUserInterceptor
         }
         return createUserInterceptor

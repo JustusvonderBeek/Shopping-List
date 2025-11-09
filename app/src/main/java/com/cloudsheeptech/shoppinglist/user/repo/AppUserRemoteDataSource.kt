@@ -7,7 +7,6 @@ import com.cloudsheeptech.shoppinglist.user.api.UserAuthenticatedApi
 import com.cloudsheeptech.shoppinglist.user.model.ApiUser
 import com.cloudsheeptech.shoppinglist.user.model.AppUser
 import com.cloudsheeptech.shoppinglist.user.util.UserFormatAdapter
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -47,8 +46,8 @@ class AppUserRemoteDataSource
         suspend fun update(user: AppUser): Boolean {
             return withContext(Dispatchers.IO) {
                 try {
-                    val response = userAuthApi.updateUser(UserFormatAdapter.fromAppToApiUser(user))
-                    return@withContext response.status == HttpStatusCode.OK
+                    val response = userAuthApi.updateUser(user.OnlineID, UserFormatAdapter.fromAppToApiUser(user))
+                    return@withContext response.isSuccessful
                 } catch (ex: UserNotCreatedException) {
                     Log.e("AppUserRemoteRepository", "User is not authenticated online: $ex")
                 } catch (ex: UserAuthenticationFailedException) {
@@ -68,7 +67,7 @@ class AppUserRemoteDataSource
             return withContext(Dispatchers.IO) {
                 try {
                     val response = userAuthApi.delete(user.OnlineID)
-                    if (response.status == HttpStatusCode.OK) {
+                    if (response.isSuccessful) {
                         Log.i("AppUserRemoteDataSource", "Successfully deleted user ${user.OnlineID} online")
                         return@withContext true
                     }

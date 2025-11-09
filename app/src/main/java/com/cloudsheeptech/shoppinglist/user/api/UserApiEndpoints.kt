@@ -22,4 +22,6 @@ object UserApiEndpoints {
     const val ENDPOINT_DELETE_USER = "/v1/users/{onlineId}"
 
     const val ENDPOINT_UPDATE_USER = "/v1/users/{onlineId}"
+
+    const val ENDPOINT_LOGOUT = "/v1/users/logout"
 }

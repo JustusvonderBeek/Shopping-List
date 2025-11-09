@@ -40,14 +40,24 @@ class AppUserRepository
         fun loaded(): Boolean = appUserLocalSource.loaded()
 
         suspend fun update(user: AppUser) {
+            val currentUsername = user.Username
             try {
                 // Currently, we don't want to update the other
                 // parameters of the user
                 appUserLocalSource.setUsername(user.Username)
                 appUserLocalSource.store()
-                appUserRemoteSource.update(user)
+                val success = appUserRemoteSource.update(user)
+                if (success) {
+                    Log.i("AppUserRepository", "Successfully updated username to ${user.Username}")
+                } else {
+                    Log.e("AppUserRepository", "Failed to update username to ${user.Username} online")
+                    appUserLocalSource.setUsername(currentUsername)
+                    appUserLocalSource.store()
+                }
             } catch (ex: Exception) {
                 Log.e("AppUserRepository", "Failed to update user information: $ex")
+                appUserLocalSource.setUsername(currentUsername)
+                appUserLocalSource.store()
             }
         }
 

@@ -80,12 +80,11 @@ object TestUtil {
             database = shoppingListApplication.database
         } else {
             val application = ApplicationProvider.getApplicationContext<Application>()
+            if (clear) {
+                application.deleteDatabase("shopping_list_database")
+            }
             database = ShoppingListDatabase.getInstance(application)
             shoppingListApplication.database = database
-        }
-        if (clear) {
-            val application = ApplicationProvider.getApplicationContext<Application>()
-            application.deleteDatabase("shopping_list_database")
         }
         return database
     }
@@ -350,7 +349,8 @@ object TestUtil {
             addTokenToHeaderInterceptor = shoppingListApplication.addTokenToHeaderInterceptor
         } else {
             val payloadProvider = UserCreationDataProvider(createLocalAppUserDS())
-            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, "tokens/")
+            val appFileDir = createAppFileDirString()
+            val tokenProvider = ShoppingListAuthenticationTokenProvider(payloadProvider, appFileDir)
             addTokenToHeaderInterceptor = AddTokenToHeaderInterceptor(tokenProvider)
             shoppingListApplication.addTokenToHeaderInterceptor = addTokenToHeaderInterceptor
         }
@@ -373,6 +373,6 @@ object TestUtil {
 
     private fun createAppFileDirString(): String {
         val application = ApplicationProvider.getApplicationContext<Application>()
-        return Path(application.applicationContext.filesDir.path, "token.txt").toString()
+        return Path(application.applicationContext.filesDir.path).toString()
     }
 }

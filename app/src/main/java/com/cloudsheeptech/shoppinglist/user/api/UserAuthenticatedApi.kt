@@ -1,7 +1,6 @@
 package com.cloudsheeptech.shoppinglist.user.api
 
 import com.cloudsheeptech.shoppinglist.user.model.ApiUser
-import io.ktor.client.statement.HttpResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -16,14 +15,15 @@ interface UserAuthenticatedApi {
 
     @PUT(UserApiEndpoints.ENDPOINT_UPDATE_USER)
     suspend fun updateUser(
+        @Path("onlineId") onlineId: Long,
         @Body user: ApiUser,
-    ): HttpResponse
+    ): Response<Unit>
 
-    @POST("todo")
-    suspend fun logout()
+    @POST(UserApiEndpoints.ENDPOINT_LOGOUT)
+    suspend fun logout(): Response<Unit>
 
     @DELETE(UserApiEndpoints.ENDPOINT_DELETE_USER)
     suspend fun delete(
         @Path("onlineId") onlineId: Long,
-    ): HttpResponse
+    ): Response<Unit>
 }

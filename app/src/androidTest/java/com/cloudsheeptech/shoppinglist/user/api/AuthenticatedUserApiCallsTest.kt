@@ -34,6 +34,28 @@ class AuthenticatedUserApiCallsTest {
         }
 
     @Test
+    fun testAuthenticationFlowWithPingOffline() =
+        runTest(EmptyCoroutineContext, Duration.parse("3m")) {
+            TestUtil.initialize(true, false)
+            val userRepo = TestUtil.shoppingListApplication.appUserRepository
+            val remoteUserDataSource = TestUtil.shoppingListApplication.appUserRemoteDataSource
+            val userAuthApi = TestUtil.shoppingListApplication.userAuthenticatedApi
+
+            userRepo.create("test user for online")
+            val userBeforeOnline = userRepo.read()
+            Assert.assertNotNull(userBeforeOnline)
+            Assert.assertEquals(0L, userBeforeOnline!!.OnlineID)
+
+            // Therefore to work, I need to mock the userAuthApi...
+//            Mockito.`when`(userAuthApi.ping()).doThrow(java.net.ConnectException("Failed to connect to server"))
+            remoteUserDataSource.create()
+
+            val currentUser = userRepo.read()
+            Assert.assertNotNull(currentUser)
+            Assert.assertEquals(0L, currentUser!!.OnlineID)
+        }
+
+    @Test
     fun testAuthFlowWithCreateList() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
             TestUtil.initialize(true, false)

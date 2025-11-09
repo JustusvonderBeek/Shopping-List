@@ -8,6 +8,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.cloudsheeptech.shoppinglist.list.dao.ItemDao
 import com.cloudsheeptech.shoppinglist.list.dao.ItemListMappingDao
+import com.cloudsheeptech.shoppinglist.list.dao.PendingListOperationDao
 import com.cloudsheeptech.shoppinglist.list.dao.SharedDao
 import com.cloudsheeptech.shoppinglist.list.dao.ShoppingListDao
 import com.cloudsheeptech.shoppinglist.list.model.DbItem
@@ -15,6 +16,7 @@ import com.cloudsheeptech.shoppinglist.list.model.DbListShare
 import com.cloudsheeptech.shoppinglist.list.model.DbShoppingList
 import com.cloudsheeptech.shoppinglist.list.model.ItemToList
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
+import com.cloudsheeptech.shoppinglist.list.model.PendingListOperation
 import com.cloudsheeptech.shoppinglist.recipe.dao.ReceiptDescriptionDao
 import com.cloudsheeptech.shoppinglist.recipe.dao.ReceiptItemDao
 import com.cloudsheeptech.shoppinglist.recipe.dao.RecipeDao
@@ -36,11 +38,11 @@ import javax.inject.Singleton
 
 @Singleton
 @Database(
-    version = 37,
+    version = 38,
     entities = [
         DbShoppingList::class, DbItem::class, ItemToList::class, AppUser::class,
         ListCreator::class, DbListShare::class, UIPreference::class, DbRecipe::class,
-        ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class,
+        ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class, PendingListOperation::class,
     ],
     exportSchema = true,
 )
@@ -69,6 +71,8 @@ abstract class ShoppingListDatabase : RoomDatabase() {
     abstract fun recipeShareDao(): RecipeShareDao
 
     abstract fun recipeImageDao(): RecipeImageDao
+
+    abstract fun pendingListOperationDao(): PendingListOperationDao
 
     companion object {
         const val LATEST_VERSION = 34

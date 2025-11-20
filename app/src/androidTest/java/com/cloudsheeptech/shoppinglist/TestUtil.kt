@@ -6,9 +6,9 @@ import com.cloudsheeptech.shoppinglist.database.ShoppingListDatabase
 import com.cloudsheeptech.shoppinglist.list.api.ShoppingListApi
 import com.cloudsheeptech.shoppinglist.list.api.interceptor.AddTokenToHeaderInterceptor
 import com.cloudsheeptech.shoppinglist.list.api.interceptor.CreateUserInterceptor
-import com.cloudsheeptech.shoppinglist.list.model.ApiResult
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
+import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListOperationRepository
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRemoteDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.list.util.ShoppingListCreatedByUtil
@@ -25,23 +25,18 @@ import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
 import com.cloudsheeptech.shoppinglist.user.util.UserCreationDataProvider
 import com.cloudsheeptech.shoppinglist.util.AppAuthenticatedApiProvider
 import com.cloudsheeptech.shoppinglist.util.AppUnauthenticatedApiProvider
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.HttpStatusCode
 import org.mockito.Mockito
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.stub
 import kotlin.io.path.Path
 
 object TestUtil {
     var shoppingListApplication: ShoppingListApplication = ShoppingListApplication()
-    var mockRemoteToDoNothing: Boolean = false
+    var networkMockingFunction: ((api: ShoppingListApi) -> Unit)? = null
 
     fun initialize(
         clearDatabase: Boolean = true,
-        mockRemoteToDoNothing: Boolean = false,
+        networkMockingFunction: ((api: ShoppingListApi) -> Unit)? = null,
     ) {
-        this.mockRemoteToDoNothing = mockRemoteToDoNothing
+        this.networkMockingFunction = networkMockingFunction
         createDatabase(clearDatabase)
         createLocalAppUserDS()
         createNetworking()
@@ -234,20 +229,14 @@ object TestUtil {
                 apiProvider.provideShoppingListApi(
                     apiProvider.provideAuthRetrofitProvider(apiProvider.provideAuthClient(authInterceptor, createUserInterceptor)),
                 )
-            if (mockRemoteToDoNothing) {
+            if (networkMockingFunction != null) {
                 shoppingListApi = Mockito.mock(ShoppingListApi::class.java)
-                shoppingListApi.stub {
-                    onBlocking { create(any()) }.doReturn(ApiResult("success", null))
-                    val httpReponse = Mockito.mock(HttpResponse::class.java)
-                    Mockito
-                        .`when`(httpReponse.status)
-                        .doReturn(HttpStatusCode.OK)
-
-                    onBlocking { addItem(any(), any()) }.doReturn(httpReponse)
-                }
+                networkMockingFunction!!(shoppingListApi)
             }
+            val pendingListOperationRepo = createPendingListOperationRepository()
+            val userRepo = createAppUserRepository()
             remoteShoppingListDataSource =
-                ShoppingListRemoteDataSource(networking, appUserRepository, shoppingListApi)
+                ShoppingListRemoteDataSource(networking, shoppingListApi, pendingListOperationRepo, userRepo)
             shoppingListApplication.shoppingListRemoteDataSource = remoteShoppingListDataSource
         }
         return remoteShoppingListDataSource
@@ -374,5 +363,18 @@ object TestUtil {
     private fun createAppFileDirString(): String {
         val application = ApplicationProvider.getApplicationContext<Application>()
         return Path(application.applicationContext.filesDir.path).toString()
+    }
+
+    private fun createPendingListOperationRepository(): ShoppingListOperationRepository {
+        val listOperationRepository: ShoppingListOperationRepository?
+        if (shoppingListApplication.isShoppingListOperationRepositoryInitialized()) {
+            listOperationRepository = shoppingListApplication.shoppingListOperationRepository
+        } else {
+            val database = createDatabase()
+            val pendingListOperationDao = database.pendingListOperationDao()
+            listOperationRepository = ShoppingListOperationRepository(pendingListOperationDao)
+            shoppingListApplication.shoppingListOperationRepository = listOperationRepository
+        }
+        return listOperationRepository
     }
 }

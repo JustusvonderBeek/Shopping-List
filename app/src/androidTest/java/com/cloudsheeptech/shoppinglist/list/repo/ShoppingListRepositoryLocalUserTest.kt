@@ -1,11 +1,16 @@
 package com.cloudsheeptech.shoppinglist.list.repo
 
 import com.cloudsheeptech.shoppinglist.TestUtil
+import com.cloudsheeptech.shoppinglist.list.api.ShoppingListApi
 import com.cloudsheeptech.shoppinglist.list.model.AppItem
 import com.cloudsheeptech.shoppinglist.list.model.ItemToggleStatus
 import com.cloudsheeptech.shoppinglist.list.model.QuantityType
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListPK
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -15,7 +20,12 @@ import org.junit.rules.TestRule
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.stub
+import retrofit2.Response
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 
@@ -70,17 +80,47 @@ class ShoppingListRepositoryLocalUserTest {
         Assert.assertEquals(newListWithItems, storedListWithItems)
     }
 
+    // Simulates failure path
+    private fun mockListApiToOnlyReturnFailures(listApi: ShoppingListApi) {
+        listApi.stub {
+            val failureResponse =
+//                okhttp3.Response
+//                    .Builder()
+//                    .code(HttpStatusCode.InternalServerError.value)
+//                    .message("Internal Server Error")
+//                    .protocol(Protocol.HTTP_2)
+//                    .body("{}".toResponseBody(ContentType.Application.Json.toString().toMediaType()))
+//                    .build()
+                Response.error<Unit>(
+                    HttpStatusCode.InternalServerError.value,
+                    "Internal Server Error".toResponseBody("application/json".toMediaType()),
+                )
+            val failureHttpResponse = Mockito.mock(HttpResponse::class.java)
+            Mockito
+                .`when`(failureHttpResponse.status)
+                .doReturn(HttpStatusCode.InternalServerError)
+
+            onBlocking {
+                performOperations(any())
+            }.doReturn(failureResponse)
+
+            onBlocking {
+                addItem(any(), any())
+            }.doReturn(failureHttpResponse)
+        }
+    }
+
     @Test
     fun testCreateListOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, true)
+            TestUtil.initialize(clearDatabase = true, ::mockListApiToOnlyReturnFailures)
             createList()
         }
 
     @Test
     fun testCreateList() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = false)
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             createList()
         }
 
@@ -122,7 +162,8 @@ class ShoppingListRepositoryLocalUserTest {
     @Test
     fun testGetListOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = true)
+            // TODO: Include mocking
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             getList()
         }
 
@@ -184,14 +225,15 @@ class ShoppingListRepositoryLocalUserTest {
     @Test
     fun testRemoveItemByNameListOperationOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = true)
+            // TODO: Include mocking
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             removeItemByNameOperation()
         }
 
     @Test
     fun testRemoveItemByNameListOperation() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = false)
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             removeItemByNameOperation()
         }
 
@@ -272,14 +314,16 @@ class ShoppingListRepositoryLocalUserTest {
     @Test
     fun testChangeQtyItemListOperationOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = true)
+            // TODO: Include mocking
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             changeQtyItemOperation()
         }
 
     @Test
     fun testChangeQtyItemListOperation() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = false)
+            // TODO: Include mocking
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             changeQtyItemOperation()
         }
 
@@ -354,14 +398,16 @@ class ShoppingListRepositoryLocalUserTest {
     @Test
     fun testSetItemToggleListOperationOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = true)
+            // TODO: Include mocking
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             setItemToggleOperation()
         }
 
     @Test
     fun testSetItemToggleListOperation() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = false)
+            // TODO: Include mocking
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             setItemToggleOperation()
         }
 
@@ -408,7 +454,8 @@ class ShoppingListRepositoryLocalUserTest {
     @Test
     fun testRenameListOperationOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = true)
+            // TODO: Include mocking
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             renameListOperation()
         }
 
@@ -452,7 +499,8 @@ class ShoppingListRepositoryLocalUserTest {
     @Test
     fun testDeleteListOfflineOnly() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = true)
+            // TODO: Include mocking
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             deleteListOperation()
         }
 }

@@ -4,7 +4,6 @@ sealed class ShoppingListOperation {
     data class Create(
         val title: String,
         val creator: ListCreator,
-        val items: List<AppItem>,
     ) : ShoppingListOperation()
 
     data class AddItem(

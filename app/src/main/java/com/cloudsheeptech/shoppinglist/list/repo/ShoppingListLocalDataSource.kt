@@ -223,8 +223,9 @@ class ShoppingListLocalDataSource
                                 createdBy = operation.creator,
                                 title = operation.title,
                                 synchronized = OffsetDateTime.now(),
-                                items = operation.items.toMutableList(),
+                                items = mutableListOf(),
                             )
+                        newList.listId = createListIdForNewLocalList(newList)
                         val newListId = shoppingListDao.insertList(newList)
                         listPk = ShoppingListPK(newListId, operation.creator.onlineId)
                         Log.i("ShoppingListLocalDataSource", "Created new list $newList")

@@ -26,8 +26,9 @@ class ShoppingListRemoteDataSource
     @Inject
     constructor(
         private val networking: Networking,
-        private val userRepository: AppUserRepository,
         private val shoppingListApi: ShoppingListApi,
+        private val pendingOperationRepository: ShoppingListOperationRepository,
+        private val userRepository: AppUserRepository,
     ) {
         private val json =
             Json {
@@ -45,29 +46,14 @@ class ShoppingListRemoteDataSource
             return withContext(Dispatchers.IO) {
                 try {
                     val result = shoppingListApi.create(list)
-                    if (!result.result.lowercase().equals("success")) {
+                    // TODO: I need to adapt the server to return the correct response
+                    if (!result.isSuccessful) {
                         Log.e(
                             "ShoppingListRemoteDataSource",
-                            "Failed to create list online: ${result.errorMessage}",
+                            "Failed to create list online: ${result.message()}",
                         )
                         return@withContext false
                     }
-                    // TODO: Test and if it works, remove this code here
-//                    val encodedList = json.encodeToString(list)
-//                    Log.d("ShoppingListRemoteDataSource", "Encoded List:\n$encodedList")
-//                    networking.POST(
-//                        UrlProviderEnum.BASE_SHOPPING_LIST_URL.url,
-//                        encodedList,
-//                    ) { response ->
-//                        if (response.status == HttpStatusCode.BadRequest) {
-//                            return@POST
-//                        }
-//                        if (response.status != HttpStatusCode.Created) {
-//                            Log.e("ShoppingListRemoteDataSource", "The list was not created online")
-//                            return@POST
-//                        }
-//                        success = true
-//                    }
                     return@withContext true
                 } catch (ex: Exception) {
                     Log.e("ShoppingListRemoteDataSource", "Failed to create list online: $ex")
@@ -133,10 +119,88 @@ class ShoppingListRemoteDataSource
             }
         }
 
+        suspend fun executePendingOperations(): Boolean {
+            return withContext(Dispatchers.IO) {
+                try {
+                    val pendingOperations = pendingOperationRepository.getAllPendingOperations()
+                    val response = shoppingListApi.performOperations(pendingOperations)
+                    if (response.code() != HttpStatusCode.OK.value) {
+                        Log.e("ShoppingListRemoteDataSource", "Failed to execute operations successfully online")
+                        return@withContext false
+                    }
+                    Log.i("ShoppingListRemoteDataSource", "Successfully performed operations online")
+                    return@withContext true
+//                    for (operation in pendingOperations) {
+//                        val convertedOp =
+//                            ShoppingListOperationConversionUtil.shoppingListApiOperationToShoppingListOperation(
+//                                operation,
+//                            )
+//                        val success = update(convertedOp)
+//                        if (!success) {
+//                            return@withContext false
+//                        }
+//                    }
+                } catch (ex: Exception) {
+                    Log.e("ShoppingListRemoteDataSource", "Unknown error while performing operation: $ex")
+                }
+                return@withContext false
+            }
+        }
+
         suspend fun update(operation: ShoppingListOperation): Boolean =
             withContext(Dispatchers.IO) {
                 try {
                     when (operation) {
+                        is ShoppingListOperation.Create -> {
+//                            val pendingOperation =
+//                                ShoppingListOperationConversionUtil.shoppingListOperationToApiOperation(
+//                                    operation,
+//                                )
+                            val opId = pendingOperationRepository.insert(operation)
+                            if (opId < 0L) {
+                                Log.e("ShoppingListRemoteDataSource", "Failed to insert operation, continue online...")
+                            }
+                            executePendingOperations()
+//                            val response = shoppingListApi.performOperation(operation = pendingOperation)
+//                            if (response.code() != HttpStatusCode.Created.value) {
+//                                Log.i(
+//                                    "ShoppingListRemoteDataSource",
+//                                    "Failed to create list online, trying again with updated user onlineId",
+//                                )
+//
+//                                val currentUser = userRepository.read() ?: throw IllegalStateException("user null after login")
+//
+//                                if (currentUser.OnlineID == operation.creator.onlineId) {
+//                                    Log.e(
+//                                        "ShoppingListRemoteDataSource",
+//                                        "OnlineID did not change since last request, failed to create list online",
+//                                    )
+//                                    return@withContext false
+//                                }
+//                                Log.i(
+//                                    "ShoppingListRemoteDataSource",
+//                                    "OnlineId of user changed during last operation, trying again with new id",
+//                                )
+//
+//                                operation.creator.onlineId = currentUser.OnlineID
+//                                val updatedOperation =
+//                                    ShoppingListOperationConversionUtil.shoppingListOperationToApiOperation(
+//                                        operation,
+//                                    )
+//                                pendingOperationRepository.updateOperation(opId, updatedOperation)
+//
+//                                val response = shoppingListApi.performOperation(operation = updatedOperation)
+//
+//                                if (response.code() == HttpStatusCode.Created.value) {
+//                                    Log.e("ShoppingListRemoteDataSource", "Failed to create list ${operation.title} online")
+//                                    return@withContext false
+//                                }
+//
+//                                pendingOperationRepository.deleteAllPendingOperations()
+//                            }
+                            Log.i("ShoppingListRemoteDataSource", "Successfully created list ${operation.title} online")
+                            return@withContext true
+                        }
                         is ShoppingListOperation.AddItem -> {
                             val response = shoppingListApi.addItem(operation.listPk.listId, operation.item)
                             response.status == HttpStatusCode.OK
@@ -155,11 +219,7 @@ class ShoppingListRemoteDataSource
                                 )
                             response.status == HttpStatusCode.OK
                         }
-                        is ShoppingListOperation.Create -> {
-                        }
                         is ShoppingListOperation.Delete -> {
-                        }
-                        is ShoppingListOperation.RemoveItemByName -> {
                         }
                         is ShoppingListOperation.RemoveItemByName -> {
                         }

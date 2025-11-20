@@ -13,10 +13,10 @@ import com.cloudsheeptech.shoppinglist.list.dao.SharedDao
 import com.cloudsheeptech.shoppinglist.list.dao.ShoppingListDao
 import com.cloudsheeptech.shoppinglist.list.model.DbItem
 import com.cloudsheeptech.shoppinglist.list.model.DbListShare
+import com.cloudsheeptech.shoppinglist.list.model.DbPendingListOperation
 import com.cloudsheeptech.shoppinglist.list.model.DbShoppingList
 import com.cloudsheeptech.shoppinglist.list.model.ItemToList
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
-import com.cloudsheeptech.shoppinglist.list.model.PendingListOperation
 import com.cloudsheeptech.shoppinglist.recipe.dao.ReceiptDescriptionDao
 import com.cloudsheeptech.shoppinglist.recipe.dao.ReceiptItemDao
 import com.cloudsheeptech.shoppinglist.recipe.dao.RecipeDao
@@ -42,7 +42,7 @@ import javax.inject.Singleton
     entities = [
         DbShoppingList::class, DbItem::class, ItemToList::class, AppUser::class,
         ListCreator::class, DbListShare::class, UIPreference::class, DbRecipe::class,
-        ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class, PendingListOperation::class,
+        ReceiptDescriptionMapping::class, ReceiptItemMapping::class, RecipeShare::class, RecipeImage::class, DbPendingListOperation::class,
     ],
     exportSchema = true,
 )

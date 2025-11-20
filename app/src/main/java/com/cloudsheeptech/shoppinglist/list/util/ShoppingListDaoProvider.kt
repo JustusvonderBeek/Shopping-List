@@ -13,4 +13,8 @@ class ShoppingListDaoProvider {
     @Provides
     @Singleton
     fun provideShoppingListDao(database: ShoppingListDatabase) = database.shoppingListDao()
+
+    @Provides
+    @Singleton
+    fun provideShoppingListOperationDao(database: ShoppingListDatabase) = database.pendingListOperationDao()
 }

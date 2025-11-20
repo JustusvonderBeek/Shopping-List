@@ -10,7 +10,8 @@ object ShoppingListEndpoints {
     const val BASE_ENDPOINT = "$PROTOCOL://10.0.2.2$PORT"
 
     // Endpoints for modification
-    const val ENDPOINT_CREATE_LIST = "/create/list"
+    const val ENDPOINT_PERFORM_OPERATION = "/v1/lists/{listId}"
+    const val ENDPOINT_CREATE_LIST = "/v1/lists"
     const val ENDPOINT_UPDATE_TITLE = "/list/{listId}/title"
     const val ENDPOINT_ADD_ITEM = "/list/{listId}/addItem"
 

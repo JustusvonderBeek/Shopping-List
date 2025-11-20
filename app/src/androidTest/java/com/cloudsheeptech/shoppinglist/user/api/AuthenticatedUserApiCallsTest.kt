@@ -17,7 +17,7 @@ class AuthenticatedUserApiCallsTest {
     @Test
     fun testAuthenticationFlowWithPing() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(true, false)
+            TestUtil.initialize(true, null)
             val userRepo = TestUtil.shoppingListApplication.appUserRepository
             val remoteUserDataSource = TestUtil.shoppingListApplication.appUserRemoteDataSource
 
@@ -36,7 +36,7 @@ class AuthenticatedUserApiCallsTest {
     @Test
     fun testAuthenticationFlowWithPingOffline() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(true, false)
+            TestUtil.initialize(true, null)
             val userRepo = TestUtil.shoppingListApplication.appUserRepository
             val remoteUserDataSource = TestUtil.shoppingListApplication.appUserRemoteDataSource
             val userAuthApi = TestUtil.shoppingListApplication.userAuthenticatedApi
@@ -58,7 +58,7 @@ class AuthenticatedUserApiCallsTest {
     @Test
     fun testAuthFlowWithCreateList() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(true, false)
+            TestUtil.initialize(true, null)
             val userRepo = TestUtil.shoppingListApplication.appUserRepository
             val shoppingListRepo = TestUtil.shoppingListApplication.shoppingListRepository
 
@@ -78,7 +78,7 @@ class AuthenticatedUserApiCallsTest {
     @Test
     fun testUpdateUser() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(true, false)
+            TestUtil.initialize(true, null)
             val userRepo = TestUtil.shoppingListApplication.appUserRepository
             val remoteUserDataSource = TestUtil.shoppingListApplication.appUserRemoteDataSource
             userRepo.create("test user for online")
@@ -105,7 +105,7 @@ class AuthenticatedUserApiCallsTest {
     @Test
     fun testDeleteUser() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(clearDatabase = true, mockRemoteToDoNothing = false)
+            TestUtil.initialize(clearDatabase = true, networkMockingFunction = null)
             val userRepo = TestUtil.shoppingListApplication.appUserRepository
             val remoteUserDataSource = TestUtil.shoppingListApplication.appUserRemoteDataSource
 

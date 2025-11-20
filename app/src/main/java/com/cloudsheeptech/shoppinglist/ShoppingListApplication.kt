@@ -7,6 +7,7 @@ import com.cloudsheeptech.shoppinglist.list.api.interceptor.AddTokenToHeaderInte
 import com.cloudsheeptech.shoppinglist.list.api.interceptor.CreateUserInterceptor
 import com.cloudsheeptech.shoppinglist.list.repo.ItemLocalDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListLocalDataSource
+import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListOperationRepository
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRemoteDataSource
 import com.cloudsheeptech.shoppinglist.list.repo.ShoppingListRepository
 import com.cloudsheeptech.shoppinglist.network.IUserCreationDataProvider
@@ -50,6 +51,9 @@ class ShoppingListApplication : Application() {
 
     @Inject
     lateinit var networking: Networking
+
+    @Inject
+    lateinit var shoppingListOperationRepository: ShoppingListOperationRepository
 
     @Inject
     lateinit var userUnauthenticatedApi: UserUnauthenticatedApi
@@ -140,4 +144,6 @@ class ShoppingListApplication : Application() {
     fun isOnlineUserRemoteDSInitialized() = ::onlineUserRemoteDataSource.isInitialized
 
     fun isOnlineUserRepositoryInitialized() = ::onlineUserRepository.isInitialized
+
+    fun isShoppingListOperationRepositoryInitialized() = ::shoppingListOperationRepository.isInitialized
 }

@@ -142,55 +142,79 @@ class ShoppingListRepository
 
         // ---------------- Convenience Operations -------------------
 
+        // TODO: Move into the operation space as well
         suspend fun create(title: String): ShoppingList {
-            var newList =
-                ShoppingList(
+            val user = userRepository.read() ?: throw IllegalStateException("user null after login")
+            val createListOp =
+                ShoppingListOperation.Create(
+                    title,
+                    ListCreator(user.OnlineID, user.Username),
+                )
+            val createdList = localDataSource.update(createListOp)
+            if (createdList == null) {
+                Log.e("ShoppingListRepository", "Failed to create new list $title")
+                return ShoppingList(
                     listId = 0L, // Created by DB
                     createdBy = ListCreator(0, ""),
                     title = title,
                     synchronized = OffsetDateTime.now(),
                     items = mutableListOf(),
                 )
-            listUtil.updateListToCurrentUser(newList)
-
-            val createdByBeforeOnlineOperation = newList.createdBy
-            newList = localDataSource.create(newList)
-            Log.i("ShoppingListRepository", "Stored list $newList offline, creating online next...")
-            try {
-                var success = remoteDataSource.create(newList)
-                if (!success) {
-                    Log.i(
-                        "ShoppingListRepository",
-                        "Failed to create list online, might be because the user was created online. Trying again with updated id...",
-                    )
-                    listUtil.updateListToCurrentUser(newList)
-                    if (newList.createdBy.onlineId != createdByBeforeOnlineOperation.onlineId) {
-                        localDataSource.updateCreatedByForOwnLists(
-                            createdByBeforeOnlineOperation.onlineId,
-                            newList.createdBy.onlineId,
-                        )
-                        Log.i(
-                            "ShoppingListRepository",
-                            "Updated createdBy to new id ${newList.createdBy.onlineId}",
-                        )
-                    }
-                    success = remoteDataSource.create(newList)
-                    if (!success) {
-                        Log.e(
-                            "ShoppingListRepository",
-                            "Failed to create new list with new createdBy ${newList.createdBy.onlineId}. Is the user created online?",
-                        )
-                    }
-                }
-                if (success) {
-                    Log.d("ShoppingListRepository", "Successfully create list $newList online")
-                }
-            } catch (ex: IllegalAccessException) {
-                Log.w("ShoppingListRepository", "Ex: $ex")
-            } catch (ex: UserNotAuthenticatedException) {
-                Log.w("ShoppingListRepository", "User not authenticated: $ex")
             }
-            return newList
+            val success = remoteDataSource.update(createListOp)
+            if (!success) {
+                Log.e("ShoppingListRepository", "Failed to create list online")
+            }
+            return createdList
+//
+//            var newList =
+//                ShoppingList(
+//                    listId = 0L, // Created by DB
+//                    createdBy = ListCreator(0, ""),
+//                    title = title,
+//                    synchronized = OffsetDateTime.now(),
+//                    items = mutableListOf(),
+//                )
+//            listUtil.updateListToCurrentUser(newList)
+//
+//            val createdByBeforeOnlineOperation = newList.createdBy
+//            newList = localDataSource.create(newList)
+//            Log.i("ShoppingListRepository", "Stored list $newList offline, creating online next...")
+//            try {
+//                var success = remoteDataSource.create(newList)
+//                if (!success) {
+//                    Log.i(
+//                        "ShoppingListRepository",
+//                        "Failed to create list online, might be because the user was created online. Trying again with updated id...",
+//                    )
+//                    listUtil.updateListToCurrentUser(newList)
+//                    if (newList.createdBy.onlineId != createdByBeforeOnlineOperation.onlineId) {
+//                        localDataSource.updateCreatedByForOwnLists(
+//                            createdByBeforeOnlineOperation.onlineId,
+//                            newList.createdBy.onlineId,
+//                        )
+//                        Log.i(
+//                            "ShoppingListRepository",
+//                            "Updated createdBy to new id ${newList.createdBy.onlineId}",
+//                        )
+//                    }
+//                    success = remoteDataSource.create(newList)
+//                    if (!success) {
+//                        Log.e(
+//                            "ShoppingListRepository",
+//                            "Failed to create new list with new createdBy ${newList.createdBy.onlineId}. Is the user created online?",
+//                        )
+//                    }
+//                }
+//                if (success) {
+//                    Log.d("ShoppingListRepository", "Successfully create list $newList online")
+//                }
+//            } catch (ex: IllegalAccessException) {
+//                Log.w("ShoppingListRepository", "Ex: $ex")
+//            } catch (ex: UserNotAuthenticatedException) {
+//                Log.w("ShoppingListRepository", "User not authenticated: $ex")
+//            }
+//            return newList
         }
 
         suspend fun syncListOnline(listPk: ShoppingListPK): ShoppingList? =

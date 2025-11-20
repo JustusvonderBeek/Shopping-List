@@ -14,7 +14,7 @@ class UnauthenticatedUserApiCallsTest {
     @Test
     fun testCreateUserApiCall() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(true, false)
+            TestUtil.initialize(true, null)
             val userRepo = TestUtil.shoppingListApplication.appUserRepository
             val userApi = TestUtil.shoppingListApplication.userUnauthenticatedApi
             userRepo.create("new user")
@@ -32,7 +32,7 @@ class UnauthenticatedUserApiCallsTest {
     @Test
     fun testLoginUserApiCall() =
         runTest(EmptyCoroutineContext, Duration.parse("3m")) {
-            TestUtil.initialize(true, false)
+            TestUtil.initialize(true, null)
             val userRepo = TestUtil.shoppingListApplication.appUserRepository
             val userApi = TestUtil.shoppingListApplication.userUnauthenticatedApi
             userRepo.create("new user")

@@ -41,6 +41,7 @@ interface ShoppingListApi {
     // be performed locally
     @POST(ShoppingListEndpoints.ENDPOINT_PERFORM_OPERATION)
     suspend fun performOperations(
+        @Path("listId") listId: Long = 0L,
         @Body operations: List<@JvmSuppressWildcards ShoppingListApiOperation>,
     ): Response<Unit>
 

@@ -29,7 +29,7 @@ sealed class ShoppingListOperation {
     ) : ShoppingListOperation()
 
     data class SetItemCheckedStatus(
-        val listPK: ShoppingListPK,
+        val listPk: ShoppingListPK,
         val itemName: String,
         val status: ItemToggleStatus = ItemToggleStatus.TOGGLE,
     ) : ShoppingListOperation()

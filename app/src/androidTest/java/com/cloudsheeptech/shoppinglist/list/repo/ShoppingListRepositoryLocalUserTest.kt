@@ -101,7 +101,7 @@ class ShoppingListRepositoryLocalUserTest {
                 .doReturn(HttpStatusCode.InternalServerError)
 
             onBlocking {
-                performOperations(any())
+                performOperations(any(), any())
             }.doReturn(failureResponse)
 
             onBlocking {

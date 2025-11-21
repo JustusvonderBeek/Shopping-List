@@ -6,6 +6,7 @@ import com.cloudsheeptech.shoppinglist.list.model.AppItem
 import com.cloudsheeptech.shoppinglist.list.model.QuantityType
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingList
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListOperation
+import com.cloudsheeptech.shoppinglist.list.util.ShoppingListOperationConversionUtil
 import com.cloudsheeptech.shoppinglist.network.Networking
 import com.cloudsheeptech.shoppinglist.network.UrlProviderEnum
 import com.cloudsheeptech.shoppinglist.user.repo.AppUserRepository
@@ -122,24 +123,39 @@ class ShoppingListRemoteDataSource
         suspend fun executePendingOperations(): Boolean {
             return withContext(Dispatchers.IO) {
                 try {
+                    val currentUser = userRepository.read() ?: throw IllegalStateException("user null after login")
+                    val userIdBeforeOperations = currentUser.OnlineID
                     val pendingOperations = pendingOperationRepository.getAllPendingOperations()
-                    val response = shoppingListApi.performOperations(pendingOperations)
+                    val pendingOperationInApiFormat =
+                        ShoppingListOperationConversionUtil.shoppingListOperationsToShoppingListApiOperations(
+                            pendingOperations,
+                        )
+                    val response = shoppingListApi.performOperations(0L, pendingOperationInApiFormat)
                     if (response.code() != HttpStatusCode.OK.value) {
                         Log.e("ShoppingListRemoteDataSource", "Failed to execute operations successfully online")
-                        return@withContext false
+                        val userAfterOnlineOperation = userRepository.read() ?: throw IllegalStateException("user null after login")
+                        if (userAfterOnlineOperation.OnlineID == userIdBeforeOperations) {
+                            Log.e("ShoppingListRemoteDataSource", "UserId not change between operations, request failed")
+                            return@withContext false
+                        }
+
+                        Log.i(
+                            "ShoppingListRemoteDataSource",
+                            "UserId changed during online request, repeat operation with updated operations",
+                        )
+                        pendingOperationRepository.updateCreatorIdForAllPendingOperations(userAfterOnlineOperation.OnlineID)
+                        val updatedPendingOperations = pendingOperationRepository.getAllPendingOperations()
+                        val updatedPendingOperationsInApiFormat =
+                            ShoppingListOperationConversionUtil.shoppingListOperationsToShoppingListApiOperations(updatedPendingOperations)
+                        val response = shoppingListApi.performOperations(0L, updatedPendingOperationsInApiFormat)
+                        if (response.code() != HttpStatusCode.OK.value) {
+                            Log.e("ShoppingListRemoteDataSource", "Failed to execute operations online")
+                            return@withContext false
+                        }
                     }
                     Log.i("ShoppingListRemoteDataSource", "Successfully performed operations online")
+                    pendingOperationRepository.deleteAllPendingOperations()
                     return@withContext true
-//                    for (operation in pendingOperations) {
-//                        val convertedOp =
-//                            ShoppingListOperationConversionUtil.shoppingListApiOperationToShoppingListOperation(
-//                                operation,
-//                            )
-//                        val success = update(convertedOp)
-//                        if (!success) {
-//                            return@withContext false
-//                        }
-//                    }
                 } catch (ex: Exception) {
                     Log.e("ShoppingListRemoteDataSource", "Unknown error while performing operation: $ex")
                 }
@@ -160,44 +176,11 @@ class ShoppingListRemoteDataSource
                             if (opId < 0L) {
                                 Log.e("ShoppingListRemoteDataSource", "Failed to insert operation, continue online...")
                             }
-                            executePendingOperations()
-//                            val response = shoppingListApi.performOperation(operation = pendingOperation)
-//                            if (response.code() != HttpStatusCode.Created.value) {
-//                                Log.i(
-//                                    "ShoppingListRemoteDataSource",
-//                                    "Failed to create list online, trying again with updated user onlineId",
-//                                )
-//
-//                                val currentUser = userRepository.read() ?: throw IllegalStateException("user null after login")
-//
-//                                if (currentUser.OnlineID == operation.creator.onlineId) {
-//                                    Log.e(
-//                                        "ShoppingListRemoteDataSource",
-//                                        "OnlineID did not change since last request, failed to create list online",
-//                                    )
-//                                    return@withContext false
-//                                }
-//                                Log.i(
-//                                    "ShoppingListRemoteDataSource",
-//                                    "OnlineId of user changed during last operation, trying again with new id",
-//                                )
-//
-//                                operation.creator.onlineId = currentUser.OnlineID
-//                                val updatedOperation =
-//                                    ShoppingListOperationConversionUtil.shoppingListOperationToApiOperation(
-//                                        operation,
-//                                    )
-//                                pendingOperationRepository.updateOperation(opId, updatedOperation)
-//
-//                                val response = shoppingListApi.performOperation(operation = updatedOperation)
-//
-//                                if (response.code() == HttpStatusCode.Created.value) {
-//                                    Log.e("ShoppingListRemoteDataSource", "Failed to create list ${operation.title} online")
-//                                    return@withContext false
-//                                }
-//
-//                                pendingOperationRepository.deleteAllPendingOperations()
-//                            }
+                            val success = executePendingOperations()
+                            if (!success) {
+                                return@withContext false
+                            }
+
                             Log.i("ShoppingListRemoteDataSource", "Successfully created list ${operation.title} online")
                             return@withContext true
                         }

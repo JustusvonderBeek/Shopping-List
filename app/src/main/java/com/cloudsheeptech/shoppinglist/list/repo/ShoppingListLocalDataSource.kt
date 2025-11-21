@@ -177,8 +177,8 @@ class ShoppingListLocalDataSource
                     is ShoppingListOperation.SetItemCheckedStatus -> {
                         val existingItems =
                             shoppingListDao.getItems(
-                                operation.listPK.listId,
-                                operation.listPK.createdBy,
+                                operation.listPk.listId,
+                                operation.listPk.createdBy,
                             )
                         val relevantItems =
                             existingItems.filter { item ->
@@ -186,7 +186,7 @@ class ShoppingListLocalDataSource
                             }
                         if (relevantItems.isEmpty()) {
                             Log.w("ShoppingListLocalDataSource", "Item ${operation.itemName} to toggle not found, skipping update")
-                            listPk = operation.listPK
+                            listPk = operation.listPk
                             return@withContext null
                         } else if (relevantItems.size > 1) {
                             throw IllegalStateException(
@@ -206,14 +206,14 @@ class ShoppingListLocalDataSource
                         relevantItem.opCount = relevantItem.opCount.plus(1)
                         shoppingListDao.updateItem(
                             relevantItem,
-                            operation.listPK.listId,
-                            operation.listPK.createdBy,
+                            operation.listPk.listId,
+                            operation.listPk.createdBy,
                         )
                         Log.i(
                             "ShoppingListLocalDataSource",
-                            "Update checked of ${operation.itemName} in list ${operation.listPK} to ${relevantItem.checked}",
+                            "Update checked of ${operation.itemName} in list ${operation.listPk} to ${relevantItem.checked}",
                         )
-                        listPk = operation.listPK
+                        listPk = operation.listPk
                     }
 
                     is ShoppingListOperation.Create -> {

@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "pending_list_operation")
-data class DbPendingListOperation(
+data class DbShoppingListOperation(
     @PrimaryKey(autoGenerate = true)
     val id: Long,
     val opType: String,

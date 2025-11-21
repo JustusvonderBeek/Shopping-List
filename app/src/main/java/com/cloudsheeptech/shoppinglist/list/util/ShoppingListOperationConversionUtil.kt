@@ -1,6 +1,6 @@
 package com.cloudsheeptech.shoppinglist.list.util
 
-import com.cloudsheeptech.shoppinglist.list.model.DbPendingListOperation
+import com.cloudsheeptech.shoppinglist.list.model.DbShoppingListOperation
 import com.cloudsheeptech.shoppinglist.list.model.ListCreator
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListApiOperation
 import com.cloudsheeptech.shoppinglist.list.model.ShoppingListOperation
@@ -15,7 +15,12 @@ class ShoppingListOperationConversionUtil {
                 ignoreUnknownKeys = true
             }
 
-        fun shoppingListOperationToDatabasePendingListOperation(operation: ShoppingListOperation): DbPendingListOperation {
+        fun shoppingListOperationsToShoppingListApiOperations(operations: List<ShoppingListOperation>): List<ShoppingListApiOperation> =
+            operations.map { operation ->
+                shoppingListOperationToApiOperation(operation)
+            }
+
+        fun shoppingListOperationToDatabasePendingListOperation(operation: ShoppingListOperation): DbShoppingListOperation {
             val apiOp = shoppingListOperationToApiOperation(operation)
             return shoppingListApiOperationToDatabasePendingListOperation(apiOp)
         }
@@ -37,9 +42,9 @@ class ShoppingListOperationConversionUtil {
                 is ShoppingListOperation.SetItemCheckedStatus -> TODO()
             }
 
-        fun shoppingListApiOperationToDatabasePendingListOperation(apiOperation: ShoppingListApiOperation): DbPendingListOperation {
+        fun shoppingListApiOperationToDatabasePendingListOperation(apiOperation: ShoppingListApiOperation): DbShoppingListOperation {
             val serializedOp: String = json.encodeToString(apiOperation)
-            return DbPendingListOperation(
+            return DbShoppingListOperation(
                 id = 0L, // Auto generated
                 opType = apiOperation.op,
                 serializedOp = serializedOp,
@@ -65,41 +70,41 @@ class ShoppingListOperationConversionUtil {
         }
 
         @Throws(IllegalArgumentException::class)
-        fun pendingListOperationToShoppingListApiOperation(dbPendingListOperation: DbPendingListOperation): ShoppingListApiOperation =
-            when (dbPendingListOperation.opType) {
+        fun databaseListOperationToShoppingListOperation(dbListOperation: DbShoppingListOperation): ShoppingListOperation =
+            when (dbListOperation.opType) {
                 ShoppingListOperationConstants.CREATE.op -> {
-                    val deserializedOp = json.decodeFromString<ShoppingListApiOperation.Create>(dbPendingListOperation.serializedOp)
-                    deserializedOp
+                    val deserializedOp = json.decodeFromString<ShoppingListApiOperation.Create>(dbListOperation.serializedOp)
+                    shoppingListApiOperationToShoppingListOperation(deserializedOp)
                 }
                 ShoppingListOperationConstants.DELETE_LIST.op -> {
-                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.DeleteList>(dbPendingListOperation.serializedOp)
-                    deserializedOp
+                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.DeleteList>(dbListOperation.serializedOp)
+                    shoppingListApiOperationToShoppingListOperation(deserializedOp)
                 }
                 ShoppingListOperationConstants.RENAME_LIST.op -> {
-                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.RenameList>(dbPendingListOperation.serializedOp)
-                    deserializedOp
+                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.RenameList>(dbListOperation.serializedOp)
+                    shoppingListApiOperationToShoppingListOperation(deserializedOp)
                 }
                 ShoppingListOperationConstants.ADD_ITEM.op -> {
-                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.AddItem>(dbPendingListOperation.serializedOp)
-                    deserializedOp
+                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.AddItem>(dbListOperation.serializedOp)
+                    shoppingListApiOperationToShoppingListOperation(deserializedOp)
                 }
                 ShoppingListOperationConstants.REMOVE_ITEM.op -> {
-                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.RemoveItem>(dbPendingListOperation.serializedOp)
-                    deserializedOp
+                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.RemoveItem>(dbListOperation.serializedOp)
+                    shoppingListApiOperationToShoppingListOperation(deserializedOp)
                 }
                 ShoppingListOperationConstants.CHANGE_QUANTITY_ITEM.op -> {
                     val deserializedOp =
                         Json.decodeFromString<ShoppingListApiOperation.ChangeQuantityItem>(
-                            dbPendingListOperation.serializedOp,
+                            dbListOperation.serializedOp,
                         )
-                    deserializedOp
+                    shoppingListApiOperationToShoppingListOperation(deserializedOp)
                 }
                 ShoppingListOperationConstants.TOGGLE_ITEM.op -> {
-                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.ToggleItem>(dbPendingListOperation.serializedOp)
-                    deserializedOp
+                    val deserializedOp = Json.decodeFromString<ShoppingListApiOperation.ToggleItem>(dbListOperation.serializedOp)
+                    shoppingListApiOperationToShoppingListOperation(deserializedOp)
                 }
                 else -> {
-                    throw IllegalArgumentException("given operation ${dbPendingListOperation.opType} cannot be handled")
+                    throw IllegalArgumentException("given operation ${dbListOperation.opType} cannot be handled")
                 }
             }
     }

@@ -165,6 +165,7 @@ class ShoppingListRepository
             if (!success) {
                 Log.e("ShoppingListRepository", "Failed to create list online")
             }
+            updateCreateByAfterOperation(createdList)
             return createdList
 //
 //            var newList =
@@ -215,6 +216,18 @@ class ShoppingListRepository
 //                Log.w("ShoppingListRepository", "User not authenticated: $ex")
 //            }
 //            return newList
+        }
+
+        private suspend fun updateCreateByAfterOperation(modifiedList: ShoppingList) {
+            val userAfterOperation =
+                userRepository.read() ?: throw IllegalStateException("user null after login")
+            if (userAfterOperation.OnlineID != modifiedList.createdBy.onlineId && modifiedList.createdBy.onlineId == 0L) {
+                modifiedList.createdBy.onlineId = userAfterOperation.OnlineID
+            } else {
+                return
+            }
+            Log.i("ShoppingListRepository", "UserId changed during operation, updating all lists from 0 to ${userAfterOperation.OnlineID}")
+            localDataSource.updateCreatedByForOwnLists(0L, userAfterOperation.OnlineID)
         }
 
         suspend fun syncListOnline(listPk: ShoppingListPK): ShoppingList? =

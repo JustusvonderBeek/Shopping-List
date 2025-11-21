@@ -168,10 +168,6 @@ class ShoppingListRemoteDataSource
                 try {
                     when (operation) {
                         is ShoppingListOperation.Create -> {
-//                            val pendingOperation =
-//                                ShoppingListOperationConversionUtil.shoppingListOperationToApiOperation(
-//                                    operation,
-//                                )
                             val opId = pendingOperationRepository.insert(operation)
                             if (opId < 0L) {
                                 Log.e("ShoppingListRemoteDataSource", "Failed to insert operation, continue online...")
@@ -180,7 +176,6 @@ class ShoppingListRemoteDataSource
                             if (!success) {
                                 return@withContext false
                             }
-
                             Log.i("ShoppingListRemoteDataSource", "Successfully created list ${operation.title} online")
                             return@withContext true
                         }

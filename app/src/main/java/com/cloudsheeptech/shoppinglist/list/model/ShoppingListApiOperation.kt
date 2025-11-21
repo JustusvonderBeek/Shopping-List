@@ -44,6 +44,8 @@ sealed class ShoppingListApiOperation {
     data class ChangeQuantityItem(
         val listPk: ShoppingListPK,
         val itemName: String,
+        val quantity: Int,
+        val quantityType: QuantityType?,
         override val op: String = ShoppingListOperationConstants.CHANGE_QUANTITY_ITEM.op,
     ) : ShoppingListApiOperation()
 
@@ -51,6 +53,7 @@ sealed class ShoppingListApiOperation {
     data class ToggleItem(
         val listPk: ShoppingListPK,
         val itemName: String,
+        val status: Boolean,
         override val op: String = ShoppingListOperationConstants.TOGGLE_ITEM.op,
     ) : ShoppingListApiOperation()
 }

@@ -22,6 +22,10 @@ class CreateUserInterceptor
         private val userUnauthenticatedApi: UserUnauthenticatedApi,
         private val appFileDir: String,
     ) : Authenticator {
+        companion object {
+            const val AUTH_HEADER_STRING = "Authorization"
+        }
+
         override fun authenticate(
             route: Route?,
             response: Response,
@@ -54,7 +58,8 @@ class CreateUserInterceptor
                 ShoppingListTokenStorage.storeTokenToDisk(appFileDir, "token.tkn", token.token)
                 return response.request
                     .newBuilder()
-                    .addHeader("Authorization", "Bearer ${token.token}")
+                    .removeHeader(AUTH_HEADER_STRING) // Clear any existing and maybe outdated auth headers
+                    .addHeader(AUTH_HEADER_STRING, "Bearer ${token.token}")
                     .build()
             } catch (ex: Exception) {
                 Log.e("CreateUserInterceptor", "Failed to authenticate: $ex")
@@ -76,7 +81,10 @@ class CreateUserInterceptor
                 return null
             }
             if (onlineUser.password != "accepted") {
-                Log.e("CreateUserInterceptor", "The remote endpoint did not replace the password, protocol violation")
+                Log.e(
+                    "CreateUserInterceptor",
+                    "The remote endpoint did not replace the password, protocol violation",
+                )
                 return null
             }
 

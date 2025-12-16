@@ -123,19 +123,30 @@ class ShoppingListRemoteDataSource
         suspend fun executePendingOperations(): Boolean {
             return withContext(Dispatchers.IO) {
                 try {
-                    val currentUser = userRepository.read() ?: throw IllegalStateException("user null after login")
+                    val currentUser =
+                        userRepository.read()
+                            ?: throw IllegalStateException("user null after login")
                     val userIdBeforeOperations = currentUser.OnlineID
                     val pendingOperations = pendingOperationRepository.getAllPendingOperations()
                     val pendingOperationInApiFormat =
                         ShoppingListOperationConversionUtil.shoppingListOperationsToShoppingListApiOperations(
                             pendingOperations,
                         )
+                    // TODO: Fix the index of the list accessed in the ULR
                     val response = shoppingListApi.performOperations(0L, pendingOperationInApiFormat)
                     if (response.code() != HttpStatusCode.OK.value) {
-                        Log.e("ShoppingListRemoteDataSource", "Failed to execute operations successfully online")
-                        val userAfterOnlineOperation = userRepository.read() ?: throw IllegalStateException("user null after login")
+                        Log.e(
+                            "ShoppingListRemoteDataSource",
+                            "Failed to execute operations successfully online",
+                        )
+                        val userAfterOnlineOperation =
+                            userRepository.read()
+                                ?: throw IllegalStateException("user null after login")
                         if (userAfterOnlineOperation.OnlineID == userIdBeforeOperations) {
-                            Log.e("ShoppingListRemoteDataSource", "UserId not change between operations, request failed")
+                            Log.e(
+                                "ShoppingListRemoteDataSource",
+                                "UserId not change between operations, request failed",
+                            )
                             return@withContext false
                         }
 
@@ -143,11 +154,20 @@ class ShoppingListRemoteDataSource
                             "ShoppingListRemoteDataSource",
                             "UserId changed during online request, repeat operation with updated operations",
                         )
-                        pendingOperationRepository.updateCreatorIdForAllPendingOperations(userAfterOnlineOperation.OnlineID)
-                        val updatedPendingOperations = pendingOperationRepository.getAllPendingOperations()
+                        pendingOperationRepository.updateCreatorIdForAllPendingOperations(
+                            userAfterOnlineOperation.OnlineID,
+                        )
+                        val updatedPendingOperations =
+                            pendingOperationRepository.getAllPendingOperations()
                         val updatedPendingOperationsInApiFormat =
-                            ShoppingListOperationConversionUtil.shoppingListOperationsToShoppingListApiOperations(updatedPendingOperations)
-                        val response = shoppingListApi.performOperations(0L, updatedPendingOperationsInApiFormat)
+                            ShoppingListOperationConversionUtil.shoppingListOperationsToShoppingListApiOperations(
+                                updatedPendingOperations,
+                            )
+                        val response =
+                            shoppingListApi.performOperations(
+                                0L,
+                                updatedPendingOperationsInApiFormat,
+                            )
                         if (response.code() != HttpStatusCode.OK.value) {
                             Log.e("ShoppingListRemoteDataSource", "Failed to execute operations online")
                             return@withContext false
@@ -157,7 +177,10 @@ class ShoppingListRemoteDataSource
                     pendingOperationRepository.deleteAllPendingOperations()
                     return@withContext true
                 } catch (ex: Exception) {
-                    Log.e("ShoppingListRemoteDataSource", "Unknown error while performing operation: $ex")
+                    Log.e(
+                        "ShoppingListRemoteDataSource",
+                        "Unknown error while performing operation: $ex",
+                    )
                 }
                 return@withContext false
             }
@@ -170,25 +193,36 @@ class ShoppingListRemoteDataSource
                         is ShoppingListOperation.Create -> {
                             val opId = pendingOperationRepository.insert(operation)
                             if (opId < 0L) {
-                                Log.e("ShoppingListRemoteDataSource", "Failed to insert operation, continue online...")
+                                Log.e(
+                                    "ShoppingListRemoteDataSource",
+                                    "Failed to insert operation, continue online...",
+                                )
                             }
                             val success = executePendingOperations()
                             if (!success) {
                                 return@withContext false
                             }
-                            Log.i("ShoppingListRemoteDataSource", "Successfully created list ${operation.title} online")
+                            Log.i(
+                                "ShoppingListRemoteDataSource",
+                                "Successfully created list ${operation.title} online",
+                            )
                             return@withContext true
                         }
+
                         is ShoppingListOperation.AddItem -> {
-                            val response = shoppingListApi.addItem(operation.listPk.listId, operation.item)
+                            val response =
+                                shoppingListApi.addItem(operation.listPk.listId, operation.item)
                             response.status == HttpStatusCode.OK
                         }
+
                         is ShoppingListOperation.AddItemByName -> {
                             // TODO: Update to retrieve correct item
-                            val itemToAdd = AppItem("", "", 1, QuantityType.PIECES, false, 1L, opCount = 0)
+                            val itemToAdd =
+                                AppItem("", "", 1, QuantityType.PIECES, false, 1L, opCount = 0)
                             val response = shoppingListApi.addItem(operation.listPk.listId, itemToAdd)
                             response.status == HttpStatusCode.OK
                         }
+
                         is ShoppingListOperation.ChangeQuantityOfItem -> {
                             val response =
                                 shoppingListApi.changeQuantityItem(
@@ -197,14 +231,22 @@ class ShoppingListRemoteDataSource
                                 )
                             response.status == HttpStatusCode.OK
                         }
+
                         is ShoppingListOperation.Delete -> {
                         }
+
                         is ShoppingListOperation.RemoveItemByName -> {
                         }
+
                         is ShoppingListOperation.RenameList -> {
-                            val response = shoppingListApi.updateTitle(operation.listPk.listId, operation.newName)
+                            val response =
+                                shoppingListApi.updateTitle(
+                                    operation.listPk.listId,
+                                    operation.newName,
+                                )
                             response.status == HttpStatusCode.OK
                         }
+
                         is ShoppingListOperation.SetItemCheckedStatus -> {
                         }
                     }

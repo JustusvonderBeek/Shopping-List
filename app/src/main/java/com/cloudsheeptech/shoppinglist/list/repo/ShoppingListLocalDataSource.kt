@@ -71,9 +71,14 @@ class ShoppingListLocalDataSource
 
         private suspend fun createListIdForNewLocalList(list: ShoppingList): Long {
             if (!isNewList(list) && !isListFromLocalUser(list)) {
+                Log.i(
+                    "ShoppingListLocalDataSource",
+                    "List is not from local user, not generating new number",
+                )
                 return 0L
             }
             if (!isNewList(list) && isListFromLocalUser(list)) {
+                Log.i("ShoppingListLocalDataSource", "List is from local user but not 0, invalid!")
                 return -1L
             }
             list.listId = getUniqueShoppingListID(list.createdBy.onlineId)
@@ -124,7 +129,10 @@ class ShoppingListLocalDataSource
                             operation.listPk.createdBy,
                         )
                         listPk = operation.listPk
-                        Log.i("ShoppingListLocalDataSource", "Added item ${operation.item} to list ${operation.listPk}")
+                        Log.i(
+                            "ShoppingListLocalDataSource",
+                            "Added item ${operation.item} to list ${operation.listPk}",
+                        )
                     }
 
                     is ShoppingListOperation.AddItemByName -> {
@@ -139,12 +147,18 @@ class ShoppingListLocalDataSource
                             operation.listPk.createdBy,
                         )
                         listPk = operation.listPk
-                        Log.i("ShoppingListLocalDataSource", "Added item ${operation.itemName} to list ${operation.listPk}")
+                        Log.i(
+                            "ShoppingListLocalDataSource",
+                            "Added item ${operation.itemName} to list ${operation.listPk}",
+                        )
                     }
 
                     is ShoppingListOperation.ChangeQuantityOfItem -> {
                         if (operation.quantity <= 0) {
-                            Log.w("ShoppingListLocalDataSource", "${operation.quantity} <= 0: change quantity is skipped")
+                            Log.w(
+                                "ShoppingListLocalDataSource",
+                                "${operation.quantity} <= 0: change quantity is skipped",
+                            )
                             return@withContext null
                         }
                         val listItems =
@@ -152,7 +166,13 @@ class ShoppingListLocalDataSource
                                 operation.listPk.listId,
                                 operation.listPk.createdBy,
                             )
-                        val itemToUpdate = listItems.find { item -> item.name.equals(operation.itemName, ignoreCase = true) }
+                        val itemToUpdate =
+                            listItems.find { item ->
+                                item.name.equals(
+                                    operation.itemName,
+                                    ignoreCase = true,
+                                )
+                            }
                         if (itemToUpdate == null) {
 //                            throw IllegalArgumentException("item ${operation.itemName} is not contained in list ${operation.listPk}")
                             return@withContext null
@@ -185,7 +205,10 @@ class ShoppingListLocalDataSource
                                 item.name.equals(operation.itemName, ignoreCase = true)
                             }
                         if (relevantItems.isEmpty()) {
-                            Log.w("ShoppingListLocalDataSource", "Item ${operation.itemName} to toggle not found, skipping update")
+                            Log.w(
+                                "ShoppingListLocalDataSource",
+                                "Item ${operation.itemName} to toggle not found, skipping update",
+                            )
                             listPk = operation.listPk
                             return@withContext null
                         } else if (relevantItems.size > 1) {
@@ -225,8 +248,12 @@ class ShoppingListLocalDataSource
                                 synchronized = OffsetDateTime.now(),
                                 items = mutableListOf(),
                             )
-                        newList.listId = createListIdForNewLocalList(newList)
+                        val generatedId = createListIdForNewLocalList(newList)
+                        if (generatedId < 0) {
+                            throw IllegalStateException("New listId from local user must not be > 0, fix operation initialization")
+                        }
                         val newListId = shoppingListDao.insertList(newList)
+                        newList.listId = createListIdForNewLocalList(newList)
                         listPk = ShoppingListPK(newListId, operation.creator.onlineId)
                         Log.i("ShoppingListLocalDataSource", "Created new list $newList")
                     }
@@ -247,7 +274,10 @@ class ShoppingListLocalDataSource
                                 operation.listPk.listId,
                                 operation.listPk.createdBy,
                             )
-                            Log.i("ShoppingListLocalDataSource", "Removed item ${operation.itemName} from list ${operation.listPk}")
+                            Log.i(
+                                "ShoppingListLocalDataSource",
+                                "Removed item ${operation.itemName} from list ${operation.listPk}",
+                            )
                         } else {
                             Log.i(
                                 "ShoppingListLocalDataSource",
@@ -263,7 +293,10 @@ class ShoppingListLocalDataSource
                             operation.listPk.listId,
                             operation.listPk.createdBy,
                         )
-                        Log.i("ShoppingListLocalDataSource", "Renamed list ${operation.listPk} to ${operation.newName}")
+                        Log.i(
+                            "ShoppingListLocalDataSource",
+                            "Renamed list ${operation.listPk} to ${operation.newName}",
+                        )
                         listPk = operation.listPk
                     }
 
@@ -322,7 +355,8 @@ class ShoppingListLocalDataSource
                     lists.map { list ->
                         val correspondingCreatorName =
                             if (list.createdBy.onlineId != user.OnlineID) {
-                                onlineUserRepository.read(list.createdBy.onlineId)?.username ?: "user not found"
+                                onlineUserRepository.read(list.createdBy.onlineId)?.username
+                                    ?: "user not found"
                             } else {
                                 user.Username
                             }

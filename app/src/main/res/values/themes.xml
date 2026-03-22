@@ -2,11 +2,52 @@
 <resources>
 
     <style name="AppTheme" parent="Theme.Material3.DynamicColors.DayNight">
-        <item name="colorPrimary">@color/app_green_0</item>
+        <!--        <item name="colorPrimary">@color/app_green_0</item>-->
         <item name="colorControlHighlight">@color/app_green_700</item>
         <item name="android:navigationBarColor">@color/app_green_700</item>
         <item name="statusBarForeground">@color/app_black</item>
         <item name="statusBarBackground">@color/app_black</item>
+        <!--        <item name="android:windowLightStatusBar">false</item>-->
+
+        <!-- Primary -->
+        <item name="colorPrimary">#006C4A</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#89F8C7</item>
+        <item name="colorOnPrimaryContainer">#002115</item>
+
+        <!-- Secondary -->
+        <item name="colorSecondary">#4D6357</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorSecondaryContainer">#CFE9D9</item>
+        <item name="colorOnSecondaryContainer">#092017</item>
+
+        <!-- Tertiary (warm accent for price highlights etc.) -->
+        <item name="colorTertiary">#3D6373</item>
+        <item name="colorOnTertiary">#FFFFFF</item>
+        <item name="colorTertiaryContainer">#C1E8FB</item>
+        <item name="colorOnTertiaryContainer">#001F2A</item>
+
+        <!-- Error -->
+        <item name="colorError">#BA1A1A</item>
+        <item name="colorOnError">#FFFFFF</item>
+        <item name="colorErrorContainer">#FFDAD6</item>
+        <item name="colorOnErrorContainer">#410002</item>
+
+        <!-- Background & Surface -->
+        <item name="android:colorBackground">#FFFBFE</item>
+        <item name="colorOnBackground">#1B1B1E</item>
+        <item name="colorSurface">#FFFBFE</item>
+        <item name="colorOnSurface">#1B1B1E</item>
+        <item name="colorSurfaceVariant">#DBE5DD</item>
+        <item name="colorOnSurfaceVariant">#404943</item>
+
+        <!-- Outline -->
+        <item name="colorOutline">#707973</item>
+        <item name="colorOutlineVariant">#BFC9C2</item>
+
+        <!-- Status bar -->
+        <!--        <item name="android:statusBarColor">@color/transparent</item>-->
         <item name="android:windowLightStatusBar">false</item>
     </style>
+
 </resources>
